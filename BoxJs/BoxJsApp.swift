@@ -9,6 +9,12 @@ import SwiftUI
 
 @main
 struct BoxJsApp: App {
+    init() {
+        // hex color f8f8f8
+        UITabBar.appearance().backgroundColor = UIColor(red: 0.97, green: 0.97, blue: 0.97, alpha: 1.00)
+        UITabBar.appearance().barTintColor = UIColor(red: 0.97, green: 0.97, blue: 0.97, alpha: 1.00)
+        
+    }
     var body: some Scene {
         WindowGroup {
             ContentView()
