@@ -24,6 +24,8 @@
 		E2E9E25D2C461EE700836E4B /* UserConfigModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E9E25C2C461EE700836E4B /* UserConfigModel.swift */; };
 		E2E9E25F2C461F1300836E4B /* AppSubCacheModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E9E25E2C461F1300836E4B /* AppSubCacheModel.swift */; };
 		E2E9E2612C46200D00836E4B /* BoxDataModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E9E2602C46200D00836E4B /* BoxDataModel.swift */; };
+		E2E9E2642C464CC300836E4B /* ArrayExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E9E2632C464CC300836E4B /* ArrayExtension.swift */; };
+		E2E9E2662C46935000836E4B /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E9E2652C46935000836E4B /* AppModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -43,6 +45,8 @@
 		E2E9E25C2C461EE700836E4B /* UserConfigModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserConfigModel.swift; sourceTree = "<group>"; };
 		E2E9E25E2C461F1300836E4B /* AppSubCacheModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSubCacheModel.swift; sourceTree = "<group>"; };
 		E2E9E2602C46200D00836E4B /* BoxDataModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxDataModel.swift; sourceTree = "<group>"; };
+		E2E9E2632C464CC300836E4B /* ArrayExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArrayExtension.swift; sourceTree = "<group>"; };
+		E2E9E2652C46935000836E4B /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,6 +81,7 @@
 		E2C273542C354F4A004952AA /* BoxJs */ = {
 			isa = PBXGroup;
 			children = (
+				E2E9E2622C464C9800836E4B /* Extension */,
 				E2E9E24E2C3FDB2300836E4B /* Helpers */,
 				E2E9E24A2C3FDAD600836E4B /* Services */,
 				E2E9E24D2C3FDB1400836E4B /* Models */,
@@ -132,6 +137,7 @@
 				E2E9E25C2C461EE700836E4B /* UserConfigModel.swift */,
 				E2E9E25E2C461F1300836E4B /* AppSubCacheModel.swift */,
 				E2E9E2602C46200D00836E4B /* BoxDataModel.swift */,
+				E2E9E2652C46935000836E4B /* AppModel.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -142,6 +148,14 @@
 				E2E9E24F2C3FE9A800836E4B /* Vibration.swift */,
 			);
 			path = Helpers;
+			sourceTree = "<group>";
+		};
+		E2E9E2622C464C9800836E4B /* Extension */ = {
+			isa = PBXGroup;
+			children = (
+				E2E9E2632C464CC300836E4B /* ArrayExtension.swift */,
+			);
+			path = Extension;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -233,7 +247,9 @@
 				E2E9E25B2C461EA000836E4B /* SysAppModel.swift in Sources */,
 				E2E9E25F2C461F1300836E4B /* AppSubCacheModel.swift in Sources */,
 				E2C273582C354F4A004952AA /* ContentView.swift in Sources */,
+				E2E9E2642C464CC300836E4B /* ArrayExtension.swift in Sources */,
 				E2E9E2612C46200D00836E4B /* BoxDataModel.swift in Sources */,
+				E2E9E2662C46935000836E4B /* AppModel.swift in Sources */,
 				E2C273562C354F4A004952AA /* BoxJsApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -2,13 +2,13 @@ import UIKit
 import SwiftUI
 
 struct HomeView: View {
-    @State private var items = (1...40).map { "Item \($0)" }
-    @StateObject var viewModel = BoxJsViewModel()
+//    @State private var items = (1...40).map { "Item \($0)" }
+    @StateObject var boxModel = BoxJsViewModel()
     
     var body: some View {
         VStack {
-             if let apiResponse = viewModel.boxData {
-                 List(apiResponse.usercfgs.favapps, id: \.self) { value in
+            if !boxModel.boxData.usercfgs.favapps.isEmpty {
+                List(boxModel.boxData.usercfgs.favapps, id: \.self) { value in
                      VStack(alignment: .leading) {
                          Text(value ?? "")
                              .font(.subheadline)
@@ -17,7 +17,7 @@ struct HomeView: View {
              } else {
                  ProgressView()
                      .onAppear {
-                         viewModel.fetchData()
+                         boxModel.fetchData()
                      }
              }
              // drop and drag ui
