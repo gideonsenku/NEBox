@@ -8,15 +8,14 @@
 import SwiftUI
 
 class BoxJsViewModel: ObservableObject {
-    @Published var boxResponse: BoxResponse?
+    @Published var boxData: BoxDataModel?
     
     func fetchData() {
         Task {
             do {
                 let fetchedData = try await NetworkService.shared.getBoxData()
                 DispatchQueue.main.async {
-                    self.boxResponse = fetchedData
-                    print(self.boxResponse?.sysapps)
+                    self.boxData = fetchedData
                 }
             } catch {
                 print("Error fetching data: \(error)")

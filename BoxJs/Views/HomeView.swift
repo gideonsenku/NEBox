@@ -7,7 +7,7 @@ struct HomeView: View {
     
     var body: some View {
         VStack {
-             if let apiResponse = viewModel.boxResponse {
+             if let apiResponse = viewModel.boxData {
                  List(apiResponse.usercfgs.favapps, id: \.self) { value in
                      VStack(alignment: .leading) {
                          Text(value ?? "")
@@ -15,7 +15,7 @@ struct HomeView: View {
                      }
                  }
              } else {
-                 Text("Loading...")
+                 ProgressView()
                      .onAppear {
                          viewModel.fetchData()
                      }
