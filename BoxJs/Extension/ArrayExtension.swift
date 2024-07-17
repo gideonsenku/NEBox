@@ -9,7 +9,4 @@ import Foundation
 
 // array filter extension
 
-extension Array {
-    
-    
-}
+extension Array {}

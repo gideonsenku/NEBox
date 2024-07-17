@@ -25,7 +25,7 @@ struct LikeBtnModifier: ViewModifier {
 
 extension Text {
     func likeButtonStyle() -> some View {
-        self.modifier(LikeBtnModifier())
+        modifier(LikeBtnModifier())
     }
 }
 

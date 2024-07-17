@@ -17,15 +17,12 @@
 		E2C2736A2C379939004952AA /* SettingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C273692C379939004952AA /* SettingView.swift */; };
 		E2E9E2472C3FCA9D00836E4B /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = E2E9E2462C3FCA9D00836E4B /* Alamofire */; };
 		E2E9E2502C3FE9A800836E4B /* Vibration.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E9E24F2C3FE9A800836E4B /* Vibration.swift */; };
-		E2E9E2522C40FD5000836E4B /* NetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E9E2512C40FD5000836E4B /* NetworkService.swift */; };
+		E2E9E2522C40FD5000836E4B /* ApiRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E9E2512C40FD5000836E4B /* ApiRequest.swift */; };
 		E2E9E2562C4101AC00836E4B /* BoxJsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E9E2552C4101AC00836E4B /* BoxJsViewModel.swift */; };
 		E2E9E2592C45072F00836E4B /* AnyCodable in Frameworks */ = {isa = PBXBuildFile; productRef = E2E9E2582C45072F00836E4B /* AnyCodable */; };
-		E2E9E25B2C461EA000836E4B /* SysAppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E9E25A2C461EA000836E4B /* SysAppModel.swift */; };
-		E2E9E25D2C461EE700836E4B /* UserConfigModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E9E25C2C461EE700836E4B /* UserConfigModel.swift */; };
-		E2E9E25F2C461F1300836E4B /* AppSubCacheModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E9E25E2C461F1300836E4B /* AppSubCacheModel.swift */; };
 		E2E9E2612C46200D00836E4B /* BoxDataModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E9E2602C46200D00836E4B /* BoxDataModel.swift */; };
 		E2E9E2642C464CC300836E4B /* ArrayExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E9E2632C464CC300836E4B /* ArrayExtension.swift */; };
-		E2E9E2662C46935000836E4B /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E9E2652C46935000836E4B /* AppModel.swift */; };
+		E2E9E2692C47718800836E4B /* SwiftyJSON in Frameworks */ = {isa = PBXBuildFile; productRef = E2E9E2682C47718800836E4B /* SwiftyJSON */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -39,14 +36,10 @@
 		E2C273672C36BB88004952AA /* SubcribeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubcribeView.swift; sourceTree = "<group>"; };
 		E2C273692C379939004952AA /* SettingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingView.swift; sourceTree = "<group>"; };
 		E2E9E24F2C3FE9A800836E4B /* Vibration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Vibration.swift; sourceTree = "<group>"; };
-		E2E9E2512C40FD5000836E4B /* NetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkService.swift; sourceTree = "<group>"; };
+		E2E9E2512C40FD5000836E4B /* ApiRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiRequest.swift; sourceTree = "<group>"; };
 		E2E9E2552C4101AC00836E4B /* BoxJsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxJsViewModel.swift; sourceTree = "<group>"; };
-		E2E9E25A2C461EA000836E4B /* SysAppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SysAppModel.swift; sourceTree = "<group>"; };
-		E2E9E25C2C461EE700836E4B /* UserConfigModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserConfigModel.swift; sourceTree = "<group>"; };
-		E2E9E25E2C461F1300836E4B /* AppSubCacheModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSubCacheModel.swift; sourceTree = "<group>"; };
 		E2E9E2602C46200D00836E4B /* BoxDataModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxDataModel.swift; sourceTree = "<group>"; };
 		E2E9E2632C464CC300836E4B /* ArrayExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArrayExtension.swift; sourceTree = "<group>"; };
-		E2E9E2652C46935000836E4B /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,6 +47,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E2E9E2692C47718800836E4B /* SwiftyJSON in Frameworks */,
 				E2E9E2592C45072F00836E4B /* AnyCodable in Frameworks */,
 				E2E9E2472C3FCA9D00836E4B /* Alamofire in Frameworks */,
 			);
@@ -105,7 +99,7 @@
 		E2E9E24A2C3FDAD600836E4B /* Services */ = {
 			isa = PBXGroup;
 			children = (
-				E2E9E2512C40FD5000836E4B /* NetworkService.swift */,
+				E2E9E2512C40FD5000836E4B /* ApiRequest.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -133,11 +127,7 @@
 		E2E9E24D2C3FDB1400836E4B /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				E2E9E25A2C461EA000836E4B /* SysAppModel.swift */,
-				E2E9E25C2C461EE700836E4B /* UserConfigModel.swift */,
-				E2E9E25E2C461F1300836E4B /* AppSubCacheModel.swift */,
 				E2E9E2602C46200D00836E4B /* BoxDataModel.swift */,
-				E2E9E2652C46935000836E4B /* AppModel.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -177,6 +167,7 @@
 			packageProductDependencies = (
 				E2E9E2462C3FCA9D00836E4B /* Alamofire */,
 				E2E9E2582C45072F00836E4B /* AnyCodable */,
+				E2E9E2682C47718800836E4B /* SwiftyJSON */,
 			);
 			productName = BoxJs;
 			productReference = E2C273522C354F4A004952AA /* BoxJs.app */;
@@ -209,6 +200,7 @@
 			packageReferences = (
 				E2E9E2452C3FCA9D00836E4B /* XCRemoteSwiftPackageReference "Alamofire" */,
 				E2E9E2572C45072F00836E4B /* XCRemoteSwiftPackageReference "AnyCodable" */,
+				E2E9E2672C47718800836E4B /* XCRemoteSwiftPackageReference "SwiftyJSON" */,
 			);
 			productRefGroup = E2C273532C354F4A004952AA /* Products */;
 			projectDirPath = "";
@@ -237,19 +229,15 @@
 			buildActionMask = 2147483647;
 			files = (
 				E2E9E2502C3FE9A800836E4B /* Vibration.swift in Sources */,
-				E2E9E2522C40FD5000836E4B /* NetworkService.swift in Sources */,
+				E2E9E2522C40FD5000836E4B /* ApiRequest.swift in Sources */,
 				E2C273662C3678B1004952AA /* AppView.swift in Sources */,
-				E2E9E25D2C461EE700836E4B /* UserConfigModel.swift in Sources */,
 				E2E9E2562C4101AC00836E4B /* BoxJsViewModel.swift in Sources */,
 				E2C273682C36BB88004952AA /* SubcribeView.swift in Sources */,
 				E2C273642C355309004952AA /* HomeView.swift in Sources */,
 				E2C2736A2C379939004952AA /* SettingView.swift in Sources */,
-				E2E9E25B2C461EA000836E4B /* SysAppModel.swift in Sources */,
-				E2E9E25F2C461F1300836E4B /* AppSubCacheModel.swift in Sources */,
 				E2C273582C354F4A004952AA /* ContentView.swift in Sources */,
 				E2E9E2642C464CC300836E4B /* ArrayExtension.swift in Sources */,
 				E2E9E2612C46200D00836E4B /* BoxDataModel.swift in Sources */,
-				E2E9E2662C46935000836E4B /* AppModel.swift in Sources */,
 				E2C273562C354F4A004952AA /* BoxJsApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -474,6 +462,14 @@
 				minimumVersion = 0.6.7;
 			};
 		};
+		E2E9E2672C47718800836E4B /* XCRemoteSwiftPackageReference "SwiftyJSON" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SwiftyJSON/SwiftyJSON";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.0.2;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -486,6 +482,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = E2E9E2572C45072F00836E4B /* XCRemoteSwiftPackageReference "AnyCodable" */;
 			productName = AnyCodable;
+		};
+		E2E9E2682C47718800836E4B /* SwiftyJSON */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E2E9E2672C47718800836E4B /* XCRemoteSwiftPackageReference "SwiftyJSON" */;
+			productName = SwiftyJSON;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

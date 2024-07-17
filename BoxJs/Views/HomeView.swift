@@ -1,91 +1,90 @@
-import UIKit
 import SwiftUI
+import UIKit
 
 struct HomeView: View {
 //    @State private var items = (1...40).map { "Item \($0)" }
     @StateObject var boxModel = BoxJsViewModel()
-    
+
     var body: some View {
         VStack {
-            if !boxModel.boxData.usercfgs.favapps.isEmpty {
-                List(boxModel.boxData.usercfgs.favapps, id: \.self) { value in
-                     VStack(alignment: .leading) {
-                         Text(value ?? "")
-                             .font(.subheadline)
-                     }
-                 }
-             } else {
-                 ProgressView()
-                     .onAppear {
-                         boxModel.fetchData()
-                     }
-             }
-             // drop and drag ui
+            if let favapps = boxModel.boxData.usercfgs?.favapps, !favapps.isEmpty {
+                List(favapps, id: \.self) { value in
+                    VStack(alignment: .leading) {
+                        Text(value)
+                            .font(.subheadline)
+                    }
+                }
+            } else {
+                ProgressView()
+                    .onAppear {
+                        boxModel.fetchData()
+                    }
+            }
+            // drop and drag ui
 //           CollectionViewWrapper(items: $items)
 //               .ignoresSafeArea()
         }
     }
 }
 
-
 struct CollectionViewWrapper: UIViewRepresentable {
     @Binding var items: [String]
-    
+
     func makeUIView(context: Context) -> UICollectionView {
         let layout = UICollectionViewFlowLayout()
-        
+
         // Section insets
         layout.sectionInset = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
         // Inter-item spacing
         layout.minimumInteritemSpacing = 10
         layout.minimumLineSpacing = 0
-        
+
         layout.itemSize = CGSize(width: 80, height: 100) // Adjust height based on content
-        
+
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.backgroundColor = .white
         collectionView.delegate = context.coordinator
         collectionView.dataSource = context.coordinator
         collectionView.register(MyCell.self, forCellWithReuseIdentifier: "Cell")
-        
+
         context.coordinator.collectionView = collectionView
-        
+
         let longPressGesture = UILongPressGestureRecognizer(target: context.coordinator, action: #selector(context.coordinator.handleLongPress(_:)))
         collectionView.addGestureRecognizer(longPressGesture)
-        
+
         return collectionView
     }
-    
+
     func updateUIView(_ uiView: UICollectionView, context: Context) {
         context.coordinator.items = items
         uiView.reloadData()
     }
-    
+
     func makeCoordinator() -> Coordinator {
         Coordinator(items: $items)
     }
-    
+
     class Coordinator: NSObject, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
         @Binding var items: [String]
         weak var collectionView: UICollectionView?
-        
+
         init(items: Binding<[String]>) {
             _items = items
         }
-        
-        func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+
+        func collectionView(_: UICollectionView, numberOfItemsInSection _: Int) -> Int {
             return items.count
         }
-        
+
         func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "Cell", for: indexPath) as! MyCell
             cell.titleLabel.text = items[indexPath.item]
             cell.imageView.image = UIImage(named: "1")
             return cell
         }
-        
+
         @objc func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
-            guard let collectionView = self.collectionView else { return }
+            guard let collectionView = collectionView else { return }
             switch gesture.state {
             case .began:
                 guard let selectedIndexPath = collectionView.indexPathForItem(at: gesture.location(in: collectionView)) else {
@@ -100,12 +99,12 @@ struct CollectionViewWrapper: UIViewRepresentable {
                 collectionView.cancelInteractiveMovement()
             }
         }
-        
-        func collectionView(_ collectionView: UICollectionView, canMoveItemAt indexPath: IndexPath) -> Bool {
+
+        func collectionView(_: UICollectionView, canMoveItemAt _: IndexPath) -> Bool {
             return true
         }
-        
-        func collectionView(_ collectionView: UICollectionView, moveItemAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
+
+        func collectionView(_: UICollectionView, moveItemAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
             let movedItem = items.remove(at: sourceIndexPath.item)
             items.insert(movedItem, at: destinationIndexPath.item)
         }
@@ -115,10 +114,10 @@ struct CollectionViewWrapper: UIViewRepresentable {
 class MyCell: UICollectionViewCell {
     let imageView = UIImageView()
     let titleLabel = UILabel()
-    
+
     override init(frame: CGRect) {
         super.init(frame: frame)
-        
+
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         imageView.layer.cornerRadius = 12
@@ -132,7 +131,7 @@ class MyCell: UICollectionViewCell {
         imageView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor).isActive = true
         imageView.widthAnchor.constraint(equalToConstant: 56).isActive = true
         imageView.heightAnchor.constraint(equalToConstant: 56).isActive = true
-        
+
         titleLabel.textAlignment = .center
         titleLabel.numberOfLines = 1
         titleLabel.textColor = .black
@@ -143,8 +142,9 @@ class MyCell: UICollectionViewCell {
         titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -10).isActive = true
         titleLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10).isActive = true
     }
-    
-    required init?(coder aDecoder: NSCoder) {
+
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 }

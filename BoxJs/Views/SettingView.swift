@@ -19,29 +19,28 @@ struct SettingView: View {
             }) {
                 Image(systemName: "wind")
                     .imageScale(.large)
-                    .rotationEffect(.degrees(showAni ? 90: 0))
+                    .rotationEffect(.degrees(showAni ? 90 : 0))
                     .scaleEffect(5)
                     .padding()
-        }
-        
-        
-        Divider().padding()
-        
-        Button {
-            withAnimation {
-                isPlaying.toggle()
             }
-        } label: {
-            if isPlaying {
-                Image(systemName: "play.fill")
-                    .imageScale(.large)
-                    .padding()
-            } else {
-                Image(systemName: "pause.fill")
-                    .imageScale(.large)
-                    .padding()
+
+            Divider().padding()
+
+            Button {
+                withAnimation {
+                    isPlaying.toggle()
+                }
+            } label: {
+                if isPlaying {
+                    Image(systemName: "play.fill")
+                        .imageScale(.large)
+                        .padding()
+                } else {
+                    Image(systemName: "pause.fill")
+                        .imageScale(.large)
+                        .padding()
+                }
             }
-        }
         }
     }
 }

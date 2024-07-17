@@ -16,7 +16,7 @@ enum Vibration {
     case medium
     case heavy
     case selection
-    
+
     func vibrate() {
         switch self {
         case .error:
