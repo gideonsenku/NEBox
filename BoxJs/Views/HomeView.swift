@@ -1,45 +1,43 @@
 import SwiftUI
 import UIKit
 
+func loadImage(from url: URL, completion: @escaping (UIImage?) -> Void) {
+    URLSession.shared.dataTask(with: url) { data, _, error in
+        guard let data = data, error == nil else {
+            print("Failed to load image: \(error?.localizedDescription ?? "Unknown error")")
+            completion(nil)
+            return
+        }
+        let image = UIImage(data: data)
+        completion(image)
+    }.resume()
+}
+
 struct HomeView: View {
-//    @State private var items = (1...40).map { "Item \($0)" }
     @StateObject var boxModel = BoxJsViewModel()
 
     var body: some View {
         VStack {
-            if let favapps = boxModel.boxData.usercfgs?.favapps, !favapps.isEmpty {
-                List(favapps, id: \.self) { value in
-                    VStack(alignment: .leading) {
-                        Text(value)
-                            .font(.subheadline)
-                    }
-                }
-            } else {
-                ProgressView()
-                    .onAppear {
+            CollectionViewWrapper(items: $boxModel.favApps)
+                .ignoresSafeArea()
+                .onAppear {
+                    DispatchQueue.main.async {
                         boxModel.fetchData()
                     }
-            }
-            // drop and drag ui
-//           CollectionViewWrapper(items: $items)
-//               .ignoresSafeArea()
+                }
         }
     }
 }
 
 struct CollectionViewWrapper: UIViewRepresentable {
-    @Binding var items: [String]
+    @Binding var items: [AppModel]
 
     func makeUIView(context: Context) -> UICollectionView {
         let layout = UICollectionViewFlowLayout()
-
-        // Section insets
         layout.sectionInset = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
-        // Inter-item spacing
         layout.minimumInteritemSpacing = 10
         layout.minimumLineSpacing = 0
-
-        layout.itemSize = CGSize(width: 80, height: 100) // Adjust height based on content
+        layout.itemSize = CGSize(width: 80, height: 100)
 
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.backgroundColor = .white
@@ -65,10 +63,10 @@ struct CollectionViewWrapper: UIViewRepresentable {
     }
 
     class Coordinator: NSObject, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
-        @Binding var items: [String]
+        @Binding var items: [AppModel]
         weak var collectionView: UICollectionView?
 
-        init(items: Binding<[String]>) {
+        init(items: Binding<[AppModel]>) {
             _items = items
         }
 
@@ -78,8 +76,13 @@ struct CollectionViewWrapper: UIViewRepresentable {
 
         func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "Cell", for: indexPath) as! MyCell
-            cell.titleLabel.text = items[indexPath.item]
-            cell.imageView.image = UIImage(named: "1")
+            let appModel = items[indexPath.item]
+            cell.titleLabel.text = appModel.name
+            if let imageURLString = appModel.icon, let imageURL = URL(string: imageURLString) {
+                cell.imageURL = imageURL
+            } else {
+                cell.imageView.image = UIImage(named: "placeholder")
+            }
             return cell
         }
 
@@ -114,6 +117,19 @@ struct CollectionViewWrapper: UIViewRepresentable {
 class MyCell: UICollectionViewCell {
     let imageView = UIImageView()
     let titleLabel = UILabel()
+    var imageURL: URL? {
+        didSet {
+            guard let url = imageURL else {
+                imageView.image = nil
+                return
+            }
+            loadImage(from: url) { [weak self] image in
+                DispatchQueue.main.async {
+                    self?.imageView.image = image
+                }
+            }
+        }
+    }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -135,6 +151,7 @@ class MyCell: UICollectionViewCell {
         titleLabel.textAlignment = .center
         titleLabel.numberOfLines = 1
         titleLabel.textColor = .black
+        titleLabel.font = UIFont.systemFont(ofSize: 12)
         contentView.addSubview(titleLabel)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 8).isActive = true

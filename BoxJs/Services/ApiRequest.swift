@@ -27,7 +27,6 @@ enum ApiRequest {
                             encoding: ParameterEncoding = URLEncoding.default,
                             complete: ((Result<JSON, RequestError>) -> Void)? = nil)
     {
-        var parameters = parameters
         AF.request(url, method: method, parameters: parameters, encoding: encoding).responseData { response in
             switch response.result {
             case let .success(data):
@@ -85,9 +84,8 @@ enum ApiRequest {
             }
         }
     }
-    
-    
-    static func getBoxData(lastIdx: Int = 0) async throws -> BodxDataResp {
+
+    static func getBoxData(lastIdx _: Int = 0) async throws -> BodxDataResp {
         let resp: BodxDataResp = try await request(EndPoint.boxdata)
         return resp
     }

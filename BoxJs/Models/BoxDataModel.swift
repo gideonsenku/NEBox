@@ -16,7 +16,7 @@ struct AppSubCache: Codable {
     var repo: String
     let updateTime: String
     var apps: [AppModel]
-    
+
     // AppSub Struct
     var isErr: Bool?
     var enable: Bool?
@@ -42,12 +42,10 @@ struct AppModel: Codable {
     let script: String?
     let descs_html: [String]?
     // let settings: [Setting] 暂时不管
-    
-    
+
     var favIcon: String?
     var icon: String?
     var favIconColor: String?
-    
 }
 
 extension AppModel {
@@ -57,7 +55,7 @@ extension AppModel {
         newApp.icon = icon
         newApp.favIcon = favIcon
         newApp.favIconColor = favIconColor
-        
+
         return newApp
     }
 }
@@ -71,22 +69,22 @@ struct AppSub: Codable {
     let enable: Bool
     let id: String?
     let url: String
-    
+
     // MARK: 非接口返回
+
     var isErr: Bool?
 }
-
 
 struct BodxDataResp: Codable {
     let appSubCaches: [String: AppSubCache]
 //    let datas: [String: AnyCodable?]
     let usercfgs: UserConfig?
     let sysapps: [AppModel]
-    
+
     var appsubs: [AppSub] {
         return usercfgs?.appsubs ?? []
     }
-    
+
     var displayAppSubCaches: [String: AppSubCache] {
         var ids = [String]()
         for appSub in appsubs {
@@ -98,13 +96,13 @@ struct BodxDataResp: Codable {
                 }
             }
         }
-        
+
         let replyIds = ids.enumerated().compactMap { index, value in
             ids[(index + 1)...].contains(value) ? value : nil
         }
-        
+
         var updatedAppSubCaches = appSubCaches
-        
+
         for appSub in appsubs {
             if var sub = updatedAppSubCaches[appSub.url], !(appSub.isErr ?? false) {
                 if !sub.apps.isEmpty {
@@ -122,7 +120,7 @@ struct BodxDataResp: Codable {
         }
         return updatedAppSubCaches
     }
-    
+
     var displayAppSubs: [AppSubCache] {
         return appsubs.map { sub in
             let cacheSub = appSubCaches[sub.url]
@@ -130,7 +128,7 @@ struct BodxDataResp: Codable {
             let author = cacheSub?.author ?? "@anonymous"
             let repo = cacheSub?.repo ?? sub.url
             let isErr = cacheSub?.isValid == true ? sub.isErr : true
-            
+
             return AppSubCache(
                 id: (cacheSub?.id ?? sub.id) ?? "",
                 name: name,
@@ -146,7 +144,7 @@ struct BodxDataResp: Codable {
             )
         }
     }
-    
+
     var displaySubApps: [AppModel] {
         var apps: [AppModel] = []
         for appSub in displayAppSubs {
@@ -156,10 +154,32 @@ struct BodxDataResp: Codable {
                 }
             }
         }
-        
+
         return apps
     }
-    
+
+    var displaySysApps: [AppModel] {
+        return sysapps.map { app in
+            loadAppBaseInfo(app)
+        }
+    }
+
+    var apps: [AppModel] {
+        return displaySubApps + displaySysApps
+    }
+
+    var favApps: [AppModel] {
+        var favapps: [AppModel] = []
+        if let favAppIds = usercfgs?.favapps, !favAppIds.isEmpty {
+            for favId in favAppIds {
+                if let app = apps.first(where: { $0.id == favId }) {
+                    favapps.append(app)
+                }
+            }
+        }
+        return favapps
+    }
+
     func loadAppBaseInfo(_ app: AppModel) -> AppModel {
         var icons = app.icons.isEmpty ? ["https://raw.githubusercontent.com/Orz-3/mini/master/Alpha/appstore.png", "https://raw.githubusercontent.com/Orz-3/mini/master/Color/appstore.png"] : app.icons
 
@@ -167,10 +187,9 @@ struct BodxDataResp: Codable {
             icons[0] = app.icons[0].replacingOccurrences(of: "/Orz-3/mini/master/", with: "/Orz-3/mini/master/Alpha/")
             icons[1] = app.icons[1].replacingOccurrences(of: "/Orz-3/task/master/", with: "/Orz-3/mini/master/Color/")
         }
-        let isFav = self.usercfgs?.favapps.contains(app.id) ?? false
-        
-        let newApp = app.withIcon(icons, icons[0], isFav ? "mdi-star" : "mdi-star-outline", isFav ? "primary" : "grey")
+        let isFav = usercfgs?.favapps.contains(app.id) ?? false
+
+        let newApp = app.withIcon(icons, icons.last ?? icons[0], isFav ? "mdi-star" : "mdi-star-outline", isFav ? "primary" : "grey")
         return newApp
     }
 }
-
