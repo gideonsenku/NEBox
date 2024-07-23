@@ -8,11 +8,11 @@
 import SwiftUI
 
 class BoxJsViewModel: ObservableObject {
-    @Published var boxData: BodxDataResp
+    @Published var boxData: BoxDataResp
     @Published var favApps: [AppModel]
     private let iconThemeIdx = 0
 
-    init(boxData: BodxDataResp = BodxDataResp(
+    init(boxData: BoxDataResp = BoxDataResp(
         appSubCaches: [:],
 //        datas: [:],
         usercfgs: UserConfig(appsubs: [], favapps: []),
@@ -29,11 +29,26 @@ class BoxJsViewModel: ObservableObject {
                 DispatchQueue.main.async {
                     self.boxData = boxdata
                     self.favApps = boxdata.favApps
-                    print(boxdata.favApps)
                 }
             } catch {
                 print("Error fetching data: \(error)")
             }
+        }
+    }
+    
+    func updateData(path: String, data: Any) {
+        Task {
+            do {
+                let boxdata = try await ApiRequest.updateData(path: path, data: data)
+                DispatchQueue.main.async {
+                    self.boxData = boxdata
+                    self.favApps = boxdata.favApps
+                    print(self.favApps.map { $0.id })
+                }
+            } catch {
+                print("Error fetching data: \(error)")
+            }
+
         }
     }
 }

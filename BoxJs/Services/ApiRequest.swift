@@ -19,6 +19,7 @@ enum RequestError: Error {
 enum ApiRequest {
     enum EndPoint {
         static let boxdata = "https://boxjs.com/query/boxdata"
+        static let update = "https://boxjs.com/api/update"
     }
 
     static func requestJSON(_ url: URLConvertible,
@@ -85,8 +86,13 @@ enum ApiRequest {
         }
     }
 
-    static func getBoxData(lastIdx _: Int = 0) async throws -> BodxDataResp {
-        let resp: BodxDataResp = try await request(EndPoint.boxdata)
+    static func getBoxData(lastIdx _: Int = 0) async throws -> BoxDataResp {
+        let resp: BoxDataResp = try await request(EndPoint.boxdata)
+        return resp
+    }
+    
+    static func updateData(path: String, data: Any) async throws -> BoxDataResp {
+        let resp: BoxDataResp = try await request(EndPoint.update, method: .post, parameters: ["path": path, "val": data], encoding: JSONEncoding.default)
         return resp
     }
 }

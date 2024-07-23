@@ -23,6 +23,7 @@
 		E2E9E2612C46200D00836E4B /* BoxDataModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E9E2602C46200D00836E4B /* BoxDataModel.swift */; };
 		E2E9E2642C464CC300836E4B /* ArrayExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E9E2632C464CC300836E4B /* ArrayExtension.swift */; };
 		E2E9E2692C47718800836E4B /* SwiftyJSON in Frameworks */ = {isa = PBXBuildFile; productRef = E2E9E2682C47718800836E4B /* SwiftyJSON */; };
+		E2E9E26B2C4A7E5B00836E4B /* ViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E9E26A2C4A7E5B00836E4B /* ViewModifier.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -40,6 +41,7 @@
 		E2E9E2552C4101AC00836E4B /* BoxJsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxJsViewModel.swift; sourceTree = "<group>"; };
 		E2E9E2602C46200D00836E4B /* BoxDataModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxDataModel.swift; sourceTree = "<group>"; };
 		E2E9E2632C464CC300836E4B /* ArrayExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArrayExtension.swift; sourceTree = "<group>"; };
+		E2E9E26A2C4A7E5B00836E4B /* ViewModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModifier.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -144,6 +146,7 @@
 			isa = PBXGroup;
 			children = (
 				E2E9E2632C464CC300836E4B /* ArrayExtension.swift */,
+				E2E9E26A2C4A7E5B00836E4B /* ViewModifier.swift */,
 			);
 			path = Extension;
 			sourceTree = "<group>";
@@ -235,6 +238,7 @@
 				E2C273682C36BB88004952AA /* SubcribeView.swift in Sources */,
 				E2C273642C355309004952AA /* HomeView.swift in Sources */,
 				E2C2736A2C379939004952AA /* SettingView.swift in Sources */,
+				E2E9E26B2C4A7E5B00836E4B /* ViewModifier.swift in Sources */,
 				E2C273582C354F4A004952AA /* ContentView.swift in Sources */,
 				E2E9E2642C464CC300836E4B /* ArrayExtension.swift in Sources */,
 				E2E9E2612C46200D00836E4B /* BoxDataModel.swift in Sources */,
@@ -380,6 +384,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -409,6 +414,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

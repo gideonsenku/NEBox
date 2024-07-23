@@ -15,22 +15,31 @@ func loadImage(from url: URL, completion: @escaping (UIImage?) -> Void) {
 
 struct HomeView: View {
     @StateObject var boxModel = BoxJsViewModel()
+    @State var items: [AppModel] = []
 
     var body: some View {
         VStack {
-            CollectionViewWrapper(items: $boxModel.favApps)
-                .ignoresSafeArea()
-                .onAppear {
-                    DispatchQueue.main.async {
-                        boxModel.fetchData()
+            if !boxModel.favApps.isEmpty {
+                CollectionViewWrapper(items: $items, boxModel: boxModel)
+                    .ignoresSafeArea()
+                    .onReceive(boxModel.$favApps) { newVal in
+                        items = newVal
                     }
-                }
+            } else {
+                ProgressView()
+                    .onAppear {
+                        DispatchQueue.main.async {
+                            boxModel.fetchData()
+                        }
+                    }
+            }
         }
     }
 }
 
 struct CollectionViewWrapper: UIViewRepresentable {
     @Binding var items: [AppModel]
+    var boxModel: BoxJsViewModel
 
     func makeUIView(context: Context) -> UICollectionView {
         let layout = UICollectionViewFlowLayout()
@@ -59,16 +68,19 @@ struct CollectionViewWrapper: UIViewRepresentable {
     }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(items: $items)
+        Coordinator(items: $items, boxModel: boxModel)
     }
 
     class Coordinator: NSObject, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
         @Binding var items: [AppModel]
+        var boxModel: BoxJsViewModel
         weak var collectionView: UICollectionView?
 
-        init(items: Binding<[AppModel]>) {
+        init(items: Binding<[AppModel]>, boxModel: BoxJsViewModel) {
             _items = items
+            self.boxModel = boxModel
         }
+        
 
         func collectionView(_: UICollectionView, numberOfItemsInSection _: Int) -> Int {
             return items.count
@@ -110,6 +122,8 @@ struct CollectionViewWrapper: UIViewRepresentable {
         func collectionView(_: UICollectionView, moveItemAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
             let movedItem = items.remove(at: sourceIndexPath.item)
             items.insert(movedItem, at: destinationIndexPath.item)
+            let updateIds = items.map { $0.id }
+            boxModel.updateData(path: "usercfgs.favapps", data: updateIds)
         }
     }
 }

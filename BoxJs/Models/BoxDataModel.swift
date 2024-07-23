@@ -75,7 +75,7 @@ struct AppSub: Codable {
     var isErr: Bool?
 }
 
-struct BodxDataResp: Codable {
+struct BoxDataResp: Codable {
     let appSubCaches: [String: AppSubCache]
 //    let datas: [String: AnyCodable?]
     let usercfgs: UserConfig?
