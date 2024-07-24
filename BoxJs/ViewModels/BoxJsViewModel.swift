@@ -8,14 +8,18 @@
 import SwiftUI
 
 class BoxJsViewModel: ObservableObject {
-    @Published var boxData: BoxDataResp
     @Published var favApps: [AppModel]
+    @Published var boxData: BoxDataResp {
+        didSet {
+            favApps = boxData.favApps
+        }
+    }
     private let iconThemeIdx = 0
 
     init(boxData: BoxDataResp = BoxDataResp(
         appSubCaches: [:],
 //        datas: [:],
-        usercfgs: UserConfig(appsubs: [], favapps: []),
+        usercfgs: UserConfig(appsubs: [], favapps: [], bgimgs: "", bgimg: ""),
         sysapps: []
     )) {
         self.boxData = boxData
@@ -28,7 +32,6 @@ class BoxJsViewModel: ObservableObject {
                 let boxdata = try await ApiRequest.getBoxData()
                 DispatchQueue.main.async {
                     self.boxData = boxdata
-                    self.favApps = boxdata.favApps
                 }
             } catch {
                 print("Error fetching data: \(error)")
@@ -42,7 +45,6 @@ class BoxJsViewModel: ObservableObject {
                 let boxdata = try await ApiRequest.updateData(path: path, data: data)
                 DispatchQueue.main.async {
                     self.boxData = boxdata
-                    self.favApps = boxdata.favApps
                     print(self.favApps.map { $0.id })
                 }
             } catch {

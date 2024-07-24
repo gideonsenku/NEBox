@@ -1,16 +1,20 @@
 import SwiftUI
 import UIKit
+import SDWebImageSwiftUI
 
-func loadImage(from url: URL, completion: @escaping (UIImage?) -> Void) {
-    URLSession.shared.dataTask(with: url) { data, _, error in
-        guard let data = data, error == nil else {
-            print("Failed to load image: \(error?.localizedDescription ?? "Unknown error")")
-            completion(nil)
-            return
+struct BackgroundView: View {
+    let imageUrl: URL
+
+    var body: some View {
+        GeometryReader { geometry in
+            WebImage(url: imageUrl)
+                .resizable()
+                .scaledToFill()
+                .frame(width: geometry.size.width, height: geometry.size.height)
+                .clipped()
         }
-        let image = UIImage(data: data)
-        completion(image)
-    }.resume()
+        .edgesIgnoringSafeArea(.all)
+    }
 }
 
 struct HomeView: View {
@@ -18,20 +22,25 @@ struct HomeView: View {
     @State var items: [AppModel] = []
 
     var body: some View {
-        VStack {
-            if !boxModel.favApps.isEmpty {
-                CollectionViewWrapper(items: $items, boxModel: boxModel)
-                    .ignoresSafeArea()
-                    .onReceive(boxModel.$favApps) { newVal in
-                        items = newVal
-                    }
-            } else {
-                ProgressView()
-                    .onAppear {
-                        DispatchQueue.main.async {
-                            boxModel.fetchData()
+        ZStack {
+            if let url = URL(string: boxModel.boxData.bgImgUrl) {
+                BackgroundView(imageUrl: url)
+            }
+            VStack {
+                if !boxModel.favApps.isEmpty {
+                    CollectionViewWrapper(items: $items, boxModel: boxModel)
+                        .ignoresSafeArea()
+                        .onReceive(boxModel.$favApps) { newVal in
+                            items = newVal
                         }
-                    }
+                } else {
+                    ProgressView()
+                        .onAppear {
+                            DispatchQueue.main.async {
+                                boxModel.fetchData()
+                            }
+                        }
+                }
             }
         }
     }
@@ -49,7 +58,7 @@ struct CollectionViewWrapper: UIViewRepresentable {
         layout.itemSize = CGSize(width: 80, height: 100)
 
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        collectionView.backgroundColor = .white
+        collectionView.backgroundColor = .clear
         collectionView.delegate = context.coordinator
         collectionView.dataSource = context.coordinator
         collectionView.register(MyCell.self, forCellWithReuseIdentifier: "Cell")
@@ -80,7 +89,6 @@ struct CollectionViewWrapper: UIViewRepresentable {
             _items = items
             self.boxModel = boxModel
         }
-        
 
         func collectionView(_: UICollectionView, numberOfItemsInSection _: Int) -> Int {
             return items.count
@@ -137,11 +145,7 @@ class MyCell: UICollectionViewCell {
                 imageView.image = nil
                 return
             }
-            loadImage(from: url) { [weak self] image in
-                DispatchQueue.main.async {
-                    self?.imageView.image = image
-                }
-            }
+            imageView.sd_setImage(with: url, placeholderImage: UIImage(named: "placeholder"))
         }
     }
 

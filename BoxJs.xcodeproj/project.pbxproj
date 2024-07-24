@@ -24,6 +24,7 @@
 		E2E9E2642C464CC300836E4B /* ArrayExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E9E2632C464CC300836E4B /* ArrayExtension.swift */; };
 		E2E9E2692C47718800836E4B /* SwiftyJSON in Frameworks */ = {isa = PBXBuildFile; productRef = E2E9E2682C47718800836E4B /* SwiftyJSON */; };
 		E2E9E26B2C4A7E5B00836E4B /* ViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E9E26A2C4A7E5B00836E4B /* ViewModifier.swift */; };
+		E2E9E2792C4FE81800836E4B /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = E2E9E2782C4FE81800836E4B /* SDWebImageSwiftUI */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -49,6 +50,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E2E9E2792C4FE81800836E4B /* SDWebImageSwiftUI in Frameworks */,
 				E2E9E2692C47718800836E4B /* SwiftyJSON in Frameworks */,
 				E2E9E2592C45072F00836E4B /* AnyCodable in Frameworks */,
 				E2E9E2472C3FCA9D00836E4B /* Alamofire in Frameworks */,
@@ -171,6 +173,7 @@
 				E2E9E2462C3FCA9D00836E4B /* Alamofire */,
 				E2E9E2582C45072F00836E4B /* AnyCodable */,
 				E2E9E2682C47718800836E4B /* SwiftyJSON */,
+				E2E9E2782C4FE81800836E4B /* SDWebImageSwiftUI */,
 			);
 			productName = BoxJs;
 			productReference = E2C273522C354F4A004952AA /* BoxJs.app */;
@@ -204,6 +207,7 @@
 				E2E9E2452C3FCA9D00836E4B /* XCRemoteSwiftPackageReference "Alamofire" */,
 				E2E9E2572C45072F00836E4B /* XCRemoteSwiftPackageReference "AnyCodable" */,
 				E2E9E2672C47718800836E4B /* XCRemoteSwiftPackageReference "SwiftyJSON" */,
+				E2E9E2772C4FE81700836E4B /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */,
 			);
 			productRefGroup = E2C273532C354F4A004952AA /* Products */;
 			projectDirPath = "";
@@ -476,6 +480,14 @@
 				minimumVersion = 5.0.2;
 			};
 		};
+		E2E9E2772C4FE81700836E4B /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SDWebImage/SDWebImageSwiftUI";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.1.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -493,6 +505,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = E2E9E2672C47718800836E4B /* XCRemoteSwiftPackageReference "SwiftyJSON" */;
 			productName = SwiftyJSON;
+		};
+		E2E9E2782C4FE81800836E4B /* SDWebImageSwiftUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E2E9E2772C4FE81700836E4B /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */;
+			productName = SDWebImageSwiftUI;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

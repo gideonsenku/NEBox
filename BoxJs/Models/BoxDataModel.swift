@@ -63,6 +63,8 @@ extension AppModel {
 struct UserConfig: Codable {
     let appsubs: [AppSub]
     let favapps: [String]
+    let bgimgs: String?
+    let bgimg: String?
 }
 
 struct AppSub: Codable {
@@ -145,19 +147,6 @@ struct BoxDataResp: Codable {
         }
     }
 
-    var displaySubApps: [AppModel] {
-        var apps: [AppModel] = []
-        for appSub in displayAppSubs {
-            if let sub = displayAppSubCaches[appSub.url!], !(appSub.isErr ?? false) {
-                for app in sub.apps {
-                    apps.append(loadAppBaseInfo(app))
-                }
-            }
-        }
-
-        return apps
-    }
-
     var displaySysApps: [AppModel] {
         return sysapps.map { app in
             loadAppBaseInfo(app)
@@ -165,7 +154,9 @@ struct BoxDataResp: Codable {
     }
 
     var apps: [AppModel] {
-        return displaySubApps + displaySysApps
+        return displayAppSubs.flatMap { sub in
+            displayAppSubCaches[sub.url!]?.apps ?? []
+        } + displaySysApps
     }
 
     var favApps: [AppModel] {
@@ -178,6 +169,12 @@ struct BoxDataResp: Codable {
             }
         }
         return favapps
+    }
+    
+    var bgImgUrl: String {
+        let imgGroup = usercfgs?.bgimgs?.split(separator: "\n")
+        let imgStr = usercfgs?.bgimg
+        return "https://64.media.tumblr.com/451bca19ad0b695c08b54b4287e4f935/tumblr_nb70h5f6XN1rnbw6mo2_r1_1280.gifv"
     }
 
     func loadAppBaseInfo(_ app: AppModel) -> AppModel {
