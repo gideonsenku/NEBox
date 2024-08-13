@@ -8,20 +8,52 @@
 import AnyCodable
 import Foundation
 
-struct AppSubCache: Codable {
+struct AppSubCache: Codable, Identifiable {
     let id: String
     var name: String
     let icon: String
     var author: String
     var repo: String
-    let updateTime: String
+    var updateTime: String
     var apps: [AppModel]
-
+    
     // AppSub Struct
     var isErr: Bool?
     var enable: Bool?
     var url: String?
     var raw: AppSub?
+    
+    var formatTime: String {
+        return formattedTimeDifference(from: self.updateTime)
+    }
+    
+    func formattedTimeDifference(from isoDateString: String) -> String {
+        let isoFormatter = ISO8601DateFormatter()
+        isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        
+        guard let date = isoFormatter.date(from: isoDateString) else {
+            return "Invalid date"
+        }
+
+        let calendar = Calendar.current
+        let now = Date()
+
+        if calendar.isDateInToday(date) {
+            let components = calendar.dateComponents([.minute, .hour], from: date, to: now)
+
+            if let hours = components.hour, hours > 0 {
+                return "\(hours)小时前"
+            } else if let minutes = components.minute, minutes > 0 {
+                return "\(minutes)分钟前"
+            } else {
+                return "刚刚"
+            }
+        } else {
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "MM-dd"
+            return dateFormatter.string(from: date)
+        }
+    }
 }
 
 extension AppSubCache {
@@ -42,7 +74,7 @@ struct AppModel: Codable {
     let script: String?
     let descs_html: [String]?
     // let settings: [Setting] 暂时不管
-
+    
     var favIcon: String?
     var icon: String?
     var favIconColor: String?
@@ -55,7 +87,7 @@ extension AppModel {
         newApp.icon = icon
         newApp.favIcon = favIcon
         newApp.favIconColor = favIconColor
-
+        
         return newApp
     }
 }
@@ -71,22 +103,22 @@ struct AppSub: Codable {
     let enable: Bool
     let id: String?
     let url: String
-
+    
     // MARK: 非接口返回
-
+    
     var isErr: Bool?
 }
 
 struct BoxDataResp: Codable {
     let appSubCaches: [String: AppSubCache]
-//    let datas: [String: AnyCodable?]
+    //    let datas: [String: AnyCodable?]
     let usercfgs: UserConfig?
     let sysapps: [AppModel]
-
+    
     var appsubs: [AppSub] {
         return usercfgs?.appsubs ?? []
     }
-
+    
     var displayAppSubCaches: [String: AppSubCache] {
         var ids = [String]()
         for appSub in appsubs {
@@ -98,13 +130,13 @@ struct BoxDataResp: Codable {
                 }
             }
         }
-
+        
         let replyIds = ids.enumerated().compactMap { index, value in
             ids[(index + 1)...].contains(value) ? value : nil
         }
-
+        
         var updatedAppSubCaches = appSubCaches
-
+        
         for appSub in appsubs {
             if var sub = updatedAppSubCaches[appSub.url], !(appSub.isErr ?? false) {
                 if !sub.apps.isEmpty {
@@ -122,7 +154,7 @@ struct BoxDataResp: Codable {
         }
         return updatedAppSubCaches
     }
-
+    
     var displayAppSubs: [AppSubCache] {
         return appsubs.map { sub in
             let cacheSub = appSubCaches[sub.url]
@@ -130,7 +162,7 @@ struct BoxDataResp: Codable {
             let author = cacheSub?.author ?? "@anonymous"
             let repo = cacheSub?.repo ?? sub.url
             let isErr = cacheSub?.isValid == true ? sub.isErr : true
-
+            
             return AppSubCache(
                 id: (cacheSub?.id ?? sub.id) ?? "",
                 name: name,
@@ -146,19 +178,21 @@ struct BoxDataResp: Codable {
             )
         }
     }
-
+    
     var displaySysApps: [AppModel] {
         return sysapps.map { app in
             loadAppBaseInfo(app)
         }
     }
-
+    
     var apps: [AppModel] {
         return displayAppSubs.flatMap { sub in
-            displayAppSubCaches[sub.url!]?.apps ?? []
+            let apps = displayAppSubCaches[sub.url!]?.apps ?? []
+            return apps.map { app in
+                loadAppBaseInfo(app)
+            }
         } + displaySysApps
     }
-
     var favApps: [AppModel] {
         var favapps: [AppModel] = []
         if let favAppIds = usercfgs?.favapps, !favAppIds.isEmpty {
@@ -176,16 +210,16 @@ struct BoxDataResp: Codable {
         let imgStr = usercfgs?.bgimg
         return "https://64.media.tumblr.com/451bca19ad0b695c08b54b4287e4f935/tumblr_nb70h5f6XN1rnbw6mo2_r1_1280.gifv"
     }
-
+    
     func loadAppBaseInfo(_ app: AppModel) -> AppModel {
         var icons = app.icons.isEmpty ? ["https://raw.githubusercontent.com/Orz-3/mini/master/Alpha/appstore.png", "https://raw.githubusercontent.com/Orz-3/mini/master/Color/appstore.png"] : app.icons
-
+        
         if app.icons.first(where: { $0.contains("/Orz-3/task/master/") }) != nil {
             icons[0] = app.icons[0].replacingOccurrences(of: "/Orz-3/mini/master/", with: "/Orz-3/mini/master/Alpha/")
             icons[1] = app.icons[1].replacingOccurrences(of: "/Orz-3/task/master/", with: "/Orz-3/mini/master/Color/")
         }
         let isFav = usercfgs?.favapps.contains(app.id) ?? false
-
+        
         let newApp = app.withIcon(icons, icons.last ?? icons[0], isFav ? "mdi-star" : "mdi-star-outline", isFav ? "primary" : "grey")
         return newApp
     }

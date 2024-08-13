@@ -20,6 +20,7 @@ struct BackgroundView: View {
 struct HomeView: View {
     @StateObject var boxModel = BoxJsViewModel()
     @State var items: [AppModel] = []
+    @State var searchText: String = ""
 
     var body: some View {
         ZStack {
@@ -27,6 +28,7 @@ struct HomeView: View {
                 BackgroundView(imageUrl: url)
             }
             VStack {
+//                SearchBar(text: $searchText)
                 if !boxModel.favApps.isEmpty {
                     CollectionViewWrapper(items: $items, boxModel: boxModel)
                         .ignoresSafeArea()
@@ -101,7 +103,7 @@ struct CollectionViewWrapper: UIViewRepresentable {
             if let imageURLString = appModel.icon, let imageURL = URL(string: imageURLString) {
                 cell.imageURL = imageURL
             } else {
-                cell.imageView.image = UIImage(named: "placeholder")
+                cell.imageView.image = UIImage(systemName: "photo")
             }
             return cell
         }
@@ -145,7 +147,7 @@ class MyCell: UICollectionViewCell {
                 imageView.image = nil
                 return
             }
-            imageView.sd_setImage(with: url, placeholderImage: UIImage(named: "placeholder"))
+            imageView.sd_setImage(with: url, placeholderImage: UIImage(systemName: "photo"))
         }
     }
 

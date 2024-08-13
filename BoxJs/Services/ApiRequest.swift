@@ -20,6 +20,9 @@ enum ApiRequest {
     enum EndPoint {
         static let boxdata = "https://boxjs.com/query/boxdata"
         static let update = "https://boxjs.com/api/update"
+        static let reload = "https://boxjs.com/api/reloadAppSub"
+        static let addAppSub = "https://boxjs.com/api/addAppSub"
+        static let deleteAppSub = "https://boxjs.com/api/deleteAppSub"
     }
 
     static func requestJSON(_ url: URLConvertible,
@@ -93,6 +96,21 @@ enum ApiRequest {
     
     static func updateData(path: String, data: Any) async throws -> BoxDataResp {
         let resp: BoxDataResp = try await request(EndPoint.update, method: .post, parameters: ["path": path, "val": data], encoding: JSONEncoding.default)
+        return resp
+    }
+    
+    static func reloadAppSub(url: String) async throws -> BoxDataResp {
+        let resp: BoxDataResp = try await request(EndPoint.reload, method: .post, parameters: ["url": url], encoding: JSONEncoding.default)
+        return resp
+    }
+
+    static func addAppSub(url: String) async throws -> BoxDataResp {
+        let resp: BoxDataResp = try await request(EndPoint.addAppSub, method: .post, parameters: ["url": url, "enable": true, "id": UUID()], encoding: JSONEncoding.default)
+        return resp
+    }
+
+    static func deleteAppSub(url: String) async throws -> BoxDataResp {
+        let resp: BoxDataResp = try await request(EndPoint.deleteAppSub, method: .post, parameters: ["url": url], encoding: JSONEncoding.default)
         return resp
     }
 }

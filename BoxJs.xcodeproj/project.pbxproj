@@ -15,6 +15,7 @@
 		E2C273662C3678B1004952AA /* AppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C273652C3678B1004952AA /* AppView.swift */; };
 		E2C273682C36BB88004952AA /* SubcribeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C273672C36BB88004952AA /* SubcribeView.swift */; };
 		E2C2736A2C379939004952AA /* SettingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C273692C379939004952AA /* SettingView.swift */; };
+		E2E8BA822C6B67BB00C2AF9E /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E8BA812C6B67BB00C2AF9E /* Utils.swift */; };
 		E2E9E2472C3FCA9D00836E4B /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = E2E9E2462C3FCA9D00836E4B /* Alamofire */; };
 		E2E9E2502C3FE9A800836E4B /* Vibration.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E9E24F2C3FE9A800836E4B /* Vibration.swift */; };
 		E2E9E2522C40FD5000836E4B /* ApiRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E9E2512C40FD5000836E4B /* ApiRequest.swift */; };
@@ -25,6 +26,8 @@
 		E2E9E2692C47718800836E4B /* SwiftyJSON in Frameworks */ = {isa = PBXBuildFile; productRef = E2E9E2682C47718800836E4B /* SwiftyJSON */; };
 		E2E9E26B2C4A7E5B00836E4B /* ViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E9E26A2C4A7E5B00836E4B /* ViewModifier.swift */; };
 		E2E9E2792C4FE81800836E4B /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = E2E9E2782C4FE81800836E4B /* SDWebImageSwiftUI */; };
+		E2E9E27D2C5273C500836E4B /* SearchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E9E27C2C5273C500836E4B /* SearchBar.swift */; };
+		E2E9E2812C63241F00836E4B /* SubScribeCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E9E2802C63241F00836E4B /* SubScribeCardView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -37,12 +40,15 @@
 		E2C273652C3678B1004952AA /* AppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppView.swift; sourceTree = "<group>"; };
 		E2C273672C36BB88004952AA /* SubcribeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubcribeView.swift; sourceTree = "<group>"; };
 		E2C273692C379939004952AA /* SettingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingView.swift; sourceTree = "<group>"; };
+		E2E8BA812C6B67BB00C2AF9E /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		E2E9E24F2C3FE9A800836E4B /* Vibration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Vibration.swift; sourceTree = "<group>"; };
 		E2E9E2512C40FD5000836E4B /* ApiRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiRequest.swift; sourceTree = "<group>"; };
 		E2E9E2552C4101AC00836E4B /* BoxJsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxJsViewModel.swift; sourceTree = "<group>"; };
 		E2E9E2602C46200D00836E4B /* BoxDataModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxDataModel.swift; sourceTree = "<group>"; };
 		E2E9E2632C464CC300836E4B /* ArrayExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArrayExtension.swift; sourceTree = "<group>"; };
 		E2E9E26A2C4A7E5B00836E4B /* ViewModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModifier.swift; sourceTree = "<group>"; };
+		E2E9E27C2C5273C500836E4B /* SearchBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBar.swift; sourceTree = "<group>"; };
+		E2E9E2802C63241F00836E4B /* SubScribeCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubScribeCardView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -113,8 +119,10 @@
 			children = (
 				E2C273572C354F4A004952AA /* ContentView.swift */,
 				E2C273632C355309004952AA /* HomeView.swift */,
+				E2E9E27C2C5273C500836E4B /* SearchBar.swift */,
 				E2C273652C3678B1004952AA /* AppView.swift */,
 				E2C273672C36BB88004952AA /* SubcribeView.swift */,
+				E2E9E2802C63241F00836E4B /* SubScribeCardView.swift */,
 				E2C273692C379939004952AA /* SettingView.swift */,
 			);
 			path = Views;
@@ -140,6 +148,7 @@
 			isa = PBXGroup;
 			children = (
 				E2E9E24F2C3FE9A800836E4B /* Vibration.swift */,
+				E2E8BA812C6B67BB00C2AF9E /* Utils.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -235,13 +244,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E2E9E27D2C5273C500836E4B /* SearchBar.swift in Sources */,
 				E2E9E2502C3FE9A800836E4B /* Vibration.swift in Sources */,
 				E2E9E2522C40FD5000836E4B /* ApiRequest.swift in Sources */,
 				E2C273662C3678B1004952AA /* AppView.swift in Sources */,
 				E2E9E2562C4101AC00836E4B /* BoxJsViewModel.swift in Sources */,
+				E2E8BA822C6B67BB00C2AF9E /* Utils.swift in Sources */,
 				E2C273682C36BB88004952AA /* SubcribeView.swift in Sources */,
 				E2C273642C355309004952AA /* HomeView.swift in Sources */,
 				E2C2736A2C379939004952AA /* SettingView.swift in Sources */,
+				E2E9E2812C63241F00836E4B /* SubScribeCardView.swift in Sources */,
 				E2E9E26B2C4A7E5B00836E4B /* ViewModifier.swift in Sources */,
 				E2C273582C354F4A004952AA /* ContentView.swift in Sources */,
 				E2E9E2642C464CC300836E4B /* ArrayExtension.swift in Sources */,

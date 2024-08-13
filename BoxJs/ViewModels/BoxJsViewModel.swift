@@ -45,7 +45,6 @@ class BoxJsViewModel: ObservableObject {
                 let boxdata = try await ApiRequest.updateData(path: path, data: data)
                 DispatchQueue.main.async {
                     self.boxData = boxdata
-                    print(self.favApps.map { $0.id })
                 }
             } catch {
                 print("Error fetching data: \(error)")
@@ -53,4 +52,27 @@ class BoxJsViewModel: ObservableObject {
 
         }
     }
+    
+    func reloadAppSub(url: String) async {
+        do {
+            let boxdata = try await ApiRequest.reloadAppSub(url: url)
+            DispatchQueue.main.async {
+                self.boxData = boxdata
+            }
+        } catch {
+            print("Error fetching data: \(error)")
+        }
+    }
+    
+    func deleteAppSub(url: String) async {
+        do {
+            let boxdata = try await ApiRequest.deleteAppSub(url: url)
+            DispatchQueue.main.async {
+                self.boxData = boxdata
+            }
+        } catch {
+            print("Error fetching data: \(error)")
+        }
+    }
+
 }
