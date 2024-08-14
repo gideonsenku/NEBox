@@ -25,5 +25,4 @@ func copyToClipboard(text: String) {
     NSPasteboard.general.clearContents()
     NSPasteboard.general.setString(text, forType: .string)
     #endif
-    print("Text copied to clipboard: \(text)")
 }
