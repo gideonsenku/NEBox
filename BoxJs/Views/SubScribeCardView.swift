@@ -89,6 +89,8 @@ struct ActionButtonsView: View {
 }
 
 struct ActionButton: View {
+    @EnvironmentObject var toastManager: ToastManager
+
     let imageName: String
     let color: Color
     let text: String
@@ -96,7 +98,8 @@ struct ActionButton: View {
     var body: some View {
         Button(action: {
             if imageName == "doc.on.doc" {
-                copyToClipboard(text: "1")
+                copyToClipboard(text: text)
+                toastManager.showToast(message: "复制成功!")
             }
         }) {
             Image(systemName: imageName)

@@ -16,6 +16,8 @@
 		E2C273682C36BB88004952AA /* SubcribeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C273672C36BB88004952AA /* SubcribeView.swift */; };
 		E2C2736A2C379939004952AA /* SettingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C273692C379939004952AA /* SettingView.swift */; };
 		E2E8BA822C6B67BB00C2AF9E /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E8BA812C6B67BB00C2AF9E /* Utils.swift */; };
+		E2E8BA852C6CA43300C2AF9E /* ToastManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E8BA842C6CA43300C2AF9E /* ToastManager.swift */; };
+		E2E8BA872C6CA46400C2AF9E /* GlobalToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E8BA862C6CA46400C2AF9E /* GlobalToastView.swift */; };
 		E2E9E2472C3FCA9D00836E4B /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = E2E9E2462C3FCA9D00836E4B /* Alamofire */; };
 		E2E9E2502C3FE9A800836E4B /* Vibration.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E9E24F2C3FE9A800836E4B /* Vibration.swift */; };
 		E2E9E2522C40FD5000836E4B /* ApiRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E9E2512C40FD5000836E4B /* ApiRequest.swift */; };
@@ -41,6 +43,8 @@
 		E2C273672C36BB88004952AA /* SubcribeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubcribeView.swift; sourceTree = "<group>"; };
 		E2C273692C379939004952AA /* SettingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingView.swift; sourceTree = "<group>"; };
 		E2E8BA812C6B67BB00C2AF9E /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
+		E2E8BA842C6CA43300C2AF9E /* ToastManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastManager.swift; sourceTree = "<group>"; };
+		E2E8BA862C6CA46400C2AF9E /* GlobalToastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalToastView.swift; sourceTree = "<group>"; };
 		E2E9E24F2C3FE9A800836E4B /* Vibration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Vibration.swift; sourceTree = "<group>"; };
 		E2E9E2512C40FD5000836E4B /* ApiRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiRequest.swift; sourceTree = "<group>"; };
 		E2E9E2552C4101AC00836E4B /* BoxJsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxJsViewModel.swift; sourceTree = "<group>"; };
@@ -85,6 +89,7 @@
 		E2C273542C354F4A004952AA /* BoxJs */ = {
 			isa = PBXGroup;
 			children = (
+				E2E8BA832C6CA41D00C2AF9E /* Managers */,
 				E2E9E2622C464C9800836E4B /* Extension */,
 				E2E9E24E2C3FDB2300836E4B /* Helpers */,
 				E2E9E24A2C3FDAD600836E4B /* Services */,
@@ -104,6 +109,14 @@
 				E2C2735C2C354F4B004952AA /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		E2E8BA832C6CA41D00C2AF9E /* Managers */ = {
+			isa = PBXGroup;
+			children = (
+				E2E8BA842C6CA43300C2AF9E /* ToastManager.swift */,
+			);
+			path = Managers;
 			sourceTree = "<group>";
 		};
 		E2E9E24A2C3FDAD600836E4B /* Services */ = {
@@ -158,6 +171,7 @@
 			children = (
 				E2E9E2632C464CC300836E4B /* ArrayExtension.swift */,
 				E2E9E26A2C4A7E5B00836E4B /* ViewModifier.swift */,
+				E2E8BA862C6CA46400C2AF9E /* GlobalToastView.swift */,
 			);
 			path = Extension;
 			sourceTree = "<group>";
@@ -247,6 +261,7 @@
 				E2E9E27D2C5273C500836E4B /* SearchBar.swift in Sources */,
 				E2E9E2502C3FE9A800836E4B /* Vibration.swift in Sources */,
 				E2E9E2522C40FD5000836E4B /* ApiRequest.swift in Sources */,
+				E2E8BA852C6CA43300C2AF9E /* ToastManager.swift in Sources */,
 				E2C273662C3678B1004952AA /* AppView.swift in Sources */,
 				E2E9E2562C4101AC00836E4B /* BoxJsViewModel.swift in Sources */,
 				E2E8BA822C6B67BB00C2AF9E /* Utils.swift in Sources */,
@@ -257,6 +272,7 @@
 				E2E9E26B2C4A7E5B00836E4B /* ViewModifier.swift in Sources */,
 				E2C273582C354F4A004952AA /* ContentView.swift in Sources */,
 				E2E9E2642C464CC300836E4B /* ArrayExtension.swift in Sources */,
+				E2E8BA872C6CA46400C2AF9E /* GlobalToastView.swift in Sources */,
 				E2E9E2612C46200D00836E4B /* BoxDataModel.swift in Sources */,
 				E2C273562C354F4A004952AA /* BoxJsApp.swift in Sources */,
 			);

@@ -27,6 +27,7 @@ struct ContentView: View {
                     Label("设置", systemImage: "paintpalette")
                 }
         }
+        .overlay(GlobalToastView())
     }
 }
 
