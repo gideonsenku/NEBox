@@ -103,7 +103,7 @@ struct CollectionViewWrapper: UIViewRepresentable {
             if let imageURLString = appModel.icon, let imageURL = URL(string: imageURLString) {
                 cell.imageURL = imageURL
             } else {
-                cell.imageView.image = UIImage(systemName: "photo")
+                cell.imageView.image = UIImage(systemName: "placeholdertext.fill")
             }
             return cell
         }
@@ -147,7 +147,7 @@ class MyCell: UICollectionViewCell {
                 imageView.image = nil
                 return
             }
-            imageView.sd_setImage(with: url, placeholderImage: UIImage(systemName: "photo"))
+            imageView.sd_setImage(with: url, placeholderImage: UIImage(systemName: "placeholdertext.fill"))
         }
     }
 
@@ -161,6 +161,7 @@ class MyCell: UICollectionViewCell {
         imageView.layer.shadowOffset = CGSize(width: 0, height: 3)
         imageView.layer.shadowOpacity = 0.5
         imageView.layer.shadowRadius = 3
+        imageView.tintColor = UIColor.gray
         contentView.addSubview(imageView)
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10).isActive = true

@@ -52,6 +52,7 @@ struct SubcribeView: View {
                         }
                         .listRowBackground(Color.clear)
                         .listRowInsets(EdgeInsets())
+                        .padding(.horizontal, -4)
                         
                     }
                 }
@@ -67,28 +68,6 @@ struct SubcribeView: View {
         }
     }
     
-}
-
-struct SubcribeCard: View {
-    var body: some View {
-        Text("Hello, World!").likeButtonStyle()
-    }
-}
-
-struct LikeBtnModifier: ViewModifier {
-    func body(content: Content) -> some View {
-        content
-            .padding(10)
-            .background(Color.blue)
-            .foregroundColor(.white)
-            .cornerRadius(10)
-    }
-}
-
-extension Text {
-    func likeButtonStyle() -> some View {
-        modifier(LikeBtnModifier())
-    }
 }
 
 #Preview {

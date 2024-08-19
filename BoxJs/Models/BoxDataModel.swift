@@ -62,7 +62,7 @@ extension AppSubCache {
     }
 }
 
-struct AppModel: Codable {
+struct AppModel: Codable, Identifiable {
     var id: String
     let name: String
     let author: String
@@ -163,6 +163,8 @@ struct BoxDataResp: Codable {
             let repo = cacheSub?.repo ?? sub.url
             let isErr = cacheSub?.isValid == true ? sub.isErr : true
             
+            let cacheApps = cacheSub?.isValid == true ? (cacheSub?.apps ?? []) : []
+            
             return AppSubCache(
                 id: (cacheSub?.id ?? sub.id) ?? "",
                 name: name,
@@ -170,7 +172,9 @@ struct BoxDataResp: Codable {
                 author: author,
                 repo: repo,
                 updateTime: cacheSub?.updateTime ?? "",
-                apps: cacheSub?.isValid == true ? (cacheSub?.apps ?? []) : [],
+                apps: cacheApps.map { app in
+                    loadAppBaseInfo(app)
+                },
                 isErr: isErr,
                 enable: cacheSub?.enable ?? sub.enable,
                 url: sub.url,

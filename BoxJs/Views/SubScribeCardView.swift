@@ -47,7 +47,7 @@ struct HeaderView: View {
                 
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
-                        Text("\(item.name)[\(item.apps.count)]")
+                        Text("\(item.name)(\(item.apps.count))")
                             .font(.system(size: 16))
                         Spacer()
                         if isLoading {
@@ -74,46 +74,6 @@ struct HeaderView: View {
                         .foregroundColor(.gray)
                 }
             }
-        }
-    }
-}
-
-struct ActionButtonsView: View {
-    var item: AppSubCache
-    
-    let buttons: [(imageName: String, color: Color)] = [
-        ("doc.on.doc", .gray),
-    ]
-    
-    var body: some View {
-        HStack {
-            Spacer()
-            ForEach(buttons, id: \.imageName) { button in
-                ActionButton(imageName: button.imageName, color: button.color, text: item.url ?? "")
-                    .padding(.horizontal, 4)
-            }
-        }
-    }
-}
-
-struct ActionButton: View {
-    @EnvironmentObject var toastManager: ToastManager
-    
-    let imageName: String
-    let color: Color
-    let text: String
-    
-    var body: some View {
-        Button(action: {
-            if imageName == "doc.on.doc" {
-                copyToClipboard(text: text)
-                toastManager.showToast(message: "复制成功!")
-            }
-        }) {
-            Image(systemName: imageName)
-                .resizable()
-                .frame(width: 24, height: 24)
-                .foregroundColor(color)
         }
     }
 }

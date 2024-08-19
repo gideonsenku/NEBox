@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E2AA91BE2C732E4200EB02B2 /* SwipeCellKit in Frameworks */ = {isa = PBXBuildFile; productRef = E2AA91BD2C732E4200EB02B2 /* SwipeCellKit */; };
 		E2C273562C354F4A004952AA /* BoxJsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C273552C354F4A004952AA /* BoxJsApp.swift */; };
 		E2C273582C354F4A004952AA /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C273572C354F4A004952AA /* ContentView.swift */; };
 		E2C2735A2C354F4B004952AA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E2C273592C354F4B004952AA /* Assets.xcassets */; };
@@ -63,6 +64,7 @@
 				E2E9E2792C4FE81800836E4B /* SDWebImageSwiftUI in Frameworks */,
 				E2E9E2692C47718800836E4B /* SwiftyJSON in Frameworks */,
 				E2E9E2592C45072F00836E4B /* AnyCodable in Frameworks */,
+				E2AA91BE2C732E4200EB02B2 /* SwipeCellKit in Frameworks */,
 				E2E9E2472C3FCA9D00836E4B /* Alamofire in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -197,6 +199,7 @@
 				E2E9E2582C45072F00836E4B /* AnyCodable */,
 				E2E9E2682C47718800836E4B /* SwiftyJSON */,
 				E2E9E2782C4FE81800836E4B /* SDWebImageSwiftUI */,
+				E2AA91BD2C732E4200EB02B2 /* SwipeCellKit */,
 			);
 			productName = BoxJs;
 			productReference = E2C273522C354F4A004952AA /* BoxJs.app */;
@@ -231,6 +234,7 @@
 				E2E9E2572C45072F00836E4B /* XCRemoteSwiftPackageReference "AnyCodable" */,
 				E2E9E2672C47718800836E4B /* XCRemoteSwiftPackageReference "SwiftyJSON" */,
 				E2E9E2772C4FE81700836E4B /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */,
+				E2AA91BC2C732E4200EB02B2 /* XCRemoteSwiftPackageReference "SwipeCellKit" */,
 			);
 			productRefGroup = E2C273532C354F4A004952AA /* Products */;
 			projectDirPath = "";
@@ -484,6 +488,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		E2AA91BC2C732E4200EB02B2 /* XCRemoteSwiftPackageReference "SwipeCellKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SwipeCellKit/SwipeCellKit";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.7.1;
+			};
+		};
 		E2E9E2452C3FCA9D00836E4B /* XCRemoteSwiftPackageReference "Alamofire" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Alamofire/Alamofire";
@@ -519,6 +531,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		E2AA91BD2C732E4200EB02B2 /* SwipeCellKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E2AA91BC2C732E4200EB02B2 /* XCRemoteSwiftPackageReference "SwipeCellKit" */;
+			productName = SwipeCellKit;
+		};
 		E2E9E2462C3FCA9D00836E4B /* Alamofire */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = E2E9E2452C3FCA9D00836E4B /* XCRemoteSwiftPackageReference "Alamofire" */;
