@@ -1,6 +1,6 @@
 //
 //  ToastManager.swift
-//  BoxJs
+//  NEBox
 //
 //  Created by Senku on 8/14/24.
 //

@@ -1,6 +1,6 @@
 //
-//  BoxJsApp.swift
-//  BoxJs
+//  NEBoxApp.swift
+//  NEBoxApp
 //
 //  Created by Senku on 7/3/24.
 //
@@ -8,7 +8,7 @@
 import SwiftUI
 
 @main
-struct BoxJsApp: App {
+struct NEBoxApp: App {
     @StateObject private var toastManager = ToastManager()
     @StateObject var boxModel = BoxJsViewModel()
     init() {
