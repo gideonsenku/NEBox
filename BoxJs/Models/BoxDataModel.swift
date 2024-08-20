@@ -78,15 +78,15 @@ struct AppModel: Codable, Identifiable {
     var favIcon: String?
     var icon: String?
     var favIconColor: String?
+    var isFav: Bool?
 }
 
 extension AppModel {
-    func withIcon(_ icons: [String], _ icon: String, _ favIcon: String, _ favIconColor: String) -> AppModel {
+    func withIcon(_ icons: [String], _ icon: String, isFav: Bool) -> AppModel {
         var newApp = self
         newApp.icons = icons
         newApp.icon = icon
-        newApp.favIcon = favIcon
-        newApp.favIconColor = favIconColor
+        newApp.isFav = isFav
         
         return newApp
     }
@@ -224,7 +224,7 @@ struct BoxDataResp: Codable {
         }
         let isFav = usercfgs?.favapps.contains(app.id) ?? false
         
-        let newApp = app.withIcon(icons, icons.last ?? icons[0], isFav ? "mdi-star" : "mdi-star-outline", isFav ? "primary" : "grey")
+        let newApp = app.withIcon(icons, icons.last ?? icons[0], isFav: isFav)
         return newApp
     }
 }

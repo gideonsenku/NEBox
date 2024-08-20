@@ -18,7 +18,7 @@ struct BackgroundView: View {
 }
 
 struct HomeView: View {
-    @StateObject var boxModel = BoxJsViewModel()
+    @EnvironmentObject var boxModel: BoxJsViewModel
     @State var items: [AppModel] = []
     @State var searchText: String = ""
 
@@ -35,14 +35,12 @@ struct HomeView: View {
                         .onReceive(boxModel.$favApps) { newVal in
                             items = newVal
                         }
-                } else {
-                    ProgressView()
-                        .onAppear {
-                            DispatchQueue.main.async {
-                                boxModel.fetchData()
-                            }
-                        }
                 }
+            }
+        }
+        .onAppear {
+            DispatchQueue.main.async {
+                boxModel.fetchData()
             }
         }
     }

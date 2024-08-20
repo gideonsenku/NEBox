@@ -11,6 +11,8 @@ import Foundation
 
 
 struct SubAppView: View {
+    @EnvironmentObject var boxModel: BoxJsViewModel
+
     var item: AppModel
     var body: some View {
         VStack {
@@ -44,7 +46,23 @@ struct SubAppView: View {
                         .foregroundColor(.gray)
                 }
                 
-                
+                if let isFav = item.isFav, isFav == true {
+                    Image(systemName: "star.fill")
+                        .foregroundColor(.accentColor)
+                        .onTapGesture {
+                            let updateIds = boxModel.favApps.map { $0.id }.filter { $0 != item.id }
+                            boxModel.updateData(path: "usercfgs.favapps", data: updateIds)
+                        }
+                } else {
+                    Image(systemName: "star")
+                        .foregroundColor(.gray)
+                        .onTapGesture {
+                            var updateIds = boxModel.favApps.map { $0.id }
+                            updateIds.append(item.id)
+                            boxModel.updateData(path: "usercfgs.favapps", data: updateIds)
+                        }
+
+                }
             }
         }
     }
@@ -62,9 +80,14 @@ struct CustomDisclosureGroup: View {
         DisclosureGroup(
             isExpanded: $isExpanded,
             content: {
-                ForEach(items) { item in
-                    SubAppView(item: item)
+                Divider()
+                    .padding(.vertical, 5)
+                ScrollView {
+                    ForEach(items) { item in
+                        SubAppView(item: item)
+                    }
                 }
+                .frame(maxHeight: 300)
             },
             label: {
                 HStack {
@@ -102,7 +125,7 @@ struct CustomDisclosureGroup: View {
 }
 
 struct AppView: View {
-    @StateObject var boxModel = BoxJsViewModel()
+    @EnvironmentObject var boxModel: BoxJsViewModel
     
     var body: some View {
         NavigationView {
