@@ -3,11 +3,11 @@ import UIKit
 import SDWebImageSwiftUI
 
 struct BackgroundView: View {
-    let imageUrl: URL
+    let imageUrl: URL?
 
     var body: some View {
         GeometryReader { geometry in
-            WebImage(url: imageUrl)
+            WebImage(url: imageUrl ?? URL(string: "https://64.media.tumblr.com/451bca19ad0b695c08b54b4287e4f935/tumblr_nb70h5f6XN1rnbw6mo2_r1_1280.gifv"))
                 .resizable()
                 .scaledToFill()
                 .frame(width: geometry.size.width, height: geometry.size.height)
@@ -24,9 +24,6 @@ struct HomeView: View {
 
     var body: some View {
         ZStack {
-            if let url = URL(string: boxModel.boxData.bgImgUrl) {
-                BackgroundView(imageUrl: url)
-            }
             VStack {
 //                SearchBar(text: $searchText)
                 if !boxModel.favApps.isEmpty {
@@ -38,6 +35,9 @@ struct HomeView: View {
                 }
             }
         }
+        .background(
+            BackgroundView(imageUrl: URL(string: boxModel.boxData.bgImgUrl))
+        )
         .onAppear {
             DispatchQueue.main.async {
                 boxModel.fetchData()

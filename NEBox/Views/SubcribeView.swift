@@ -15,10 +15,6 @@ struct SubcribeView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                if let url = URL(string: boxModel.boxData.bgImgUrl) {
-                    BackgroundView(imageUrl: url)
-                        .edgesIgnoringSafeArea(.all)
-                }
                 List {
                     let enumeratedSubs = Array(boxModel.boxData.displayAppSubs.enumerated())
                     ForEach(enumeratedSubs, id: \.element.id) { index, subApp in
@@ -59,6 +55,9 @@ struct SubcribeView: View {
                 .background(Color.clear)
                 .scrollContentBackground(.hidden)
             }
+            .background(
+                BackgroundView(imageUrl: URL(string: boxModel.boxData.bgImgUrl))
+            )
             .navigationTitle("应用订阅")
         }
         .onAppear {

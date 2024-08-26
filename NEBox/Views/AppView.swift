@@ -17,17 +17,6 @@ struct SubAppView: View {
     var body: some View {
         VStack {
             HStack {
-                if let iconUrl = URL(string: item.icon ?? "") {
-                    WebImage(url: iconUrl) { image in
-                        image.resizable()
-                    } placeholder: {
-                        Rectangle().foregroundColor(.gray)
-                    }
-                    .resizable()
-                    .frame(width: 40, height: 40)
-                    .clipShape(Circle())
-                }
-                
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
                         Text("\(item.name)")
@@ -65,6 +54,9 @@ struct SubAppView: View {
                 }
             }
         }
+        .background(
+            BackgroundView(imageUrl: URL(string: boxModel.boxData.bgImgUrl))
+        )
     }
 }
 
