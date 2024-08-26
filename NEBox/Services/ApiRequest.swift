@@ -105,7 +105,8 @@ enum ApiRequest {
     }
 
     static func addAppSub(url: String) async throws -> BoxDataResp {
-        let resp: BoxDataResp = try await request(EndPoint.addAppSub, method: .post, parameters: ["url": url, "enable": true, "id": UUID()], encoding: JSONEncoding.default)
+        let parameters = ["url": url, "enable": true, "id": UUID().uuidString] as [String : Any]
+        let resp: BoxDataResp = try await request(EndPoint.addAppSub, method: .post, parameters: parameters, encoding: JSONEncoding.default)
         return resp
     }
 

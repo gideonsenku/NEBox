@@ -64,6 +64,17 @@ class BoxJsViewModel: ObservableObject {
         }
     }
     
+    func addAppSub(url: String) async {
+        do {
+            let boxdata = try await ApiRequest.addAppSub(url: url)
+            DispatchQueue.main.async {
+                self.boxData = boxdata
+            }
+        } catch {
+            print("Error fetching data: \(error)")
+        }
+    }
+    
     func deleteAppSub(url: String) async {
         do {
             let boxdata = try await ApiRequest.deleteAppSub(url: url)

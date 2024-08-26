@@ -11,6 +11,9 @@ import SDWebImageSwiftUI
 struct SubcribeView: View {
     @StateObject var boxModel = BoxJsViewModel()
     @State private var refreshingIndex: Int? = nil
+    @State private var isShowingSheet = false
+    @State private var subUrl = ""
+    
     
     var body: some View {
         NavigationView {
@@ -58,6 +61,19 @@ struct SubcribeView: View {
             .background(
                 BackgroundView(imageUrl: URL(string: boxModel.boxData.bgImgUrl))
             )
+            .toolbar {
+                ToolbarItem {
+                    Button {
+                        showTextFieldAlert(title: "添加订阅", message: nil, placeholder: "输入订阅地址", confirmButtonTitle: "确定", cancelButtonTitle: "取消") { inputText in
+                            Task {
+                                await boxModel.addAppSub(url: inputText)
+                            }
+                        }
+                    } label: {
+                        Label("Add Account", systemImage: "plus")
+                    }
+                }
+            }
             .navigationTitle("应用订阅")
         }
         .onAppear {

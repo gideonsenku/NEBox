@@ -118,14 +118,9 @@ struct CustomDisclosureGroup: View {
 
 struct AppView: View {
     @EnvironmentObject var boxModel: BoxJsViewModel
-    
     var body: some View {
         NavigationView {
             ZStack {
-                if let url = URL(string: boxModel.boxData.bgImgUrl) {
-                    BackgroundView(imageUrl: url)
-                        .edgesIgnoringSafeArea(.all)
-                }
                 ScrollView() {
                     if !boxModel.favApps.isEmpty {
                         CustomDisclosureGroup(title: "收藏应用", items: boxModel.favApps, sysIcon: "star.circle.fill")
@@ -144,6 +139,9 @@ struct AppView: View {
                     }
                 }
             }
+            .background(
+                BackgroundView(imageUrl: URL(string: boxModel.boxData.bgImgUrl))
+            )
             .navigationBarTitle("应用列表")
         }
         .onAppear {
