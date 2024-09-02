@@ -20,6 +20,7 @@ struct BackgroundImageModifier: ViewModifier {
     }
 }
 
+
 extension View {
     func backgroundImage() -> some View {
         self.modifier(BackgroundImageModifier())

@@ -76,11 +76,6 @@ struct SubcribeView: View {
             }
             .navigationTitle("应用订阅")
         }
-        .onAppear {
-            DispatchQueue.main.async {
-                boxModel.fetchData()
-            }
-        }
     }
     
 }

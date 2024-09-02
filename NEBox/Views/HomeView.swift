@@ -21,34 +21,43 @@ struct HomeView: View {
     @EnvironmentObject var boxModel: BoxJsViewModel
     @State var items: [AppModel] = []
     @State var searchText: String = ""
+    @State private var selectedApp: AppModel? = nil  // 用于存储当前选择的应用
+    @State private var isNavigationActive: Bool = false
 
     var body: some View {
-        ZStack {
-            VStack {
-//                SearchBar(text: $searchText)
-                if !boxModel.favApps.isEmpty {
-                    CollectionViewWrapper(items: $items, boxModel: boxModel)
-                        .ignoresSafeArea()
-                        .onReceive(boxModel.$favApps) { newVal in
-                            items = newVal
-                        }
+        NavigationView {
+            ZStack {
+                VStack {
+                    // SearchBar(text: $searchText)
+                    if !boxModel.favApps.isEmpty {
+                        CollectionViewWrapper(items: $items, boxModel: boxModel, selectedApp: $selectedApp, isNavigationActive: $isNavigationActive)
+                            .ignoresSafeArea()
+                            .onReceive(boxModel.$favApps) { newVal in
+                                items = newVal
+                            }
+                    }
                 }
-            }
-        }
-        .background(
-            BackgroundView(imageUrl: URL(string: boxModel.boxData.bgImgUrl))
-        )
-        .onAppear {
-            DispatchQueue.main.async {
-                boxModel.fetchData()
+                .background(
+                    BackgroundView(imageUrl: URL(string: boxModel.boxData.bgImgUrl))
+                )
+
+                // 导航链接
+                NavigationLink(
+                    destination: AppDetailView(app: selectedApp),
+                    isActive: $isNavigationActive,
+                    label: { EmptyView() }
+                )
             }
         }
     }
 }
 
+
 struct CollectionViewWrapper: UIViewRepresentable {
     @Binding var items: [AppModel]
     var boxModel: BoxJsViewModel
+    @Binding var selectedApp: AppModel?
+    @Binding var isNavigationActive: Bool
 
     func makeUIView(context: Context) -> UICollectionView {
         let layout = UICollectionViewFlowLayout()
@@ -77,17 +86,21 @@ struct CollectionViewWrapper: UIViewRepresentable {
     }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(items: $items, boxModel: boxModel)
+        Coordinator(items: $items, boxModel: boxModel, selectedApp: $selectedApp, isNavigationActive: $isNavigationActive)
     }
 
     class Coordinator: NSObject, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
         @Binding var items: [AppModel]
         var boxModel: BoxJsViewModel
+        @Binding var selectedApp: AppModel?
+        @Binding var isNavigationActive: Bool
         weak var collectionView: UICollectionView?
 
-        init(items: Binding<[AppModel]>, boxModel: BoxJsViewModel) {
+        init(items: Binding<[AppModel]>, boxModel: BoxJsViewModel, selectedApp: Binding<AppModel?>, isNavigationActive: Binding<Bool>) {
             _items = items
             self.boxModel = boxModel
+            _selectedApp = selectedApp
+            _isNavigationActive = isNavigationActive
         }
 
         func collectionView(_: UICollectionView, numberOfItemsInSection _: Int) -> Int {
@@ -104,6 +117,12 @@ struct CollectionViewWrapper: UIViewRepresentable {
                 cell.imageView.image = UIImage(systemName: "placeholdertext.fill")
             }
             return cell
+        }
+
+        func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+            let appModel = items[indexPath.item]
+            selectedApp = appModel
+            isNavigationActive = true  // 触发导航
         }
 
         @objc func handleLongPress(_ gesture: UILongPressGestureRecognizer) {

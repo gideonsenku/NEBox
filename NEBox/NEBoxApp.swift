@@ -22,6 +22,11 @@ struct NEBoxApp: App {
             ContentView()
                 .environmentObject(toastManager)
                 .environmentObject(boxModel)
+                .onAppear {
+                    Task {
+                        await boxModel.fetchData()
+                    }
+                }
         }
     }
 }

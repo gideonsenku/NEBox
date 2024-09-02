@@ -17,6 +17,16 @@ struct SubAppView: View {
     var body: some View {
         VStack {
             HStack {
+                if let iconUrl = URL(string: item.icon ?? "") {
+                    WebImage(url: iconUrl) { image in
+                        image.resizable()
+                    } placeholder: {
+                        Rectangle().foregroundColor(.gray)
+                    }
+                    .resizable()
+                    .frame(width: 40, height: 40)
+                    .clipShape(Circle())
+                }
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
                         Text("\(item.name)")
@@ -54,9 +64,6 @@ struct SubAppView: View {
                 }
             }
         }
-        .background(
-            BackgroundView(imageUrl: URL(string: boxModel.boxData.bgImgUrl))
-        )
     }
 }
 
@@ -76,7 +83,9 @@ struct CustomDisclosureGroup: View {
                     .padding(.vertical, 5)
                 ScrollView {
                     ForEach(items) { item in
-                        SubAppView(item: item)
+                        NavigationLink(destination: AppDetailView(app: item)) {
+                            SubAppView(item: item)
+                        }
                     }
                 }
                 .frame(maxHeight: 300)
@@ -143,11 +152,6 @@ struct AppView: View {
                 BackgroundView(imageUrl: URL(string: boxModel.boxData.bgImgUrl))
             )
             .navigationBarTitle("应用列表")
-        }
-        .onAppear {
-            DispatchQueue.main.async {
-                boxModel.fetchData()
-            }
         }
     }
 }

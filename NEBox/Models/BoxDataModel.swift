@@ -72,6 +72,7 @@ struct AppModel: Codable, Identifiable {
     var icons: [String]
     let desc: String?
     let script: String?
+    let desc_html: String?
     let descs_html: [String]?
     // let settings: [Setting] 暂时不管
     
@@ -79,6 +80,12 @@ struct AppModel: Codable, Identifiable {
     var icon: String?
     var favIconColor: String?
     var isFav: Bool?
+    var hasDescription: Bool {
+        return (desc != nil && !desc!.isEmpty) ||
+               (descs != nil && !descs!.isEmpty) ||
+               (desc_html != nil && !desc_html!.isEmpty) ||
+               (descs_html != nil && !descs_html!.isEmpty)
+    }
 }
 
 extension AppModel {

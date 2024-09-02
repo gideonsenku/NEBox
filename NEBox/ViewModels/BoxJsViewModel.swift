@@ -25,17 +25,15 @@ class BoxJsViewModel: ObservableObject {
         self.boxData = boxData
         favApps = []
     }
-
-    func fetchData() {
-        Task {
-            do {
-                let boxdata = try await ApiRequest.getBoxData()
-                DispatchQueue.main.async {
-                    self.boxData = boxdata
-                }
-            } catch {
-                print("Error fetching data: \(error)")
+    
+    func fetchData() async {
+        do {
+            let boxdata = try await ApiRequest.getBoxData()
+            DispatchQueue.main.async {
+                self.boxData = boxdata
             }
+        } catch {
+            print("Error fetching data: \(error)")
         }
     }
     
