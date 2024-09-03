@@ -43,12 +43,10 @@ struct HTMLTextView: UIViewRepresentable {
 }
 
 
-
-
-
 struct AppDescCardView: View {
     let app: AppModel?
-    let width: CGFloat
+//    let width: CGFloat
+    let width = UIScreen.main.bounds.width
     
     var body: some View {
         if app?.hasDescription == true {
@@ -81,7 +79,42 @@ struct AppDescCardView: View {
             .background(Color.white)
             .cornerRadius(12)
             .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
-            .frame(width: width)
+        }
+    }
+}
+
+struct AppScriptsView: View {
+    let scripts: [RunScript]
+    var body: some View {
+        if scripts.isEmpty != true {
+            VStack(alignment: .leading) {
+                Text("应用脚本(\(scripts.count))")
+                    .font(.system(size: 14))
+                    .foregroundColor(.gray)
+                Spacer()
+                VStack(spacing: 16) {
+                    ForEach(Array(scripts.enumerated()), id: \.element.script) { index, script in
+                        HStack {
+                            Text("\(index + 1). \(script.name)")
+                                .font(.system(size: 13))
+                                .fontWeight(.medium)
+                            Spacer()
+                            Button {
+                                Task {
+                                    let resp = try await ApiRequest.runScript(url: script.script)
+                                }
+                            } label: {
+                                Image(systemName: "play.circle.fill")
+                            }
+                        }
+                    }
+                }
+            }
+            .frame(width: UIScreen.main.bounds.width - 60)
+            .padding(12)
+            .background(Color.white)
+            .cornerRadius(12)
+            .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
         }
     }
 }
@@ -95,15 +128,18 @@ struct AppDetailView: View {
         if let app = app {
             ZStack {
                 ScrollView {
-                    GeometryReader { geometry in
-                        let width = geometry.size.width
-                        AppDescCardView(app: app, width: width)
+                    VStack(spacing: 16) {
+                        AppDescCardView(app: app)
+                        AppScriptsView(scripts: app.scripts ?? [])
                     }
                     .toolbar {
                         if let script = app.script {
                             ToolbarItem {
                                 Button {
-                                    presentSubscriptionAlert()
+                                    Task {
+                                        let resp = try await ApiRequest.runScript(url: script)
+                                        print(resp)
+                                    }
                                 } label: {
                                     Label("Run Script", systemImage: "play.circle.fill")
                                 }
@@ -113,6 +149,7 @@ struct AppDetailView: View {
                     .navigationTitle(app.name)
                 }
             }
+            .frame(width: UIScreen.main.bounds.width)
             .background(
                 BackgroundView(imageUrl: URL(string: boxModel.boxData.bgImgUrl))
             )
@@ -121,7 +158,6 @@ struct AppDetailView: View {
     
     private func presentSubscriptionAlert() {
         showTextFieldAlert(title: "添加订阅", message: nil, placeholder: "输入订阅地址", confirmButtonTitle: "确定", cancelButtonTitle: "取消") { inputText in
-            // Perform the async task here
             Task {
                 // await boxModel.addAppSub(url: inputText)
             }

@@ -23,8 +23,8 @@ struct NEBoxApp: App {
                 .environmentObject(toastManager)
                 .environmentObject(boxModel)
                 .onAppear {
-                    Task {
-                        await boxModel.fetchData()
+                    DispatchQueue.main.async {
+                        boxModel.fetchData()
                     }
                 }
         }

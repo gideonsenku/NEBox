@@ -23,6 +23,7 @@ enum ApiRequest {
         static let reload = "https://boxjs.com/api/reloadAppSub"
         static let addAppSub = "https://boxjs.com/api/addAppSub"
         static let deleteAppSub = "https://boxjs.com/api/deleteAppSub"
+        static let runScript = "https://boxjs.com/api/runScript"
     }
 
     static func requestJSON(_ url: URLConvertible,
@@ -112,6 +113,11 @@ enum ApiRequest {
 
     static func deleteAppSub(url: String) async throws -> BoxDataResp {
         let resp: BoxDataResp = try await request(EndPoint.deleteAppSub, method: .post, parameters: ["url": url], encoding: JSONEncoding.default)
+        return resp
+    }
+    
+    static func runScript(url: String) async throws -> ScriptResp {
+        let resp: ScriptResp = try await request(EndPoint.runScript, method: .post, parameters: ["url": url, "isRemote": true], encoding: JSONEncoding.default)
         return resp
     }
 }

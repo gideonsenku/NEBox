@@ -62,6 +62,11 @@ extension AppSubCache {
     }
 }
 
+struct RunScript: Codable {
+    var name: String
+    var script: String
+}
+
 struct AppModel: Codable, Identifiable {
     var id: String
     let name: String
@@ -72,6 +77,8 @@ struct AppModel: Codable, Identifiable {
     var icons: [String]
     let desc: String?
     let script: String?
+    let scripts: [RunScript]?
+
     let desc_html: String?
     let descs_html: [String]?
     // let settings: [Setting] 暂时不管
@@ -234,4 +241,10 @@ struct BoxDataResp: Codable {
         let newApp = app.withIcon(icons, icons.last ?? icons[0], isFav: isFav)
         return newApp
     }
+}
+
+
+struct ScriptResp: Codable {
+    var exception: String?
+    var output: String?
 }
