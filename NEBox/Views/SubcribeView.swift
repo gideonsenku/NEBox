@@ -9,7 +9,7 @@ import SwiftUI
 import SDWebImageSwiftUI
 
 struct SubcribeView: View {
-    @StateObject var boxModel = BoxJsViewModel()
+    @EnvironmentObject var boxModel: BoxJsViewModel
     @State private var refreshingIndex: Int? = nil
     @State private var isShowingSheet = false
     @State private var subUrl = ""

@@ -18,7 +18,8 @@ class BoxJsViewModel: ObservableObject {
 
     init(boxData: BoxDataResp = BoxDataResp(
         appSubCaches: [:],
-//        datas: [:],
+        datas: [:],
+        sessions: [],
         usercfgs: UserConfig(appsubs: [], favapps: [], bgimgs: "", bgimg: ""),
         sysapps: []
     )) {
@@ -78,6 +79,17 @@ class BoxJsViewModel: ObservableObject {
     func deleteAppSub(url: String) async {
         do {
             let boxdata = try await ApiRequest.deleteAppSub(url: url)
+            DispatchQueue.main.async {
+                self.boxData = boxdata
+            }
+        } catch {
+            print("Error fetching data: \(error)")
+        }
+    }
+    
+    func saveData(params: [SessionData]) async {
+        do {
+            let boxdata = try await ApiRequest.saveData(parameters: params)
             DispatchQueue.main.async {
                 self.boxData = boxdata
             }

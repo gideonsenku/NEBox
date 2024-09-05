@@ -8,6 +8,7 @@
 import SwiftUI
 import UIKit
 import WebKit
+import AnyCodable
 
 struct HTMLTextView: UIViewRepresentable {
     let html: String
@@ -110,7 +111,7 @@ struct AppScriptsView: View {
                     }
                 }
             }
-            .frame(width: UIScreen.main.bounds.width - 60)
+            .frame(width: UIScreen.main.bounds.width - 60, alignment: .leading)
             .padding(12)
             .background(Color.white)
             .cornerRadius(12)
@@ -119,10 +120,153 @@ struct AppScriptsView: View {
     }
 }
 
+struct AppSettingsView: View {
+    @Binding var settings: [Setting]
+    @EnvironmentObject var boxModel: BoxJsViewModel
+    
+    // 动态绑定到 settings 数组中的特定 val 值
+    private func binding(for index: Int) -> Binding<String> {
+        return Binding<String>(
+            get: {
+                if let stringValue = settings[index].val?.value as? String {
+                    return stringValue
+                } else {
+                    return "" // 默认返回空字符串
+                }
+            },
+            set: { newValue in
+                settings[index].val = AnyCodable(newValue)
+            }
+        )
+    }
+    
+    // 动态绑定到 Boolean 值
+    private func boolBinding(for index: Int) -> Binding<Bool> {
+        return Binding<Bool>(
+            get: {
+                if let boolValue = settings[index].val?.value as? Bool {
+                    return boolValue
+                } else {
+                    return false // 默认返回 false
+                }
+            },
+            set: { newValue in
+                settings[index].val = AnyCodable(newValue)
+            }
+        )
+    }
+
+    var body: some View {
+        if settings.isEmpty != true {
+            VStack(alignment: .leading) {
+                Text("应用设置(\(settings.count))")
+                    .font(.system(size: 14))
+                    .foregroundColor(.gray)
+
+                Spacer()
+
+                VStack(alignment: .leading, spacing: 12) {
+                    ForEach(Array(settings.enumerated()), id: \.element.id) { index, setting in
+                        switch setting.type {
+
+                        case "boolean":
+                            VStack(alignment: .leading, spacing: 2) {
+                                HStack {
+                                    Text(setting.name ?? "")
+                                        .font(.system(size: 14))
+                                        .lineLimit(1)
+                                    Spacer()
+                                    Toggle("", isOn: boolBinding(for: index))
+                                        .labelsHidden()
+                                        .scaleEffect(0.8)
+                                }
+                                if let desc = setting.desc, desc != "" {
+                                    Text(desc)
+                                        .font(.system(size: 12))
+                                        .foregroundColor(Color(UIColor.systemGray2))
+                                }
+                            }
+                        case "textarea":
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(setting.name ?? "")
+                                    .font(.system(size: 14))
+                                    .lineLimit(1)
+
+                                ZStack(alignment: .topLeading) {
+                                    TextEditor(text: binding(for: index))
+                                        .padding(4)
+                                        .background(Color.white)
+                                        .cornerRadius(8)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 8)
+                                                .stroke(Color(UIColor.systemGray5), lineWidth: 1)
+                                        )
+                                        .frame(height: 138)
+                                    if setting.val == "" {
+                                        Text(setting.name ?? "请输入内容...")
+                                            .foregroundColor(.gray)
+                                            .padding(.top, 12)
+                                            .padding(.leading, 8)
+                                    }
+                                }
+                                if let desc = setting.desc, desc != "" {
+                                    Text(desc)
+                                        .font(.system(size: 12))
+                                        .foregroundColor(Color(UIColor.systemGray2))
+                                }
+                            }
+                        default:
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(setting.name ?? "")
+                                    .font(.system(size: 14))
+                                    .lineLimit(1)
+
+                                TextField(setting.placeholder ?? "请输入内容", text: binding(for: index))
+                                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                                if let desc = setting.desc, desc != "" {
+                                    Text(desc)
+                                        .font(.system(size: 12))
+                                        .foregroundColor(Color(UIColor.systemGray2))
+                                }
+                            }
+                        }
+                    }
+                    
+                    Divider()
+                    HStack {
+                        Spacer()
+                        
+                        Button {
+                            Task {
+                                await boxModel.saveData(params: settings.map { setting in
+                                    SessionData(key: setting.id, val: setting.val)
+                                })
+                            }
+                        } label: {
+                            Text("保存")
+                                .font(.system(size: 12))
+                        }
+                    }
+                }
+
+            }
+            .frame(width: UIScreen.main.bounds.width - 60, alignment: .leading)
+            .padding(12)
+            .background(Color.white)
+            .cornerRadius(12)
+            .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
+            .onAppear(perform: {
+//                print(settings)
+            })
+        }
+    }
+}
+
 struct AppDetailView: View {
-    let app: AppModel?
+    @State var app: AppModel?
     
     @EnvironmentObject var boxModel: BoxJsViewModel
+    @EnvironmentObject var toastManager: ToastManager
     
     var body: some View {
         if let app = app {
@@ -131,17 +275,32 @@ struct AppDetailView: View {
                     VStack(spacing: 16) {
                         AppDescCardView(app: app)
                         AppScriptsView(scripts: app.scripts ?? [])
+                        AppSettingsView(settings: bindingForSettings())
                     }
+                    .padding(.bottom, 16)
                     .toolbar {
-                        if let script = app.script {
-                            ToolbarItem {
+                        ToolbarItem {
+                            HStack {
                                 Button {
                                     Task {
-                                        let resp = try await ApiRequest.runScript(url: script)
-                                        print(resp)
+                                        await boxModel.saveData(params: (app.settings ?? []).map { setting in
+                                            SessionData(key: setting.id, val: setting.val)
+                                        })
+                                        toastManager.showToast(message: "保存成功!")
                                     }
                                 } label: {
-                                    Label("Run Script", systemImage: "play.circle.fill")
+                                    Label("Run Script", systemImage: "externaldrive.fill.badge.checkmark")
+                                }
+                                
+                                if let script = app.script {
+                                    Button {
+                                        Task {
+                                            let resp = try await ApiRequest.runScript(url: script)
+                                            print(resp)
+                                        }
+                                    } label: {
+                                        Label("Run Script", systemImage: "play.circle.fill")
+                                    }
                                 }
                             }
                         }
@@ -154,6 +313,20 @@ struct AppDetailView: View {
                 BackgroundView(imageUrl: URL(string: boxModel.boxData.bgImgUrl))
             )
         }
+    }
+    
+    // 创建一个处理 Optional settings 的绑定函数
+    private func bindingForSettings() -> Binding<[Setting]> {
+        return Binding<[Setting]>(
+            get: {
+                app?.settings ?? [] // 如果 app?.settings 是 nil，返回一个空数组
+            },
+            set: { newValue in
+                if app != nil {
+                    app!.settings = newValue // 如果 app 不为 nil，更新 settings
+                }
+            }
+        )
     }
     
     private func presentSubscriptionAlert() {

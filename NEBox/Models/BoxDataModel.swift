@@ -67,6 +67,15 @@ struct RunScript: Codable {
     var script: String
 }
 
+struct Setting: Codable {
+    let id: String
+    let name: String?
+    var val: AnyCodable?
+    let desc: String?
+    let placeholder: String?
+    let type: String?
+}
+
 struct AppModel: Codable, Identifiable {
     var id: String
     let name: String
@@ -81,7 +90,7 @@ struct AppModel: Codable, Identifiable {
 
     let desc_html: String?
     let descs_html: [String]?
-    // let settings: [Setting] 暂时不管
+    var settings: [Setting]?
     
     var favIcon: String?
     var icon: String?
@@ -123,9 +132,25 @@ struct AppSub: Codable {
     var isErr: Bool?
 }
 
+struct SessionData: Codable {
+    let key: String
+    let val: AnyCodable?
+}
+
+struct Session: Codable {
+    let id: String
+    let name: String
+    let enable: Bool
+    let appId: String
+    let appName: String
+    let createTime: String
+    let datas: [SessionData]
+}
+
 struct BoxDataResp: Codable {
     let appSubCaches: [String: AppSubCache]
-    //    let datas: [String: AnyCodable?]
+    let datas: [String: AnyCodable?]
+    let sessions: [Session]
     let usercfgs: UserConfig?
     let sysapps: [AppModel]
     
