@@ -46,7 +46,6 @@ struct HTMLTextView: UIViewRepresentable {
 
 struct AppDescCardView: View {
     let app: AppModel?
-//    let width: CGFloat
     let width = UIScreen.main.bounds.width
     
     var body: some View {
@@ -120,9 +119,12 @@ struct AppScriptsView: View {
     }
 }
 
+
 struct AppSettingsView: View {
     @Binding var settings: [Setting]
     @EnvironmentObject var boxModel: BoxJsViewModel
+    
+    @State var selectedOption = "Paris"
     
     // 动态绑定到 settings 数组中的特定 val 值
     private func binding(for index: Int) -> Binding<String> {
@@ -168,7 +170,6 @@ struct AppSettingsView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     ForEach(Array(settings.enumerated()), id: \.element.id) { index, setting in
                         switch setting.type {
-
                         case "boolean":
                             VStack(alignment: .leading, spacing: 2) {
                                 HStack {
@@ -209,6 +210,21 @@ struct AppSettingsView: View {
                                             .padding(.leading, 8)
                                     }
                                 }
+                                if let desc = setting.desc, desc != "" {
+                                    Text(desc)
+                                        .font(.system(size: 12))
+                                        .foregroundColor(Color(UIColor.systemGray2))
+                                }
+                            }
+                        case "radios":
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(setting.name ?? "")
+                                    .font(.system(size: 14))
+                                    .lineLimit(1)
+                                
+                                RadioButtonGroup(items: (setting.items ?? [] as [RadioItem]), selectedKey: binding(for: index))
+                                    .padding(.top, 4)
+
                                 if let desc = setting.desc, desc != "" {
                                     Text(desc)
                                         .font(.system(size: 12))

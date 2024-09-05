@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E21043252C89951C00347C43 /* RadioButtonGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21043242C89951C00347C43 /* RadioButtonGroup.swift */; };
 		E23F56042C7DBDCD0039F1CC /* AppDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E23F56032C7DBDCD0039F1CC /* AppDetailView.swift */; };
 		E23F560F2C7F1EC10039F1CC /* SwiftUIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E23F560E2C7F1EC10039F1CC /* SwiftUIView.swift */; };
 		E2AA91BE2C732E4200EB02B2 /* SwipeCellKit in Frameworks */ = {isa = PBXBuildFile; productRef = E2AA91BD2C732E4200EB02B2 /* SwipeCellKit */; };
@@ -36,6 +37,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		E21043242C89951C00347C43 /* RadioButtonGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadioButtonGroup.swift; sourceTree = "<group>"; };
 		E23F56032C7DBDCD0039F1CC /* AppDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDetailView.swift; sourceTree = "<group>"; };
 		E23F560E2C7F1EC10039F1CC /* SwiftUIView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIView.swift; sourceTree = "<group>"; };
 		E2C273522C354F4A004952AA /* NEBox.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NEBox.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -145,6 +147,7 @@
 				E2C273692C379939004952AA /* SettingView.swift */,
 				E23F56032C7DBDCD0039F1CC /* AppDetailView.swift */,
 				E23F560E2C7F1EC10039F1CC /* SwiftUIView.swift */,
+				E21043242C89951C00347C43 /* RadioButtonGroup.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -287,6 +290,7 @@
 				E2E8BA872C6CA46400C2AF9E /* GlobalToastView.swift in Sources */,
 				E2E9E2612C46200D00836E4B /* BoxDataModel.swift in Sources */,
 				E2C273562C354F4A004952AA /* NEBoxApp.swift in Sources */,
+				E21043252C89951C00347C43 /* RadioButtonGroup.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

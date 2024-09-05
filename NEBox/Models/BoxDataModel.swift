@@ -67,6 +67,11 @@ struct RunScript: Codable {
     var script: String
 }
 
+struct RadioItem: Codable {
+    let key: String
+    let label: String
+}
+
 struct Setting: Codable {
     let id: String
     let name: String?
@@ -74,6 +79,7 @@ struct Setting: Codable {
     let desc: String?
     let placeholder: String?
     let type: String?
+    let items: [RadioItem]?
 }
 
 struct AppModel: Codable, Identifiable {
