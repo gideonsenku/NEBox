@@ -123,6 +123,7 @@ struct AppScriptsView: View {
 struct AppSettingsView: View {
     @Binding var settings: [Setting]
     @EnvironmentObject var boxModel: BoxJsViewModel
+    @EnvironmentObject var toastManager: ToastManager
     
     @State var selectedOption = "Paris"
     
@@ -157,6 +158,23 @@ struct AppSettingsView: View {
             }
         )
     }
+    
+    // 动态绑定到 [String] 值
+    private func arrayBinding(for index: Int) -> Binding<[String]> {
+        return Binding<[String]>(
+            get: {
+                if let arrayValue = settings[index].val?.value as? [String] {
+                    return arrayValue
+                } else {
+                    return [] // 默认返回空数组
+                }
+            },
+            set: { newValue in
+                settings[index].val = AnyCodable(newValue)
+            }
+        )
+    }
+
 
     var body: some View {
         if settings.isEmpty != true {
@@ -231,6 +249,21 @@ struct AppSettingsView: View {
                                         .foregroundColor(Color(UIColor.systemGray2))
                                 }
                             }
+                        case "checkboxes":
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(setting.name ?? "")
+                                    .font(.system(size: 14))
+                                    .lineLimit(1)
+                                
+                                CheckBoxGroup(items: (setting.items ?? []), selectedKeys: arrayBinding(for: index))
+                                    .padding(.top, 4)
+
+                                if let desc = setting.desc, desc != "" {
+                                    Text(desc)
+                                        .font(.system(size: 12))
+                                        .foregroundColor(Color(UIColor.systemGray2))
+                                }
+                            }
                         default:
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(setting.name ?? "")
@@ -254,14 +287,26 @@ struct AppSettingsView: View {
                         
                         Button {
                             Task {
-                                await boxModel.saveData(params: settings.map { setting in
-                                    SessionData(key: setting.id, val: setting.val)
-                                })
+                                let params = settings.map { setting in
+                                    let transformedVal: AnyCodable = {
+                                        if setting.type == "checkboxes", let arrayVal = setting.val?.value as? [String] {
+                                            return AnyCodable(arrayVal.joined(separator: ","))  // 将数组转换为字符串并封装为 AnyCodable
+                                        } else if let val = setting.val {
+                                            return val
+                                        } else {
+                                            return AnyCodable(nil)  // 如果 val 是 nil，返回 AnyCodable(nil)
+                                        }
+                                    }()
+                                    return SessionData(key: setting.id, val: transformedVal)
+                                }
+                                await boxModel.saveData(params: params)
+                                toastManager.showToast(message: "保存成功!")
                             }
                         } label: {
                             Text("保存")
                                 .font(.system(size: 12))
                         }
+
                     }
                 }
 
@@ -300,7 +345,16 @@ struct AppDetailView: View {
                                 Button {
                                     Task {
                                         await boxModel.saveData(params: (app.settings ?? []).map { setting in
-                                            SessionData(key: setting.id, val: setting.val)
+                                            let transformedVal: AnyCodable = {
+                                                if setting.type == "checkboxes", let arrayVal = setting.val?.value as? [String] {
+                                                    return AnyCodable(arrayVal.joined(separator: ","))  // 将数组转换为字符串并封装为 AnyCodable
+                                                } else if let val = setting.val {
+                                                    return val
+                                                } else {
+                                                    return AnyCodable(nil)  // 如果 val 是 nil，返回 AnyCodable(nil)
+                                                }
+                                            }()
+                                            return SessionData(key: setting.id, val: transformedVal)
                                         })
                                         toastManager.showToast(message: "保存成功!")
                                     }

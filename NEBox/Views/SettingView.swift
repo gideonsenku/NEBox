@@ -6,42 +6,28 @@
 //
 
 import SwiftUI
+import MarkdownUI
 
 struct SettingView: View {
-    @State var showAni = false
-    @State var isPlaying = false
+    let markdownString = """
+      #### 获取Cookie以及脚本配置请查看[脚本注释](https://raw.githubusercontent.com/NobyDa/Script/master/JD-DailyBonus/JD_DailyBonus.js)
+
+      #### 如需修改Cookie列表请严格按照[JSON格式](https://www.bejson.com/json/format)修改
+
+      #### 建议通过脚本获取Cookie
+
+        
+
+      ### 签到相关教程
+      - [x] Write the press release
+      
+      ```javascript
+      const name = "hello"
+      ```
+      """
     var body: some View {
-        VStack {
-            Button(action: {
-                withAnimation(.smooth) {
-                    showAni.toggle()
-                }
-            }) {
-                Image(systemName: "wind")
-                    .imageScale(.large)
-                    .rotationEffect(.degrees(showAni ? 90 : 0))
-                    .scaleEffect(5)
-                    .padding()
-            }
-
-            Divider().padding()
-
-            Button {
-                withAnimation {
-                    isPlaying.toggle()
-                }
-            } label: {
-                if isPlaying {
-                    Image(systemName: "play.fill")
-                        .imageScale(.large)
-                        .padding()
-                } else {
-                    Image(systemName: "pause.fill")
-                        .imageScale(.large)
-                        .padding()
-                }
-            }
-        }
+        Markdown(markdownString)
+            .markdownTheme(.gitHub)
     }
 }
 

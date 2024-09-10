@@ -29,22 +29,20 @@ struct RadioButton: View {
     let textSize: CGFloat = 14
 
     var body: some View {
-        Button(action: {
-            self.selectedID = self.id  // 更新 selectedID 为当前按钮的 key
-        }) {
-            HStack(alignment: .center, spacing: 10) {
-                Image(systemName: self.selectedID == self.id ? "largecircle.fill.circle" : "circle")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: self.size, height: self.size)
-                Text(label)  // 显示 label 而不是 key
-                    .font(Font.system(size: textSize))
-                    .foregroundColor(.black)
-                Spacer()
-            }
-            .foregroundColor(self.selectedID == self.id ? .blue : .gray)
+        HStack(alignment: .center, spacing: 10) {
+            Image(systemName: self.selectedID == self.id ? "largecircle.fill.circle" : "circle")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: self.size, height: self.size)
+            Text(label)  // 显示 label 而不是 key
+                .font(Font.system(size: textSize))
+                .foregroundColor(.black)
+            Spacer()
         }
-        .foregroundColor(self.color)
+        .onTapGesture {
+            self.selectedID = self.id  // 点击时更新 selectedID
+        }
+        .foregroundColor(self.selectedID == self.id ? .blue : .gray)  // 选中时改变颜色
     }
 }
 

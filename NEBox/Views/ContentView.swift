@@ -22,10 +22,10 @@ struct ContentView: View {
                 .tabItem {
                     Label("订阅", systemImage: "cloud")
                 }
-//            SettingView()
-//                .tabItem {
-//                    Label("设置", systemImage: "paintpalette")
-//                }
+            SettingView()
+                .tabItem {
+                    Label("设置", systemImage: "paintpalette")
+                }
         }
         .overlay(GlobalToastView())
     }
