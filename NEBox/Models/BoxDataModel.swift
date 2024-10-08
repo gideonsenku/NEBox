@@ -67,9 +67,11 @@ struct RunScript: Codable {
     var script: String
 }
 
-struct RadioItem: Codable {
+struct RadioItem: Codable, Identifiable {
     let key: String
     let label: String
+    
+    var id: String { key }
 }
 
 struct Setting: Codable {

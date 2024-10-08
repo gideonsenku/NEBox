@@ -102,6 +102,7 @@ struct AppScriptsView: View {
                             Button {
                                 Task {
                                     let resp = try await ApiRequest.runScript(url: script.script)
+                                    print(resp)
                                 }
                             } label: {
                                 Image(systemName: "play.circle.fill")
@@ -175,8 +176,10 @@ struct AppSettingsView: View {
         )
     }
 
-
+    // TODO: 需要拆分到子页面中
     var body: some View {
+        @State var selectedFruit = "Apple"
+
         if settings.isEmpty != true {
             VStack(alignment: .leading) {
                 Text("应用设置(\(settings.count))")
@@ -258,6 +261,28 @@ struct AppSettingsView: View {
                                 CheckBoxGroup(items: (setting.items ?? []), selectedKeys: arrayBinding(for: index))
                                     .padding(.top, 4)
 
+                                if let desc = setting.desc, desc != "" {
+                                    Text(desc)
+                                        .font(.system(size: 12))
+                                        .foregroundColor(Color(UIColor.systemGray2))
+                                }
+                            }
+                        case "selects", "modalSelects":
+                            VStack(alignment: .leading, spacing: 2) {
+                                HStack {
+                                    Text(setting.name ?? "")
+                                        .font(.system(size: 14))
+                                        .lineLimit(1)
+                                    
+                                    Spacer()
+
+                                    Picker("Select", selection: binding(for: index)) {
+                                        ForEach((setting.items ?? [])) { item in
+                                            Text(item.label).tag(item.key)
+                                        }
+                                    }
+                                    .pickerStyle(MenuPickerStyle())
+                                }
                                 if let desc = setting.desc, desc != "" {
                                     Text(desc)
                                         .font(.system(size: 12))
