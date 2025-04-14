@@ -10,6 +10,7 @@
 		E21043252C89951C00347C43 /* RadioButtonGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21043242C89951C00347C43 /* RadioButtonGroup.swift */; };
 		E21043282C8ADBC100347C43 /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = E21043272C8ADBC100347C43 /* MarkdownUI */; };
 		E210432C2C90307000347C43 /* CheckBoxGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = E210432B2C90307000347C43 /* CheckBoxGroup.swift */; };
+		E210FCEF2CBF6DCA004A8CFB /* ApiManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E210FCEE2CBF6DC7004A8CFB /* ApiManager.swift */; };
 		E23F56042C7DBDCD0039F1CC /* AppDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E23F56032C7DBDCD0039F1CC /* AppDetailView.swift */; };
 		E23F560F2C7F1EC10039F1CC /* SwiftUIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E23F560E2C7F1EC10039F1CC /* SwiftUIView.swift */; };
 		E2AA91BE2C732E4200EB02B2 /* SwipeCellKit in Frameworks */ = {isa = PBXBuildFile; productRef = E2AA91BD2C732E4200EB02B2 /* SwipeCellKit */; };
@@ -41,6 +42,7 @@
 /* Begin PBXFileReference section */
 		E21043242C89951C00347C43 /* RadioButtonGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadioButtonGroup.swift; sourceTree = "<group>"; };
 		E210432B2C90307000347C43 /* CheckBoxGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckBoxGroup.swift; sourceTree = "<group>"; };
+		E210FCEE2CBF6DC7004A8CFB /* ApiManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiManager.swift; sourceTree = "<group>"; };
 		E23F56032C7DBDCD0039F1CC /* AppDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDetailView.swift; sourceTree = "<group>"; };
 		E23F560E2C7F1EC10039F1CC /* SwiftUIView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIView.swift; sourceTree = "<group>"; };
 		E2C273522C354F4A004952AA /* NEBox.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NEBox.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -126,6 +128,7 @@
 		E2E8BA832C6CA41D00C2AF9E /* Managers */ = {
 			isa = PBXGroup;
 			children = (
+				E210FCEE2CBF6DC7004A8CFB /* ApiManager.swift */,
 				E2E8BA842C6CA43300C2AF9E /* ToastManager.swift */,
 			);
 			path = Managers;
@@ -296,6 +299,7 @@
 				E23F56042C7DBDCD0039F1CC /* AppDetailView.swift in Sources */,
 				E2E9E2642C464CC300836E4B /* ArrayExtension.swift in Sources */,
 				E2E8BA872C6CA46400C2AF9E /* GlobalToastView.swift in Sources */,
+				E210FCEF2CBF6DCA004A8CFB /* ApiManager.swift in Sources */,
 				E2E9E2612C46200D00836E4B /* BoxDataModel.swift in Sources */,
 				E2C273562C354F4A004952AA /* NEBoxApp.swift in Sources */,
 				E21043252C89951C00347C43 /* RadioButtonGroup.swift in Sources */,
@@ -449,9 +453,13 @@
 				MARKETING_VERSION = 0.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.elongpaoxiao.NEBox;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -480,9 +488,13 @@
 				MARKETING_VERSION = 0.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.elongpaoxiao.NEBox;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};

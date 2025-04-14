@@ -14,6 +14,8 @@ class BoxJsViewModel: ObservableObject {
             favApps = boxData.favApps
         }
     }
+    @Published var hasError = false
+
     private let iconThemeIdx = 0
 
     init(boxData: BoxDataResp = BoxDataResp(
@@ -35,7 +37,10 @@ class BoxJsViewModel: ObservableObject {
                     self.boxData = boxdata
                 }
             } catch {
-                print("Error fetching data: \(error)")
+                DispatchQueue.main.async {
+                    self.hasError = true
+                    print("Error fetching data: \(error)")
+                }
             }
         }
     }

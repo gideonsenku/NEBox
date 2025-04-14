@@ -85,6 +85,10 @@ struct AppDescCardView: View {
 
 struct AppScriptsView: View {
     let scripts: [RunScript]
+    @State private var isLoading = false
+    @State private var loadingScript: String? = nil
+    @EnvironmentObject var boxModel: BoxJsViewModel
+    
     var body: some View {
         if scripts.isEmpty != true {
             VStack(alignment: .leading) {
@@ -99,13 +103,28 @@ struct AppScriptsView: View {
                                 .font(.system(size: 13))
                                 .fontWeight(.medium)
                             Spacer()
-                            Button {
-                                Task {
-                                    let resp = try await ApiRequest.runScript(url: script.script)
-                                    print(resp)
+                            if isLoading && loadingScript == script.script {
+                                ProgressView()
+                                    .frame(width: 20, height: 20)
+                            } else {
+                                Button {
+                                    Task {
+                                        isLoading = true
+                                        loadingScript = script.script
+                                        do {
+                                            let resp = try await ApiRequest.runScript(url: script.script)
+                                            print(resp)
+                                            // 获取最新的数据
+                                            await boxModel.fetchData()
+                                        } catch {
+                                            print("Error running script: \(error)")
+                                        }
+                                        isLoading = false
+                                        loadingScript = nil
+                                    }
+                                } label: {
+                                    Image(systemName: "play.circle.fill")
                                 }
-                            } label: {
-                                Image(systemName: "play.circle.fill")
                             }
                         }
                     }
