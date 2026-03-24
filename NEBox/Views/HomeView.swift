@@ -123,10 +123,9 @@ struct CollectionViewWrapper: UIViewRepresentable {
     
     func makeUIView(context: Context) -> UICollectionView {
         let layout = UICollectionViewFlowLayout()
-        layout.sectionInset = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
-        layout.minimumInteritemSpacing = 10
-        layout.minimumLineSpacing = 0
-        layout.itemSize = CGSize(width: 80, height: 100)
+        layout.sectionInset = UIEdgeInsets(top: 24, left: 16, bottom: 24, right: 16)
+        layout.minimumInteritemSpacing = 0
+        layout.minimumLineSpacing = 8
         
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.backgroundColor = .clear
@@ -147,9 +146,18 @@ struct CollectionViewWrapper: UIViewRepresentable {
     }
     
     func updateUIView(_ uiView: UICollectionView, context: Context) {
+        let wasEditMode = context.coordinator.isEditMode
         context.coordinator.items = items
         context.coordinator.isEditMode = isEditMode
         uiView.reloadData()
+
+        // Apply or remove jiggle when edit mode changes
+        if isEditMode != wasEditMode {
+            // Wait for reloadData to finish so cells exist
+            DispatchQueue.main.async {
+                context.coordinator.applyJiggle(to: uiView, enabled: isEditMode)
+            }
+        }
     }
 
     func makeCoordinator() -> Coordinator {
@@ -175,6 +183,13 @@ struct CollectionViewWrapper: UIViewRepresentable {
         func collectionView(_: UICollectionView, numberOfItemsInSection _: Int) -> Int {
             return items.count
         }
+
+        func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+            let columns: CGFloat = 4
+            let totalInset: CGFloat = 32  // 16 + 16
+            let width = floor((collectionView.bounds.width - totalInset) / columns)
+            return CGSize(width: width, height: 90)
+        }
         
         func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "Cell", for: indexPath) as! MyCell
@@ -186,6 +201,12 @@ struct CollectionViewWrapper: UIViewRepresentable {
                 cell.imageView.image = UIImage(systemName: "placeholdertext.fill")
             }
             cell.showDeleteBadge(isEditMode)
+            if isEditMode {
+                startJiggleAnimation(for: cell)
+            } else {
+                cell.layer.removeAnimation(forKey: "jiggle")
+                cell.transform = .identity
+            }
             return cell
         }
 
@@ -210,18 +231,58 @@ struct CollectionViewWrapper: UIViewRepresentable {
 
         @objc func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
             guard let collectionView = collectionView else { return }
+
             switch gesture.state {
             case .began:
-                guard let selectedIndexPath = collectionView.indexPathForItem(at: gesture.location(in: collectionView)) else {
-                    break
+                // If not in edit mode, enter it first
+                if !isEditMode {
+                    let generator = UIImpactFeedbackGenerator(style: .medium)
+                    generator.impactOccurred()
+                    isEditMode = true
+                    applyJiggle(to: collectionView, enabled: true)
+                    updateDeleteBadges(in: collectionView, show: true)
                 }
-                collectionView.beginInteractiveMovementForItem(at: selectedIndexPath)
+                // Also start drag-to-reorder
+                if let indexPath = collectionView.indexPathForItem(at: gesture.location(in: collectionView)) {
+                    collectionView.beginInteractiveMovementForItem(at: indexPath)
+                }
             case .changed:
                 collectionView.updateInteractiveMovementTargetPosition(gesture.location(in: gesture.view!))
             case .ended:
                 collectionView.endInteractiveMovement()
             default:
                 collectionView.cancelInteractiveMovement()
+            }
+        }
+
+        func applyJiggle(to collectionView: UICollectionView, enabled: Bool) {
+            for cell in collectionView.visibleCells {
+                if enabled {
+                    startJiggleAnimation(for: cell)
+                } else {
+                    cell.layer.removeAnimation(forKey: "jiggle")
+                    cell.transform = .identity
+                }
+            }
+        }
+
+        func startJiggleAnimation(for cell: UICollectionViewCell) {
+            let angle: CGFloat = .pi / 90  // ~2 degrees
+            let randomOffset = Double.random(in: 0...0.08)
+            let animation = CAKeyframeAnimation(keyPath: "transform.rotation.z")
+            animation.values = [-angle, angle, -angle]
+            animation.keyTimes = [0, 0.5, 1.0]
+            animation.duration = 0.25 + randomOffset
+            animation.repeatCount = .infinity
+            animation.isRemovedOnCompletion = false
+            cell.layer.add(animation, forKey: "jiggle")
+        }
+
+        func updateDeleteBadges(in collectionView: UICollectionView, show: Bool) {
+            for cell in collectionView.visibleCells {
+                if let myCell = cell as? MyCell {
+                    myCell.showDeleteBadge(show)
+                }
             }
         }
         
@@ -256,41 +317,58 @@ class MyCell: UICollectionViewCell {
     override init(frame: CGRect) {
         super.init(frame: frame)
         
+        // Icon image — 60pt, iOS 规范圆角比例
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
-        imageView.layer.cornerRadius = 12
-        imageView.layer.shadowColor = UIColor.black.cgColor
-        imageView.layer.shadowOffset = CGSize(width: 0, height: 3)
-        imageView.layer.shadowOpacity = 0.5
-        imageView.layer.shadowRadius = 3
-        imageView.tintColor = UIColor.gray
+        imageView.layer.cornerRadius = 13.5
+        imageView.layer.cornerCurve = .continuous
+        imageView.tintColor = .systemGray3
         contentView.addSubview(imageView)
         imageView.translatesAutoresizingMaskIntoConstraints = false
-        imageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10).isActive = true
-        imageView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor).isActive = true
-        imageView.widthAnchor.constraint(equalToConstant: 56).isActive = true
-        imageView.heightAnchor.constraint(equalToConstant: 56).isActive = true
-        
+        NSLayoutConstraint.activate([
+            imageView.topAnchor.constraint(equalTo: contentView.topAnchor),
+            imageView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            imageView.widthAnchor.constraint(equalToConstant: 60),
+            imageView.heightAnchor.constraint(equalToConstant: 60),
+        ])
+
+        // Icon shadow — 放在 imageView 外层容器上才能穿透 clipsToBounds
+        contentView.layer.shadowColor = UIColor.black.cgColor
+        contentView.layer.shadowOffset = CGSize(width: 0, height: 2)
+        contentView.layer.shadowOpacity = 0.2
+        contentView.layer.shadowRadius = 4
+
+        // Label — 白字 + 阴影，贴合壁纸背景
         titleLabel.textAlignment = .center
-        titleLabel.numberOfLines = 1
-        titleLabel.textColor = .label
-        titleLabel.font = UIFont.systemFont(ofSize: 12)
+        titleLabel.numberOfLines = 2
+        titleLabel.textColor = .white
+        titleLabel.font = UIFont.systemFont(ofSize: 11.5, weight: .medium)
+        titleLabel.layer.shadowColor = UIColor.black.cgColor
+        titleLabel.layer.shadowOffset = CGSize(width: 0, height: 0.5)
+        titleLabel.layer.shadowOpacity = 0.6
+        titleLabel.layer.shadowRadius = 1.5
         contentView.addSubview(titleLabel)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        titleLabel.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 8).isActive = true
-        titleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 10).isActive = true
-        titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -10).isActive = true
-        titleLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10).isActive = true
+        NSLayoutConstraint.activate([
+            titleLabel.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 6),
+            titleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 2),
+            titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -2),
+            titleLabel.bottomAnchor.constraint(lessThanOrEqualTo: contentView.bottomAnchor),
+        ])
 
-        // Delete badge
-        let config = UIImage.SymbolConfiguration(pointSize: 18, weight: .medium)
-        deleteBadge.image = UIImage(systemName: "xmark.circle.fill", withConfiguration: config)
-        deleteBadge.tintColor = .systemRed
+        // Delete badge — iOS style: dark gray circle with white minus
+        let config = UIImage.SymbolConfiguration(pointSize: 16, weight: .bold)
+            .applying(UIImage.SymbolConfiguration(paletteColors: [.white, .darkGray]))
+        deleteBadge.image = UIImage(systemName: "minus.circle.fill", withConfiguration: config)
         deleteBadge.isHidden = true
         contentView.addSubview(deleteBadge)
         deleteBadge.translatesAutoresizingMaskIntoConstraints = false
-        deleteBadge.topAnchor.constraint(equalTo: imageView.topAnchor, constant: -6).isActive = true
-        deleteBadge.trailingAnchor.constraint(equalTo: imageView.trailingAnchor, constant: 6).isActive = true
+        NSLayoutConstraint.activate([
+            deleteBadge.centerXAnchor.constraint(equalTo: imageView.leadingAnchor),
+            deleteBadge.centerYAnchor.constraint(equalTo: imageView.topAnchor),
+            deleteBadge.widthAnchor.constraint(equalToConstant: 22),
+            deleteBadge.heightAnchor.constraint(equalToConstant: 22),
+        ])
     }
 
     func showDeleteBadge(_ show: Bool) {
