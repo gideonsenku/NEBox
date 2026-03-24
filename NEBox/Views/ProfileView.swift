@@ -14,9 +14,11 @@ import AnyCodable
 struct ProfileView: View {
     @EnvironmentObject var boxModel: BoxJsViewModel
     @EnvironmentObject var toastManager: ToastManager
+    @EnvironmentObject var apiManager: ApiManager
 
     @State private var showEditProfile = false
     @State private var showImportBak = false
+    @State private var showApiSettings = false
     @State private var importBakText = ""
     @State private var editName = ""
     @State private var editIcon = ""
@@ -117,6 +119,31 @@ struct ProfileView: View {
                     profileActionLabel("创建备份", icon: "externaldrive.badge.plus", highlight: true)
                 }
             }
+
+            Divider()
+
+            // API 地址行
+            HStack(spacing: 12) {
+                Image(systemName: "creditcard")
+                    .foregroundColor(.secondary)
+                    .font(.system(size: 16))
+                    .frame(width: 24)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("API 地址")
+                        .font(.system(size: 13))
+                        .foregroundColor(.secondary)
+                    Text(apiManager.apiUrl ?? "未设置")
+                        .font(.system(size: 14))
+                        .foregroundColor(.primary)
+                        .lineLimit(1)
+                }
+                Spacer()
+                Button("修改") {
+                    showApiSettings = true
+                }
+                .font(.system(size: 14))
+                .foregroundColor(.accentColor)
+            }
         }
         .padding(16)
         .background(Color(.systemBackground))
@@ -127,6 +154,9 @@ struct ProfileView: View {
         }
         .sheet(isPresented: $showImportBak) {
             importBakSheet
+        }
+        .sheet(isPresented: $showApiSettings) {
+            ApiSettingsView()
         }
     }
 
@@ -454,5 +484,81 @@ struct BackupDetailView: View {
                 print("Failed to load backup data: \(error)")
             }
         }
+    }
+}
+
+// MARK: - API Settings View
+
+struct ApiSettingsView: View {
+    @EnvironmentObject var apiManager: ApiManager
+    @EnvironmentObject var boxModel: BoxJsViewModel
+    @EnvironmentObject var toastManager: ToastManager
+    @Environment(\.dismiss) var dismiss
+
+    @State private var apiUrlInput: String = ""
+    @State private var showResetConfirm = false
+
+    var body: some View {
+        NavigationView {
+            Form {
+                Section(header: Text("后端地址"), footer: Text("修改后将重新拉取数据")) {
+                    HStack {
+                        Image(systemName: "link")
+                            .foregroundColor(.secondary)
+                        TextField("http://boxjs.com", text: $apiUrlInput)
+                            .autocorrectionDisabled()
+                            .textInputAutocapitalization(.never)
+                            .onSubmit { saveAndDismiss() }
+                    }
+                }
+
+                Section {
+                    Button(role: .destructive) {
+                        showResetConfirm = true
+                    } label: {
+                        HStack {
+                            Spacer()
+                            Text("重置连接")
+                            Spacer()
+                        }
+                    }
+                } footer: {
+                    Text("重置后将返回初始配置页")
+                }
+            }
+            .navigationTitle("API 设置")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("取消") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("保存") { saveAndDismiss() }
+                        .disabled(apiUrlInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
+            }
+            .onAppear {
+                apiUrlInput = apiManager.apiUrl ?? ""
+            }
+            .confirmationDialog("确认重置连接？", isPresented: $showResetConfirm, titleVisibility: .visible) {
+                Button("重置", role: .destructive) {
+                    apiManager.apiUrl = nil
+                    boxModel.reset()
+                    dismiss()
+                }
+                Button("取消", role: .cancel) {}
+            } message: {
+                Text("这将清除已保存的 API 地址，返回初始配置页")
+            }
+        }
+    }
+
+    private func saveAndDismiss() {
+        let trimmed = apiUrlInput.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        apiManager.apiUrl = trimmed
+        boxModel.fetchData()
+        toastManager.showToast(message: "API 地址已保存")
+        dismiss()
     }
 }

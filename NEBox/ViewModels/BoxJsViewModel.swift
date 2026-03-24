@@ -39,7 +39,13 @@ class BoxJsViewModel: ObservableObject {
         self.boxData = boxdata
     }
 
-    func fetchData() {
+    func reset() {
+        favApps = []
+        isDataLoaded = false
+        hasError = false
+    }
+
+func fetchData() {
         Task {
             do {
                 let boxdata = try await ApiRequest.getBoxData()

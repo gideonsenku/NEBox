@@ -7,46 +7,122 @@
 
 import SwiftUI
 
-struct ApiConfigView: View {
+struct WelcomeSetupView: View {
     @Binding var apiUrlInput: String
-    var onSave: () -> Void
-    var onCancel: () -> Void
+    var onConnect: () -> Void
+
+    @FocusState private var isFocused: Bool
+
+    private var inputIsEmpty: Bool {
+        apiUrlInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
 
     var body: some View {
-        NavigationView {
-            VStack(spacing: 20) {
-                Text("请输入后端 API 地址")
-                    .font(.headline)
-                TextField("http://boxjs.com", text: $apiUrlInput)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .autocapitalization(.none)
-                    .disableAutocorrection(true)
-                    .padding(.horizontal)
-                Text("BoxJs 默认地址为 http://boxjs.com\n请确保代理工具正在运行")
-                    .font(.caption)
+        VStack(spacing: 0) {
+            Spacer()
+
+            VStack(spacing: 16) {
+                Image("BoxJs")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 80, height: 80)
+                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                    .shadow(color: .black.opacity(0.1), radius: 8, y: 4)
+
+                Text("NEBox")
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
+
+                Text("BoxJs 客户端")
+                    .font(.subheadline)
                     .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
             }
-            .padding()
-            .navigationTitle("配置 API")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("取消") { onCancel() }
+
+            Spacer().frame(height: 48)
+
+            VStack(spacing: 16) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("后端地址")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(.secondary)
+
+                    HStack(spacing: 10) {
+                        Image(systemName: "link")
+                            .foregroundColor(.secondary)
+                            .font(.system(size: 14))
+                        TextField("http://boxjs.com", text: $apiUrlInput)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                            .font(.system(size: 15))
+                            .focused($isFocused)
+                        if !apiUrlInput.isEmpty {
+                            Button {
+                                apiUrlInput = ""
+                            } label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundColor(Color(.tertiaryLabel))
+                                    .font(.system(size: 14))
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
+                    .background(Color(.tertiarySystemFill))
+                    .cornerRadius(10)
                 }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("保存") { onSave() }
-                        .disabled(apiUrlInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+
+                Button {
+                    apiUrlInput = "http://boxjs.com"
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "wand.and.stars")
+                            .font(.system(size: 11))
+                        Text("使用默认地址")
+                            .font(.system(size: 12))
+                    }
+                    .foregroundColor(.accentColor)
                 }
+                .opacity(apiUrlInput.isEmpty ? 1 : 0)
+                .animation(.easeInOut(duration: 0.2), value: apiUrlInput.isEmpty)
+
+                Button(action: onConnect) {
+                    HStack {
+                        Image(systemName: "bolt.fill")
+                            .font(.system(size: 14))
+                        Text("连接")
+                            .font(.system(size: 16, weight: .semibold))
+                    }
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .fill(inputIsEmpty ? Color.gray.opacity(0.4) : Color.accentColor)
+                    )
+                }
+                .disabled(inputIsEmpty)
             }
+            .padding(24)
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(Color(.secondarySystemGroupedBackground))
+            )
+            .padding(.horizontal, 24)
+
+            Spacer().frame(height: 16)
+
+            Text("请确保代理工具正在运行")
+                .font(.system(size: 12))
+                .foregroundColor(Color(.tertiaryLabel))
+
+            Spacer()
         }
+        .background(Color(.systemGroupedBackground).ignoresSafeArea())
     }
 }
 
 struct ContentView: View {
     @EnvironmentObject var apiManager: ApiManager
     @EnvironmentObject var boxModel: BoxJsViewModel
-    @State private var showApiConfigSheet = false
     @State private var apiUrlInput: String = ""
     @State private var showSearch = false
     @State private var showVersionSheet = false
@@ -56,18 +132,16 @@ struct ContentView: View {
     var body: some View {
         VStack {
             if !apiManager.isApiUrlSet() {
-                Text("请配置后端 API 地址")
-                    .padding()
-
-                Button(action: {
-                    showApiConfigSheet = true
-                }) {
-                    Text("配置 API 地址")
-                        .padding()
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(8)
-                }
+                WelcomeSetupView(
+                    apiUrlInput: $apiUrlInput,
+                    onConnect: {
+                        let trimmed = apiUrlInput.trimmingCharacters(in: .whitespacesAndNewlines)
+                        if !trimmed.isEmpty {
+                            apiManager.apiUrl = trimmed
+                            boxModel.fetchData()
+                        }
+                    }
+                )
             } else {
                 TabView {
                         HomeView(showSearch: $showSearch)
@@ -98,23 +172,6 @@ struct ContentView: View {
                     }
                 }
             }
-        }
-        .sheet(isPresented: $showApiConfigSheet) {
-            ApiConfigView(
-                apiUrlInput: $apiUrlInput,
-                onSave: {
-                    let trimmed = apiUrlInput.trimmingCharacters(in: .whitespacesAndNewlines)
-                    if !trimmed.isEmpty {
-                        apiManager.apiUrl = trimmed
-                        boxModel.fetchData()
-                    }
-                    showApiConfigSheet = false
-                },
-                onCancel: {
-                    apiUrlInput = ""
-                    showApiConfigSheet = false
-                }
-            )
         }
         .sheet(isPresented: $showVersionSheet) {
             versionSheet

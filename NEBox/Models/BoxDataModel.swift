@@ -82,6 +82,29 @@ struct Setting: Codable {
     let placeholder: String?
     let type: String?
     let items: [RadioItem]?
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(String.self, forKey: .id)
+        name = try c.decodeIfPresent(String.self, forKey: .name)
+        val = try c.decodeIfPresent(AnyCodable.self, forKey: .val)
+        desc = try c.decodeIfPresent(String.self, forKey: .desc)
+        placeholder = try c.decodeIfPresent(String.self, forKey: .placeholder)
+        type = try c.decodeIfPresent(String.self, forKey: .type)
+
+        // items can be [RadioItem] or a "key@label\n..." string
+        if let arr = try? c.decodeIfPresent([RadioItem].self, forKey: .items) {
+            items = arr
+        } else if let str = try? c.decodeIfPresent(String.self, forKey: .items) {
+            items = str.components(separatedBy: "\n").compactMap { line in
+                let parts = line.components(separatedBy: "@")
+                guard parts.count >= 2 else { return nil }
+                return RadioItem(key: parts[0], label: parts[1])
+            }
+        } else {
+            items = nil
+        }
+    }
 }
 
 struct AppModel: Codable, Identifiable {

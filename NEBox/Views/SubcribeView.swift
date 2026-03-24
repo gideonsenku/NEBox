@@ -15,6 +15,7 @@ struct SubcribeView: View {
     @State private var items: [AppSubCache] = []
     @State private var isEditMode: Bool = false
     @State private var isDragging: Bool = false
+    @State private var isScrolled: Bool = false
 
     var body: some View {
         NavigationView {
@@ -28,12 +29,15 @@ struct SubcribeView: View {
                         items: $items,
                         boxModel: boxModel,
                         isEditMode: $isEditMode,
-                        isDragging: $isDragging
+                        isDragging: $isDragging,
+                        onScroll: { offset in isScrolled = offset < -5 }
                     )
                         .ignoresSafeArea(edges: .bottom)
                 }
             }
             .navigationTitle("应用订阅")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(isScrolled ? .visible : .hidden, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     if !items.isEmpty {
@@ -96,6 +100,7 @@ struct SubCollectionViewWrapper: UIViewRepresentable {
     let boxModel: BoxJsViewModel
     @Binding var isEditMode: Bool
     @Binding var isDragging: Bool
+    var onScroll: ((CGFloat) -> Void)? = nil
 
     func makeUIView(context: Context) -> UICollectionView {
         let layout = UICollectionViewFlowLayout()
@@ -157,7 +162,8 @@ struct SubCollectionViewWrapper: UIViewRepresentable {
             items: $items,
             boxModel: boxModel,
             isEditMode: $isEditMode,
-            isDragging: $isDragging
+            isDragging: $isDragging,
+            onScroll: onScroll
         )
     }
 
@@ -166,6 +172,7 @@ struct SubCollectionViewWrapper: UIViewRepresentable {
         let boxModel: BoxJsViewModel
         @Binding var isEditMode: Bool
         @Binding var isDragging: Bool
+        var onScroll: ((CGFloat) -> Void)?
         weak var collectionView: UICollectionView?
         weak var reorderLongPressGesture: UILongPressGestureRecognizer?
         var lastRenderedIds: [String] = []
@@ -175,12 +182,18 @@ struct SubCollectionViewWrapper: UIViewRepresentable {
             items: Binding<[AppSubCache]>,
             boxModel: BoxJsViewModel,
             isEditMode: Binding<Bool>,
-            isDragging: Binding<Bool>
+            isDragging: Binding<Bool>,
+            onScroll: ((CGFloat) -> Void)?
         ) {
             _items = items
             self.boxModel = boxModel
             _isEditMode = isEditMode
             _isDragging = isDragging
+            self.onScroll = onScroll
+        }
+
+        func scrollViewDidScroll(_ scrollView: UIScrollView) {
+            onScroll?(-scrollView.contentOffset.y)
         }
 
         func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
