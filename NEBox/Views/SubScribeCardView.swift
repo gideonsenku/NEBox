@@ -20,7 +20,7 @@ struct SubScribeCardView: View {
             HeaderView(item: item, isLoading: isLoading)
         }
         .padding()
-        .background(Color.white)
+        .background(Color(.systemBackground))
         .onTapGesture {
             copyToClipboard(text: item.url ?? "")
             toastManager.showToast(message: "复制成功!")
@@ -49,6 +49,15 @@ struct HeaderView: View {
                     HStack {
                         Text("\(item.name)(\(item.apps.count))")
                             .font(.system(size: 16))
+                        if item.isErr == true {
+                            Text("格式错误")
+                                .font(.system(size: 10))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 5)
+                                .padding(.vertical, 2)
+                                .background(Color.pink)
+                                .cornerRadius(4)
+                        }
                         Spacer()
                         if isLoading {
                             ProgressView()

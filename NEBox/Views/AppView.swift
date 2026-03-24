@@ -29,8 +29,9 @@ struct SubAppView: View {
                 }
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
-                        Text("\(item.name)")
+                        Text("\(item.name) (\(item.id))")
                             .font(.system(size: 16))
+                            .lineLimit(1)
                         Spacer()
                     }
                     
@@ -116,8 +117,8 @@ struct CustomDisclosureGroup: View {
             }
         )
         .padding()
-        .foregroundColor(.black)
-        .background(Color.white)
+        .foregroundColor(.primary)
+        .background(Color(.systemBackground))
         .cornerRadius(10)
         .shadow(radius: 5)
         .padding(.horizontal, 16)
@@ -130,6 +131,7 @@ struct AppView: View {
     var body: some View {
         NavigationView {
             ZStack {
+                BackgroundView(urlString: boxModel.boxData.bgImgUrl)
                 ScrollView() {
                     if !boxModel.favApps.isEmpty {
                         CustomDisclosureGroup(title: "收藏应用", items: boxModel.favApps, sysIcon: "star.circle.fill")
@@ -147,10 +149,10 @@ struct AppView: View {
                         CustomDisclosureGroup(title: "系统应用", items: boxModel.boxData.displaySysApps, sysIcon: "gearshape.circle.fill")
                     }
                 }
+                .refreshable {
+                    boxModel.fetchData()
+                }
             }
-            .background(
-                BackgroundView(imageUrl: URL(string: boxModel.boxData.bgImgUrl))
-            )
             .navigationBarTitle("应用列表")
         }
     }

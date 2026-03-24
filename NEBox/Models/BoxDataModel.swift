@@ -128,6 +128,24 @@ struct UserConfig: Codable {
     let favapps: [String]
     let bgimgs: String?
     let bgimg: String?
+    let name: String?
+    let icon: String?
+    let viewkeys: [String]?
+    let gist_cache_key: [String]?
+    // Preferences
+    let theme: String?
+    let isTransparentIcons: Bool?
+    let isWallpaperMode: Bool?
+    let isMute: Bool?
+    let isMuteQueryAlert: Bool?
+    let isHideHelp: Bool?
+    let isHideBoxIcon: Bool?
+    let isHideMyTitle: Bool?
+    let isHideCoding: Bool?
+    let isHideRefresh: Bool?
+    let isDebugWeb: Bool?
+    let lang: String?
+    let httpapi: String?
 }
 
 struct AppSub: Codable {
@@ -145,22 +163,37 @@ struct SessionData: Codable {
     let val: AnyCodable?
 }
 
-struct Session: Codable {
+struct Session: Codable, Identifiable {
     let id: String
-    let name: String
+    var name: String
     let enable: Bool
     let appId: String
     let appName: String
     let createTime: String
-    let datas: [SessionData]
+    var datas: [SessionData]
+}
+
+struct GlobalBackup: Codable, Identifiable {
+    let id: String
+    var name: String
+    let createTime: String?
+    let tags: [String]?
+    var bak: AnyCodable?
+}
+
+struct DataQueryResp: Codable {
+    let val: AnyCodable?
 }
 
 struct BoxDataResp: Codable {
     let appSubCaches: [String: AppSubCache]
     let datas: [String: AnyCodable?]
-    let sessions: [Session]
+    var sessions: [Session]
     let usercfgs: UserConfig?
     let sysapps: [AppModel]
+    let globalbaks: [GlobalBackup]?
+    let curSessions: [String: String]?
+    let syscfgs: SysCfgs?
     
     var appsubs: [AppSub] {
         return usercfgs?.appsubs ?? []
@@ -256,12 +289,27 @@ struct BoxDataResp: Codable {
         return favapps
     }
     
-    var bgImgUrl: String {
-        let imgGroup = usercfgs?.bgimgs?.split(separator: "\n")
-        let imgStr = usercfgs?.bgimg
-        return "https://64.media.tumblr.com/451bca19ad0b695c08b54b4287e4f935/tumblr_nb70h5f6XN1rnbw6mo2_r1_1280.gifv"
+    var bgImgUrl: String? {
+        guard let bgimg = usercfgs?.bgimg, !bgimg.isEmpty else { return nil }
+        return bgimg
     }
     
+    func loadAppDataInfo(for app: AppModel) -> AppDataInfo {
+        var appDatas: [SessionData] = []
+        if let keys = app.keys {
+            for key in keys {
+                let val = datas[key] ?? nil
+                appDatas.append(SessionData(key: key, val: val))
+            }
+        }
+        let appSessions = sessions.filter { $0.appId == app.id }
+        var curSession: Session? = nil
+        if let curSessionId = curSessions?[app.id] {
+            curSession = sessions.first { $0.id == curSessionId }
+        }
+        return AppDataInfo(datas: appDatas, sessions: appSessions, curSession: curSession)
+    }
+
     func loadAppBaseInfo(_ app: AppModel) -> AppModel {
         var icons = app.icons.isEmpty ? ["https://raw.githubusercontent.com/Orz-3/mini/master/Alpha/appstore.png", "https://raw.githubusercontent.com/Orz-3/mini/master/Color/appstore.png"] : app.icons
         
@@ -277,7 +325,35 @@ struct BoxDataResp: Codable {
 }
 
 
+struct AppDataInfo {
+    var datas: [SessionData]
+    var sessions: [Session]
+    var curSession: Session?
+}
+
 struct ScriptResp: Codable {
     var exception: String?
     var output: String?
+}
+
+struct VersionNote: Codable {
+    let name: String
+    let descs: [String]
+}
+
+struct VersionInfo: Codable, Identifiable {
+    let version: String
+    let notes: [VersionNote]
+    var id: String { version }
+}
+
+struct VersionsResp: Codable {
+    let releases: [VersionInfo]?
+}
+
+// Add syscfgs to BoxDataResp
+struct SysCfgs: Codable {
+    let version: String?
+    let env: String?
+    let versionType: String?
 }

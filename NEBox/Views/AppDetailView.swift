@@ -9,40 +9,145 @@ import SwiftUI
 import UIKit
 import WebKit
 import AnyCodable
+import SDWebImageSwiftUI
 
-struct HTMLTextView: UIViewRepresentable {
+struct HTMLWebView: UIViewRepresentable {
     let html: String
-    
-    func makeUIView(context: Context) -> UILabel {
-        let label = UILabel()
-        label.numberOfLines = 0 // Allow multiple lines
-        label.lineBreakMode = .byWordWrapping
-        label.backgroundColor = .clear
-        return label
+    @Binding var height: CGFloat
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(height: $height)
     }
-    
-    func updateUIView(_ uiView: UILabel, context: Context) {
-        guard let data = html.data(using: .utf8) else {
-            print("Failed to encode HTML string")
-            return
+
+    func makeUIView(context: Context) -> WKWebView {
+        let config = WKWebViewConfiguration()
+        let userController = WKUserContentController()
+        userController.add(context.coordinator, name: "sizeNotify")
+        config.userContentController = userController
+
+        let webView = WKWebView(frame: .zero, configuration: config)
+        webView.scrollView.isScrollEnabled = false
+        webView.scrollView.bounces = false
+        webView.isOpaque = false
+        webView.backgroundColor = .clear
+        webView.scrollView.backgroundColor = .clear
+        webView.navigationDelegate = context.coordinator
+        return webView
+    }
+
+    func updateUIView(_ webView: WKWebView, context: Context) {
+        let wrapped = """
+        <!DOCTYPE html>
+        <html>
+        <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body {
+                font-family: -apple-system, sans-serif;
+                font-size: 14px;
+                line-height: 1.5;
+                color: #666;
+                background: transparent;
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+            }
+            img { max-width: 100%; height: auto; }
+            a { color: #007AFF; }
+        </style>
+        </head>
+        <body>
+        \(html)
+        <script>
+            function notifySize() {
+                var h = document.body.scrollHeight;
+                window.webkit.messageHandlers.sizeNotify.postMessage(h);
+            }
+            window.onload = notifySize;
+            new MutationObserver(notifySize).observe(document.body, { childList: true, subtree: true });
+            // fallback
+            setTimeout(notifySize, 200);
+            setTimeout(notifySize, 500);
+        </script>
+        </body>
+        </html>
+        """
+        webView.loadHTMLString(wrapped, baseURL: nil)
+    }
+
+    class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
+        @Binding var height: CGFloat
+
+        init(height: Binding<CGFloat>) {
+            _height = height
         }
-        
-        do {
-            let attributedString = try NSAttributedString(
-                data: data,
-                options: [.documentType: NSAttributedString.DocumentType.html,
-                          .characterEncoding: String.Encoding.utf8.rawValue],
-                documentAttributes: nil)
-            uiView.attributedText = attributedString
-            // Adjust the height of UILabel based on content
-            let size = uiView.sizeThatFits(CGSize(width: uiView.frame.width, height: CGFloat.greatestFiniteMagnitude))
-            uiView.frame.size.height = size.height
-        } catch {
-            print("Failed to parse HTML: \(error)")
+
+        func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+            if message.name == "sizeNotify", let h = message.body as? CGFloat {
+                DispatchQueue.main.async {
+                    if h > 0 && h != self.height {
+                        self.height = h
+                    }
+                }
+            }
+        }
+
+        func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+            if navigationAction.navigationType == .linkActivated, let url = navigationAction.request.url {
+                UIApplication.shared.open(url)
+                decisionHandler(.cancel)
+            } else {
+                decisionHandler(.allow)
+            }
         }
     }
 }
 
+struct HTMLTextView: View {
+    let html: String
+    @State private var webViewHeight: CGFloat = 1
+
+    var body: some View {
+        HTMLWebView(html: html, height: $webViewHeight)
+            .frame(height: webViewHeight)
+    }
+}
+
+
+struct AppHeaderView: View {
+    let app: AppModel
+
+    var body: some View {
+        HStack(spacing: 12) {
+            if let iconUrl = app.icon, let url = URL(string: iconUrl) {
+                WebImage(url: url)
+                    .resizable()
+                    .frame(width: 56, height: 56)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .shadow(color: Color.black.opacity(0.1), radius: 3, x: 0, y: 1)
+            }
+            VStack(alignment: .leading, spacing: 4) {
+                Text(app.name)
+                    .font(.system(size: 17, weight: .semibold))
+                Text(app.author)
+                    .font(.system(size: 13))
+                    .foregroundColor(.secondary)
+                if let repo = app.repo, !repo.isEmpty {
+                    Text(repo)
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                }
+            }
+            Spacer()
+        }
+        .frame(width: UIScreen.main.bounds.width - 60, alignment: .leading)
+        .padding(12)
+        .background(Color(.systemBackground))
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.08), radius: 5, x: 0, y: 2)
+    }
+}
 
 struct AppDescCardView: View {
     let app: AppModel?
@@ -76,7 +181,7 @@ struct AppDescCardView: View {
                 }
             }
             .padding(12)
-            .background(Color.white)
+            .background(Color(.systemBackground))
             .cornerRadius(12)
             .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
         }
@@ -85,10 +190,11 @@ struct AppDescCardView: View {
 
 struct AppScriptsView: View {
     let scripts: [RunScript]
+    var onScriptResult: ((ScriptResp) -> Void)? = nil
     @State private var isLoading = false
     @State private var loadingScript: String? = nil
     @EnvironmentObject var boxModel: BoxJsViewModel
-    
+
     var body: some View {
         if scripts.isEmpty != true {
             VStack(alignment: .leading) {
@@ -113,9 +219,11 @@ struct AppScriptsView: View {
                                         loadingScript = script.script
                                         do {
                                             let resp = try await ApiRequest.runScript(url: script.script)
-                                            print(resp)
-                                            // 获取最新的数据
-                                            await boxModel.fetchData()
+                                            let isMute = boxModel.boxData.usercfgs?.isMute ?? false
+                                            if !isMute {
+                                                onScriptResult?(resp)
+                                            }
+                                            boxModel.fetchData()
                                         } catch {
                                             print("Error running script: \(error)")
                                         }
@@ -132,7 +240,7 @@ struct AppScriptsView: View {
             }
             .frame(width: UIScreen.main.bounds.width - 60, alignment: .leading)
             .padding(12)
-            .background(Color.white)
+            .background(Color(.systemBackground))
             .cornerRadius(12)
             .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
         }
@@ -179,6 +287,38 @@ struct AppSettingsView: View {
         )
     }
     
+    // 动态绑定到 Double 值
+    private func doubleBinding(for index: Int) -> Binding<Double> {
+        return Binding<Double>(
+            get: {
+                if let val = settings[index].val?.value {
+                    if let d = val as? Double { return d }
+                    if let n = val as? Int { return Double(n) }
+                    if let s = val as? String, let d = Double(s) { return d }
+                }
+                return 0
+            },
+            set: { newValue in
+                settings[index].val = AnyCodable(newValue)
+            }
+        )
+    }
+
+    // 动态绑定到 Color 值
+    private func colorBinding(for index: Int) -> Binding<Color> {
+        return Binding<Color>(
+            get: {
+                if let hex = settings[index].val?.value as? String, !hex.isEmpty {
+                    return Color(hex: hex)
+                }
+                return .blue
+            },
+            set: { newValue in
+                settings[index].val = AnyCodable(newValue.toHex())
+            }
+        )
+    }
+
     // 动态绑定到 [String] 值
     private func arrayBinding(for index: Int) -> Binding<[String]> {
         return Binding<[String]>(
@@ -236,7 +376,7 @@ struct AppSettingsView: View {
                                 ZStack(alignment: .topLeading) {
                                     TextEditor(text: binding(for: index))
                                         .padding(4)
-                                        .background(Color.white)
+                                        .background(Color(.systemBackground))
                                         .cornerRadius(8)
                                         .overlay(
                                             RoundedRectangle(cornerRadius: 8)
@@ -308,6 +448,54 @@ struct AppSettingsView: View {
                                         .foregroundColor(Color(UIColor.systemGray2))
                                 }
                             }
+                        case "slider":
+                            VStack(alignment: .leading, spacing: 2) {
+                                HStack {
+                                    Text(setting.name ?? "")
+                                        .font(.system(size: 14))
+                                        .lineLimit(1)
+                                    Spacer()
+                                    Text(String(format: "%.0f", doubleBinding(for: index).wrappedValue))
+                                        .font(.system(size: 13))
+                                        .foregroundColor(.secondary)
+                                }
+                                Slider(value: doubleBinding(for: index), in: 0...100, step: 1)
+                                if let desc = setting.desc, desc != "" {
+                                    Text(desc)
+                                        .font(.system(size: 12))
+                                        .foregroundColor(Color(UIColor.systemGray2))
+                                }
+                            }
+                        case "colorpicker":
+                            VStack(alignment: .leading, spacing: 2) {
+                                HStack {
+                                    Text(setting.name ?? "")
+                                        .font(.system(size: 14))
+                                        .lineLimit(1)
+                                    Spacer()
+                                    ColorPicker("", selection: colorBinding(for: index))
+                                        .labelsHidden()
+                                }
+                                if let desc = setting.desc, desc != "" {
+                                    Text(desc)
+                                        .font(.system(size: 12))
+                                        .foregroundColor(Color(UIColor.systemGray2))
+                                }
+                            }
+                        case "number":
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(setting.name ?? "")
+                                    .font(.system(size: 14))
+                                    .lineLimit(1)
+                                TextField(setting.placeholder ?? "请输入数字", text: binding(for: index))
+                                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                                    .keyboardType(.decimalPad)
+                                if let desc = setting.desc, desc != "" {
+                                    Text(desc)
+                                        .font(.system(size: 12))
+                                        .foregroundColor(Color(UIColor.systemGray2))
+                                }
+                            }
                         default:
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(setting.name ?? "")
@@ -357,7 +545,7 @@ struct AppSettingsView: View {
             }
             .frame(width: UIScreen.main.bounds.width - 60, alignment: .leading)
             .padding(12)
-            .background(Color.white)
+            .background(Color(.systemBackground))
             .cornerRadius(12)
             .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
             .onAppear(perform: {
@@ -369,18 +557,45 @@ struct AppSettingsView: View {
 
 struct AppDetailView: View {
     @State var app: AppModel?
-    
+
     @EnvironmentObject var boxModel: BoxJsViewModel
     @EnvironmentObject var toastManager: ToastManager
-    
+
+    @State private var showImportSession = false
+    @State private var importSessionText = ""
+    @State private var showScriptResult = false
+    @State private var scriptResult: ScriptResp? = nil
+
+    var appDataInfo: AppDataInfo {
+        guard let app = app else { return AppDataInfo(datas: [], sessions: [], curSession: nil) }
+        return boxModel.boxData.loadAppDataInfo(for: app)
+    }
+
     var body: some View {
         if let app = app {
             ZStack {
+                BackgroundView(urlString: boxModel.boxData.bgImgUrl)
                 ScrollView {
                     VStack(spacing: 16) {
+                        // App header
+                        AppHeaderView(app: app)
+
                         AppDescCardView(app: app)
-                        AppScriptsView(scripts: app.scripts ?? [])
+                        AppScriptsView(scripts: app.scripts ?? []) { resp in
+                            scriptResult = resp
+                            showScriptResult = true
+                        }
                         AppSettingsView(settings: bindingForSettings())
+
+                        // Session data section
+                        if app.keys != nil && !appDataInfo.datas.isEmpty {
+                            appSessionDataCard(app: app)
+                        }
+
+                        // Session list
+                        ForEach(Array(appDataInfo.sessions.enumerated()), id: \.element.id) { index, session in
+                            sessionCard(session: session, index: index, app: app)
+                        }
                     }
                     .padding(.bottom, 16)
                     .toolbar {
@@ -391,11 +606,11 @@ struct AppDetailView: View {
                                         await boxModel.saveData(params: (app.settings ?? []).map { setting in
                                             let transformedVal: AnyCodable = {
                                                 if setting.type == "checkboxes", let arrayVal = setting.val?.value as? [String] {
-                                                    return AnyCodable(arrayVal.joined(separator: ","))  // 将数组转换为字符串并封装为 AnyCodable
+                                                    return AnyCodable(arrayVal.joined(separator: ","))
                                                 } else if let val = setting.val {
                                                     return val
                                                 } else {
-                                                    return AnyCodable(nil)  // 如果 val 是 nil，返回 AnyCodable(nil)
+                                                    return AnyCodable(nil)
                                                 }
                                             }()
                                             return SessionData(key: setting.id, val: transformedVal)
@@ -403,17 +618,26 @@ struct AppDetailView: View {
                                         toastManager.showToast(message: "保存成功!")
                                     }
                                 } label: {
-                                    Label("Run Script", systemImage: "externaldrive.fill.badge.checkmark")
+                                    Label("保存", systemImage: "externaldrive.fill.badge.checkmark")
                                 }
-                                
+
                                 if let script = app.script {
                                     Button {
                                         Task {
-                                            let resp = try await ApiRequest.runScript(url: script)
-                                            print(resp)
+                                            do {
+                                                let resp = try await ApiRequest.runScript(url: script)
+                                                let isMute = boxModel.boxData.usercfgs?.isMute ?? false
+                                                if !isMute {
+                                                    scriptResult = resp
+                                                    showScriptResult = true
+                                                }
+                                                boxModel.fetchData()
+                                            } catch {
+                                                print("Error: \(error)")
+                                            }
                                         }
                                     } label: {
-                                        Label("Run Script", systemImage: "play.circle.fill")
+                                        Label("运行", systemImage: "play.circle.fill")
                                     }
                                 }
                             }
@@ -423,31 +647,290 @@ struct AppDetailView: View {
                 }
             }
             .frame(width: UIScreen.main.bounds.width)
-            .background(
-                BackgroundView(imageUrl: URL(string: boxModel.boxData.bgImgUrl))
-            )
+                        .sheet(isPresented: $showImportSession) {
+                importSessionSheet(app: app)
+            }
+            .sheet(isPresented: $showScriptResult) {
+                scriptResultSheet
+            }
         }
     }
-    
-    // 创建一个处理 Optional settings 的绑定函数
+
+    // MARK: - Current Session Data Card
+
+    private func appSessionDataCard(app: AppModel) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("当前会话")
+                    .font(.system(size: 14))
+                    .foregroundColor(.gray)
+                if let curSession = appDataInfo.curSession {
+                    Text(curSession.name)
+                        .font(.system(size: 13))
+                        .foregroundColor(.accentColor)
+                }
+                Spacer()
+
+                Menu {
+                    Button {
+                        let encoder = JSONEncoder()
+                        encoder.outputFormatting = .prettyPrinted
+                        if let data = try? encoder.encode(app),
+                           let str = String(data: data, encoding: .utf8) {
+                            copyToClipboard(text: str)
+                            toastManager.showToast(message: "已复制")
+                        }
+                    } label: {
+                        Label("复制", systemImage: "doc.on.doc")
+                    }
+
+                    Button {
+                        showImportSession = true
+                    } label: {
+                        Label("导入", systemImage: "square.and.arrow.down")
+                    }
+
+                    Button {
+                        copyAppDatas()
+                    } label: {
+                        Label("复制数据", systemImage: "doc.on.clipboard")
+                    }
+
+                    Divider()
+
+                    Button(role: .destructive) {
+                        Task {
+                            await boxModel.clearAppDatas(app: app)
+                            toastManager.showToast(message: "已清除")
+                        }
+                    } label: {
+                        Label("清除数据", systemImage: "trash")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                        .foregroundColor(.secondary)
+                }
+            }
+
+            ForEach(appDataInfo.datas, id: \.key) { data in
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(data.key)
+                            .font(.system(size: 13, weight: .medium))
+                        Text(dataValString(data.val) .isEmpty ? "无数据" : dataValString(data.val))
+                            .font(.system(size: 12))
+                            .foregroundColor(.secondary)
+                            .lineLimit(2)
+                    }
+                    Spacer()
+                    Button {
+                        Task {
+                            await boxModel.clearAppDatas(app: app, key: data.key)
+                            toastManager.showToast(message: "已清除")
+                        }
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 11))
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .padding(.vertical, 2)
+            }
+
+            Divider()
+
+            HStack {
+                Spacer()
+                Button {
+                    Task {
+                        await boxModel.saveAppSession(app: app, datas: appDataInfo.datas)
+                        toastManager.showToast(message: "已克隆会话")
+                    }
+                } label: {
+                    Text("克隆")
+                        .font(.system(size: 13))
+                        .foregroundColor(.accentColor)
+                }
+            }
+        }
+        .frame(width: UIScreen.main.bounds.width - 60, alignment: .leading)
+        .padding(12)
+        .background(Color(.systemBackground))
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
+    }
+
+    // MARK: - Session Card
+
+    private func sessionCard(session: Session, index: Int, app: AppModel) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                let isCurrent = appDataInfo.curSession?.id == session.id
+                Text("#\(index + 1) \(session.name)")
+                    .font(.system(size: 14, weight: isCurrent ? .bold : .regular))
+                    .foregroundColor(isCurrent ? .accentColor : .primary)
+                Spacer()
+
+                Menu {
+                    Button(role: .destructive) {
+                        Task {
+                            await boxModel.delAppSession(sessionId: session.id)
+                            toastManager.showToast(message: "已删除")
+                        }
+                    } label: {
+                        Label("删除", systemImage: "trash")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                        .foregroundColor(.secondary)
+                }
+            }
+
+            ForEach(session.datas, id: \.key) { data in
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(data.key)
+                        .font(.system(size: 13, weight: .medium))
+                    Text(dataValString(data.val).isEmpty ? "无数据" : dataValString(data.val))
+                        .font(.system(size: 12))
+                        .foregroundColor(.secondary)
+                        .lineLimit(2)
+                }
+                .padding(.vertical, 1)
+            }
+
+            Divider()
+
+            HStack {
+                Text(session.createTime.prefix(19).replacingOccurrences(of: "T", with: " "))
+                    .font(.system(size: 11))
+                    .foregroundColor(.secondary)
+                Spacer()
+                Button {
+                    Task {
+                        await boxModel.useAppSession(sessionId: session.id, appId: app.id)
+                        toastManager.showToast(message: "已使用")
+                    }
+                } label: {
+                    Text("使用")
+                        .font(.system(size: 13))
+                        .foregroundColor(.accentColor)
+                }
+                Button {
+                    Task {
+                        await boxModel.linkAppSession(sessionId: session.id, appId: app.id)
+                        toastManager.showToast(message: "已关联")
+                    }
+                } label: {
+                    Text("关联")
+                        .font(.system(size: 13))
+                        .foregroundColor(.accentColor)
+                }
+            }
+        }
+        .frame(width: UIScreen.main.bounds.width - 80, alignment: .leading)
+        .padding(12)
+        .background(Color(.systemBackground))
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.08), radius: 4, x: 0, y: 2)
+        .padding(.leading, 20)
+    }
+
+    // MARK: - Import Session Sheet
+
+    private func importSessionSheet(app: AppModel) -> some View {
+        NavigationView {
+            Form {
+                Section(header: Text("导入会话"), footer: Text("粘贴会话数据 (JSON 格式)")) {
+                    TextEditor(text: $importSessionText)
+                        .frame(minHeight: 150)
+                }
+            }
+            .navigationTitle("导入会话")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("取消") {
+                        showImportSession = false
+                        importSessionText = ""
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("导入") {
+                        guard !importSessionText.isEmpty else { return }
+                        Task {
+                            await boxModel.impAppDatas(jsonString: importSessionText)
+                            toastManager.showToast(message: "导入成功!")
+                            showImportSession = false
+                            importSessionText = ""
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // MARK: - Script Result Sheet
+
+    private var scriptResultSheet: some View {
+        NavigationView {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 8) {
+                    if let resp = scriptResult {
+                        if let exception = resp.exception, !exception.isEmpty {
+                            Text(exception)
+                                .font(.system(size: 13, design: .monospaced))
+                                .foregroundColor(.red)
+                        } else if let output = resp.output, !output.isEmpty {
+                            Text(output)
+                                .font(.system(size: 13, design: .monospaced))
+                        } else {
+                            Text("无输出")
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+                .padding()
+            }
+            .navigationTitle("执行结果")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("关闭") { showScriptResult = false }
+                }
+            }
+        }
+    }
+
+    // MARK: - Helpers
+
     private func bindingForSettings() -> Binding<[Setting]> {
         return Binding<[Setting]>(
-            get: {
-                app?.settings ?? [] // 如果 app?.settings 是 nil，返回一个空数组
-            },
+            get: { app?.settings ?? [] },
             set: { newValue in
-                if app != nil {
-                    app!.settings = newValue // 如果 app 不为 nil，更新 settings
-                }
+                if app != nil { app!.settings = newValue }
             }
         )
     }
-    
-    private func presentSubscriptionAlert() {
-        showTextFieldAlert(title: "添加订阅", message: nil, placeholder: "输入订阅地址", confirmButtonTitle: "确定", cancelButtonTitle: "取消") { inputText in
-            Task {
-                // await boxModel.addAppSub(url: inputText)
-            }
+
+    private func dataValString(_ val: AnyCodable?) -> String {
+        guard let val = val else { return "" }
+        if let str = val.value as? String { return str }
+        let encoder = JSONEncoder()
+        if let data = try? encoder.encode(val), let str = String(data: data, encoding: .utf8) {
+            return str
+        }
+        return String(describing: val.value)
+    }
+
+    private func copyAppDatas() {
+        var result: [String: String] = [:]
+        for data in appDataInfo.datas {
+            result[data.key] = dataValString(data.val)
+        }
+        if let jsonData = try? JSONSerialization.data(withJSONObject: result),
+           let str = String(data: jsonData, encoding: .utf8) {
+            copyToClipboard(text: str)
+            toastManager.showToast(message: "已复制数据")
         }
     }
 }
