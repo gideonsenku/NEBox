@@ -32,6 +32,7 @@ class ApiManager: ObservableObject {
         didSet { UserDefaults.standard.set(selectedToolId, forKey: "selectedToolId") }
     }
 
+
     init() {
         self.apiUrl = UserDefaults.standard.string(forKey: "apiUrl")
         self.toolUrls = UserDefaults.standard.dictionary(forKey: "toolUrls") as? [String: String] ?? [:]

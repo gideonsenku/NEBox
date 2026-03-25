@@ -114,6 +114,15 @@ func fetchData() {
         }
     }
 
+    func reloadAllAppSub() async {
+        do {
+            let boxdata = try await ApiRequest.reloadAllAppSub()
+            await updateBoxData(boxdata)
+        } catch {
+            print("Error reloading all subs: \(error)")
+        }
+    }
+
     func addAppSub(url: String) async {
         do {
             let boxdata = try await ApiRequest.addAppSub(url: url)

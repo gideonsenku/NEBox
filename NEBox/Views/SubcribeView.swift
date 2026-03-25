@@ -116,7 +116,7 @@ struct SubcribeView: View {
                 }
                 Button {
                     Task {
-                        await boxModel.reloadAppSub(url: "")
+                        await boxModel.reloadAllAppSub()
                         toastManager.showToast(message: "已刷新全部订阅")
                     }
                 } label: {
@@ -226,6 +226,7 @@ struct SubCollectionViewWrapper: UIViewRepresentable {
     func updateUIView(_ uiView: UICollectionView, context: Context) {
         let prevIds = context.coordinator.lastRenderedIds
         let newIds = items.map { $0.id }
+        let newFingerprint = items.map { $0.id + $0.updateTime }
         let editChanged = context.coordinator.prevEditMode != isEditMode
 
         context.coordinator.items = items
@@ -234,8 +235,11 @@ struct SubCollectionViewWrapper: UIViewRepresentable {
         context.coordinator.prevEditMode = isEditMode
         context.coordinator.reorderGesture?.isEnabled = isEditMode
 
-        let needsReload = !isDragging && prevIds != newIds
-        if needsReload { context.coordinator.lastRenderedIds = newIds }
+        let needsReload = !isDragging && (prevIds != newIds || context.coordinator.lastFingerprint != newFingerprint)
+        if needsReload {
+            context.coordinator.lastRenderedIds = newIds
+            context.coordinator.lastFingerprint = newFingerprint
+        }
         DispatchQueue.main.async {
             if needsReload { uiView.reloadData() }
             if editChanged { context.coordinator.applyEditMode(to: uiView, enabled: isEditMode) }
@@ -257,7 +261,9 @@ struct SubCollectionViewWrapper: UIViewRepresentable {
         weak var collectionView: UICollectionView?
         weak var reorderGesture: UILongPressGestureRecognizer?
         var lastRenderedIds: [String] = []
+        var lastFingerprint: [String] = []
         var prevEditMode: Bool = false
+        private var refreshTimer: Timer?
 
         init(items: Binding<[AppSubCache]>, boxModel: BoxJsViewModel, isEditMode: Binding<Bool>, isDragging: Binding<Bool>, onTap: ((AppSubCache) -> Void)?) {
             _items = items
@@ -265,6 +271,24 @@ struct SubCollectionViewWrapper: UIViewRepresentable {
             _isEditMode = isEditMode
             _isDragging = isDragging
             self.onTap = onTap
+            super.init()
+            startRefreshTimer()
+        }
+
+        deinit {
+            refreshTimer?.invalidate()
+        }
+
+        private func startRefreshTimer() {
+            refreshTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
+                guard let self, let cv = self.collectionView else { return }
+                for cell in cv.visibleCells {
+                    guard let ip = cv.indexPath(for: cell),
+                          ip.item < self.items.count,
+                          let subCell = cell as? SubCardCell else { continue }
+                    subCell.configure(with: self.items[ip.item])
+                }
+            }
         }
 
         func collectionView(_: UICollectionView, numberOfItemsInSection _: Int) -> Int { items.count }
@@ -350,7 +374,7 @@ struct SubCollectionViewWrapper: UIViewRepresentable {
 
         @objc func handleRefresh(_ rc: UIRefreshControl) {
             Task {
-                await boxModel.reloadAppSub(url: "")
+                await boxModel.reloadAllAppSub()
                 await MainActor.run { rc.endRefreshing() }
             }
         }
