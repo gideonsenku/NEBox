@@ -1,8 +1,6 @@
 //
 //  SubcribeView.swift
-//  BoxJs
-//
-//  Created by Senku on 7/4/24.
+//  NEBox
 //
 
 import SwiftUI
@@ -15,386 +13,414 @@ struct SubcribeView: View {
     @State private var items: [AppSubCache] = []
     @State private var isEditMode: Bool = false
     @State private var isDragging: Bool = false
-    @State private var isScrolled: Bool = false
+    @State private var showAddAlert: Bool = false
+    @State private var addUrlInput: String = ""
+    @State private var selectedSub: AppSubCache? = nil
+    @State private var isNavActive: Bool = false
 
     var body: some View {
-        NavigationView {
-            ZStack {
-                BackgroundView(urlString: boxModel.boxData.bgImgUrl)
+        NavigationStack {
+            ZStack(alignment: .top) {
+                // Gradient background — matches HomeView
+                LinearGradient(
+                    colors: [Color(hex: "#EEF0FA"), Color(hex: "#F0EDF8"), Color(hex: "#F5F0F8")],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
 
-                if items.isEmpty {
-                    emptyState
-                } else {
-                    SubCollectionViewWrapper(
-                        items: $items,
-                        boxModel: boxModel,
-                        isEditMode: $isEditMode,
-                        isDragging: $isDragging,
-                        onScroll: { offset in isScrolled = offset < -5 }
-                    )
+                VStack(spacing: 0) {
+                    // Placeholder to push content below nav bar
+                    Color.clear.frame(height: 56)
+
+                    if items.isEmpty {
+                        emptyState
+                    } else {
+                        SubCollectionViewWrapper(
+                            items: $items,
+                            boxModel: boxModel,
+                            isEditMode: $isEditMode,
+                            isDragging: $isDragging,
+                            onTap: { sub in
+                                selectedSub = sub
+                                isNavActive = true
+                            }
+                        )
                         .ignoresSafeArea(edges: .bottom)
-                }
-            }
-            .navigationTitle("应用订阅")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(isScrolled ? .visible : .hidden, for: .navigationBar)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    if !items.isEmpty {
-                        Button {
-                            isEditMode.toggle()
-                        } label: {
-                            Text(isEditMode ? "完成" : "编辑")
-                                .font(.system(size: 15))
-                        }
                     }
                 }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    HStack(spacing: 12) {
-                        Button {
-                            Task {
-                                await boxModel.reloadAppSub(url: "")
-                                toastManager.showToast(message: "已刷新全部订阅")
-                            }
-                        } label: {
-                            Image(systemName: "arrow.triangle.2.circlepath")
-                        }
-                        Button {
-                            showTextFieldAlert(title: "添加订阅", message: nil, placeholder: "输入订阅地址", confirmButtonTitle: "确定", cancelButtonTitle: "取消") { inputText in
-                                Task {
-                                    await boxModel.addAppSub(url: inputText)
-                                }
-                            }
-                        } label: {
-                            Image(systemName: "plus")
-                        }
-                    }
+
+                // Nav bar always on top — solid background covers scrolled cells
+                VStack {
+                    navBar
+                        .background(Color(hex: "#EEF0FA").ignoresSafeArea())
+                    Spacer()
                 }
             }
+            .toolbar(.hidden, for: .navigationBar)
+            .toolbarBackground(.hidden, for: .navigationBar)
+            .navigationDestination(isPresented: $isNavActive) {
+                SubDetailView(sub: selectedSub)
+            }
+        }
+        .alert("添加订阅", isPresented: $showAddAlert) {
+            TextField("输入订阅地址", text: $addUrlInput)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+            Button("确定") {
+                let url = addUrlInput.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !url.isEmpty {
+                    Task { await boxModel.addAppSub(url: url) }
+                }
+            }
+            Button("取消", role: .cancel) {}
         }
         .onReceive(boxModel.$boxData) { data in
             if !isDragging {
-                items = data.displayAppSubs
+                DispatchQueue.main.async { items = data.displayAppSubs }
             }
         }
+    }
+
+    // MARK: - Nav Bar
+
+    private var navBar: some View {
+        HStack(spacing: 0) {
+            // Left: page identity (mirrors HomeView's tool switcher position)
+            HStack(spacing: 8) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(Color(hex: "#E8EAF4"))
+                        .frame(width: 36, height: 36)
+                    Image(systemName: "square.stack.fill")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(Color(hex: "#002FA7"))
+                }
+                Text("应用订阅")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(Color(hex: "#1A1918"))
+            }
+
+            Spacer()
+
+            // Right: actions
+            HStack(spacing: 16) {
+                if !items.isEmpty {
+                    Button {
+                        isEditMode.toggle()
+                    } label: {
+                        Text(isEditMode ? "完成" : "编辑")
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundColor(Color(hex: "#002FA7"))
+                    }
+                }
+                Button {
+                    Task {
+                        await boxModel.reloadAppSub(url: "")
+                        toastManager.showToast(message: "已刷新全部订阅")
+                    }
+                } label: {
+                    Image(systemName: "arrow.triangle.2.circlepath")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(Color(hex: "#002FA7"))
+                }
+                Button {
+                    addUrlInput = ""
+                    showAddAlert = true
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.system(size: 17, weight: .medium))
+                        .foregroundColor(Color(hex: "#002FA7"))
+                }
+            }
+        }
+        .frame(height: 56)
+        .padding(.horizontal, 20)
     }
 
     // MARK: - Empty State
 
     private var emptyState: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 20) {
             Spacer()
-            Image(systemName: "tray")
-                .font(.system(size: 48))
-                .foregroundColor(Color(.tertiaryLabel))
-            Text("暂无订阅")
-                .font(.headline)
-                .foregroundColor(.secondary)
+            ZStack {
+                Circle()
+                    .fill(Color(hex: "#ECEEF4"))
+                    .frame(width: 80, height: 80)
+                Image(systemName: "tray")
+                    .font(.system(size: 36))
+                    .foregroundColor(Color(hex: "#9098AD"))
+            }
+            VStack(spacing: 8) {
+                Text("暂无订阅")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(Color(hex: "#1A1918"))
+                Text("添加订阅源后，这里会展示所有应用")
+                    .font(.system(size: 14))
+                    .foregroundColor(Color(hex: "#6D6C6A"))
+                    .multilineTextAlignment(.center)
+            }
+            Button {
+                addUrlInput = ""
+                showAddAlert = true
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "plus")
+                        .font(.system(size: 15, weight: .semibold))
+                    Text("添加订阅")
+                        .font(.system(size: 15, weight: .semibold))
+                }
+                .foregroundColor(.white)
+                .padding(.horizontal, 24)
+                .frame(height: 48)
+                .background(Color(hex: "#002FA7"))
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
             Spacer()
         }
+        .padding(.horizontal, 32)
     }
 }
+
+// MARK: - Collection View Wrapper
 
 struct SubCollectionViewWrapper: UIViewRepresentable {
     @Binding var items: [AppSubCache]
     let boxModel: BoxJsViewModel
     @Binding var isEditMode: Bool
     @Binding var isDragging: Bool
-    var onScroll: ((CGFloat) -> Void)? = nil
+    var onTap: ((AppSubCache) -> Void)? = nil
 
     func makeUIView(context: Context) -> UICollectionView {
         let layout = UICollectionViewFlowLayout()
-        layout.sectionInset = UIEdgeInsets(top: 10, left: 16, bottom: 16, right: 16)
+        layout.sectionInset = UIEdgeInsets(top: 16, left: 20, bottom: 110, right: 20)
         layout.minimumInteritemSpacing = 12
         layout.minimumLineSpacing = 12
 
-        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        collectionView.backgroundColor = .clear
-        collectionView.delegate = context.coordinator
-        collectionView.dataSource = context.coordinator
-        collectionView.register(SubCardCell.self, forCellWithReuseIdentifier: "SubCardCell")
-        collectionView.clipsToBounds = false
+        let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        cv.backgroundColor = .clear
+        cv.clipsToBounds = false
+        cv.delegate = context.coordinator
+        cv.dataSource = context.coordinator
+        cv.register(SubCardCell.self, forCellWithReuseIdentifier: "SubCardCell")
 
-        context.coordinator.collectionView = collectionView
+        context.coordinator.collectionView = cv
 
-        let refreshControl = UIRefreshControl()
-        refreshControl.addTarget(context.coordinator, action: #selector(context.coordinator.handleRefresh(_:)), for: .valueChanged)
-        collectionView.refreshControl = refreshControl
+        let refresh = UIRefreshControl()
+        refresh.addTarget(context.coordinator, action: #selector(context.coordinator.handleRefresh(_:)), for: .valueChanged)
+        cv.refreshControl = refresh
 
-        // 编辑模式下用于拖拽排序；非编辑模式交给系统 context menu
-        let longPressGesture = UILongPressGestureRecognizer(target: context.coordinator, action: #selector(context.coordinator.handleLongPress(_:)))
-        longPressGesture.minimumPressDuration = 0.18
-        longPressGesture.isEnabled = false
-        collectionView.addGestureRecognizer(longPressGesture)
-        context.coordinator.reorderLongPressGesture = longPressGesture
+        let longPress = UILongPressGestureRecognizer(target: context.coordinator, action: #selector(context.coordinator.handleLongPress(_:)))
+        longPress.minimumPressDuration = 0.18
+        longPress.isEnabled = false
+        cv.addGestureRecognizer(longPress)
+        context.coordinator.reorderGesture = longPress
 
-        // Tap gesture 用于退出 jiggle 模式，cancelsTouchesInView = false 不干扰正常点击
-        let tapGesture = UITapGestureRecognizer(target: context.coordinator, action: #selector(context.coordinator.handleTap(_:)))
-        tapGesture.cancelsTouchesInView = false
-        collectionView.addGestureRecognizer(tapGesture)
+        let tap = UITapGestureRecognizer(target: context.coordinator, action: #selector(context.coordinator.handleTap(_:)))
+        tap.cancelsTouchesInView = false
+        cv.addGestureRecognizer(tap)
 
-        return collectionView
+        return cv
     }
 
     func updateUIView(_ uiView: UICollectionView, context: Context) {
-        let previousIds = context.coordinator.lastRenderedIds
+        let prevIds = context.coordinator.lastRenderedIds
         let newIds = items.map { $0.id }
-        let editModeChanged = context.coordinator.previousEditMode != isEditMode
+        let editChanged = context.coordinator.prevEditMode != isEditMode
 
         context.coordinator.items = items
         context.coordinator.isEditMode = isEditMode
         context.coordinator.isDragging = isDragging
-        context.coordinator.previousEditMode = isEditMode
-        context.coordinator.reorderLongPressGesture?.isEnabled = isEditMode
+        context.coordinator.prevEditMode = isEditMode
+        context.coordinator.reorderGesture?.isEnabled = isEditMode
 
-        if !isDragging, previousIds != newIds {
-            context.coordinator.lastRenderedIds = newIds
-            uiView.reloadData()
-        }
-
-        if editModeChanged {
-            context.coordinator.applyEditMode(to: uiView, enabled: isEditMode)
+        let needsReload = !isDragging && prevIds != newIds
+        if needsReload { context.coordinator.lastRenderedIds = newIds }
+        DispatchQueue.main.async {
+            if needsReload { uiView.reloadData() }
+            if editChanged { context.coordinator.applyEditMode(to: uiView, enabled: isEditMode) }
         }
     }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(
-            items: $items,
-            boxModel: boxModel,
-            isEditMode: $isEditMode,
-            isDragging: $isDragging,
-            onScroll: onScroll
-        )
+        Coordinator(items: $items, boxModel: boxModel, isEditMode: $isEditMode, isDragging: $isDragging, onTap: onTap)
     }
+
+    // MARK: Coordinator
 
     final class Coordinator: NSObject, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
         @Binding var items: [AppSubCache]
         let boxModel: BoxJsViewModel
         @Binding var isEditMode: Bool
         @Binding var isDragging: Bool
-        var onScroll: ((CGFloat) -> Void)?
+        var onTap: ((AppSubCache) -> Void)?
         weak var collectionView: UICollectionView?
-        weak var reorderLongPressGesture: UILongPressGestureRecognizer?
+        weak var reorderGesture: UILongPressGestureRecognizer?
         var lastRenderedIds: [String] = []
-        var previousEditMode: Bool = false
+        var prevEditMode: Bool = false
 
-        init(
-            items: Binding<[AppSubCache]>,
-            boxModel: BoxJsViewModel,
-            isEditMode: Binding<Bool>,
-            isDragging: Binding<Bool>,
-            onScroll: ((CGFloat) -> Void)?
-        ) {
+        init(items: Binding<[AppSubCache]>, boxModel: BoxJsViewModel, isEditMode: Binding<Bool>, isDragging: Binding<Bool>, onTap: ((AppSubCache) -> Void)?) {
             _items = items
             self.boxModel = boxModel
             _isEditMode = isEditMode
             _isDragging = isDragging
-            self.onScroll = onScroll
+            self.onTap = onTap
         }
 
-        func scrollViewDidScroll(_ scrollView: UIScrollView) {
-            onScroll?(-scrollView.contentOffset.y)
+        func collectionView(_: UICollectionView, numberOfItemsInSection _: Int) -> Int { items.count }
+
+        func collectionView(_ cv: UICollectionView, layout _: UICollectionViewLayout, sizeForItemAt _: IndexPath) -> CGSize {
+            let inset: CGFloat = 40   // left 20 + right 20
+            let gap: CGFloat = 12
+            let width = floor((cv.bounds.width - inset - gap) / 2)
+            return CGSize(width: width, height: 128)
         }
 
-        func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-            items.count
-        }
-
-        func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "SubCardCell", for: indexPath) as! SubCardCell
+        func collectionView(_ cv: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+            let cell = cv.dequeueReusableCell(withReuseIdentifier: "SubCardCell", for: indexPath) as! SubCardCell
             let item = items[indexPath.item]
             cell.configure(with: item)
             cell.showDeleteBadge(isEditMode)
             cell.onDelete = { [weak self] in
-                guard let self, let url = self.items[indexPath.item].url else { return }
-                Task {
-                    await self.boxModel.deleteAppSub(url: url)
-                }
+                guard let self, let url = self.items[safe: indexPath.item]?.url else { return }
+                Task { await self.boxModel.deleteAppSub(url: url) }
             }
-            if isEditMode {
-                startJiggleAnimation(for: cell)
-            } else {
-                cell.layer.removeAnimation(forKey: "jiggle.rotation")
-                cell.layer.removeAnimation(forKey: "jiggle.bounce")
-                cell.transform = .identity
-            }
+            if isEditMode { startJiggle(for: cell) }
+            else { stopJiggle(for: cell) }
             return cell
         }
 
-        func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-            let spacing: CGFloat = 12
-            let inset: CGFloat = 32
-            let width = (collectionView.bounds.width - inset - spacing) / 2
-            return CGSize(width: floor(width), height: 112)
+        func collectionView(_: UICollectionView, shouldSelectItemAt _: IndexPath) -> Bool { !isEditMode }
+
+        func collectionView(_: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+            guard !isEditMode, indexPath.item < items.count else { return }
+            onTap?(items[indexPath.item])
         }
 
-        // jiggle 模式下禁止 cell 选中
-        func collectionView(_ collectionView: UICollectionView, shouldSelectItemAt indexPath: IndexPath) -> Bool {
-            return !isEditMode
-        }
+        // MARK: Context Menu
 
-        @objc func handleRefresh(_ refreshControl: UIRefreshControl) {
-            Task {
-                await boxModel.reloadAppSub(url: "")
-                await MainActor.run {
-                    refreshControl.endRefreshing()
-                }
-            }
-        }
-
-        // 点击任意位置退出 jiggle 模式
-        @objc func handleTap(_ gesture: UITapGestureRecognizer) {
-            guard let collectionView = collectionView, isEditMode else { return }
-            isEditMode = false
-            applyEditMode(to: collectionView, enabled: false)
-        }
-
-        @objc func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
-            guard let collectionView = collectionView else { return }
-            guard isEditMode else { return }
-            let location = gesture.location(in: collectionView)
-
-            switch gesture.state {
-            case .began:
-                guard let indexPath = collectionView.indexPathForItem(at: location) else { return }
-                isDragging = true
-                collectionView.beginInteractiveMovementForItem(at: indexPath)
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-
-            case .changed:
-                if isDragging {
-                    collectionView.updateInteractiveMovementTargetPosition(location)
-                }
-
-            case .ended:
-                if isDragging {
-                    isDragging = false
-                    collectionView.endInteractiveMovement()
-                }
-
-            default:
-                if isDragging {
-                    isDragging = false
-                    collectionView.cancelInteractiveMovement()
-                }
-            }
-        }
-
-        // MARK: - 原生 Context Menu（静止长按弹出 iOS 风格深色菜单）
-
-        func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+        func collectionView(_ cv: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
             guard !isEditMode, indexPath.item < items.count else { return nil }
             let item = items[indexPath.item]
 
             return UIContextMenuConfiguration(identifier: indexPath as NSCopying, previewProvider: nil) { [weak self] _ in
                 guard let self else { return nil }
 
-                let editAction = UIAction(
-                    title: "编辑模式",
-                    image: UIImage(systemName: "square.grid.3x3.topleft.filled")
-                ) { [weak self] _ in
-                    guard let self else { return }
-                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                    self.isEditMode = true
-                    self.applyEditMode(to: collectionView, enabled: true)
+                let refresh = UIAction(title: "刷新", image: UIImage(systemName: "arrow.clockwise")) { [weak self] _ in
+                    guard let url = item.url else { return }
+                    Task { await self?.boxModel.reloadAppSub(url: url) }
                 }
 
-                let refreshAction = UIAction(
-                    title: "刷新订阅",
-                    image: UIImage(systemName: "arrow.clockwise")
-                ) { [weak self] _ in
-                    guard let self, let url = item.url else { return }
-                    Task { await self.boxModel.reloadAppSub(url: url) }
+                let openInBrowser = UIAction(title: "在浏览器中打开", image: UIImage(systemName: "safari")) { _ in
+                    guard let urlString = item.url, let url = URL(string: urlString) else { return }
+                    UIApplication.shared.open(url)
                 }
 
-                let deleteAction = UIAction(
-                    title: "删除订阅",
-                    image: UIImage(systemName: "trash"),
-                    attributes: .destructive
-                ) { [weak self] _ in
-                    guard let self, let url = item.url else { return }
-                    Task { await self.boxModel.deleteAppSub(url: url) }
+                let copyURL = UIAction(title: "复制订阅 URL", image: UIImage(systemName: "doc.on.doc")) { _ in
+                    UIPasteboard.general.string = item.url
                 }
 
-                return UIMenu(title: "", children: [editAction, refreshAction, deleteAction])
+                let delete = UIAction(title: "删除订阅", image: UIImage(systemName: "minus.circle"), attributes: .destructive) { [weak self] _ in
+                    guard let url = item.url else { return }
+                    Task { await self?.boxModel.deleteAppSub(url: url) }
+                }
+
+                return UIMenu(title: "", children: [refresh, openInBrowser, copyURL, delete])
             }
         }
 
-        func collectionView(_ collectionView: UICollectionView, previewForHighlightingContextMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
-            makeCardTargetedPreview(collectionView: collectionView, configuration: configuration)
+        func collectionView(_ cv: UICollectionView, previewForHighlightingContextMenuWithConfiguration config: UIContextMenuConfiguration) -> UITargetedPreview? {
+            cardPreview(cv: cv, config: config)
         }
 
-        func collectionView(_ collectionView: UICollectionView, previewForDismissingContextMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
-            makeCardTargetedPreview(collectionView: collectionView, configuration: configuration)
+        func collectionView(_ cv: UICollectionView, previewForDismissingContextMenuWithConfiguration config: UIContextMenuConfiguration) -> UITargetedPreview? {
+            cardPreview(cv: cv, config: config)
         }
 
-        private func makeCardTargetedPreview(collectionView: UICollectionView, configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
-            guard let indexPath = configuration.identifier as? IndexPath,
-                  let cell = collectionView.cellForItem(at: indexPath) as? SubCardCell else {
-                return nil
+        private func cardPreview(cv: UICollectionView, config: UIContextMenuConfiguration) -> UITargetedPreview? {
+            guard let ip = config.identifier as? IndexPath,
+                  let cell = cv.cellForItem(at: ip) as? SubCardCell else { return nil }
+            let params = UIPreviewParameters()
+            params.backgroundColor = .clear
+            params.visiblePath = UIBezierPath(roundedRect: cell.cardView.bounds, cornerRadius: cell.cardView.layer.cornerRadius)
+            return UITargetedPreview(view: cell.cardView, parameters: params)
+        }
+
+        // MARK: Refresh
+
+        @objc func handleRefresh(_ rc: UIRefreshControl) {
+            Task {
+                await boxModel.reloadAppSub(url: "")
+                await MainActor.run { rc.endRefreshing() }
             }
-
-            let parameters = cell.makeContextMenuPreviewParameters()
-            return UITargetedPreview(view: cell.contextMenuPreviewView, parameters: parameters)
         }
 
-        func collectionView(_ collectionView: UICollectionView, canMoveItemAt indexPath: IndexPath) -> Bool {
-            true
+        // MARK: Tap (exit edit mode)
+
+        @objc func handleTap(_ gesture: UITapGestureRecognizer) {
+            guard let cv = collectionView, isEditMode else { return }
+            isEditMode = false
+            applyEditMode(to: cv, enabled: false)
         }
 
-        func collectionView(_ collectionView: UICollectionView, moveItemAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
-            let movedItem = items.remove(at: sourceIndexPath.item)
-            items.insert(movedItem, at: destinationIndexPath.item)
-            persistOrder()
+        // MARK: Long Press (reorder in edit mode)
+
+        @objc func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
+            guard let cv = collectionView, isEditMode else { return }
+            let loc = gesture.location(in: cv)
+            switch gesture.state {
+            case .began:
+                guard let ip = cv.indexPathForItem(at: loc) else { return }
+                isDragging = true
+                cv.beginInteractiveMovementForItem(at: ip)
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            case .changed:
+                if isDragging { cv.updateInteractiveMovementTargetPosition(loc) }
+            case .ended:
+                if isDragging { isDragging = false; cv.endInteractiveMovement() }
+            default:
+                if isDragging { isDragging = false; cv.cancelInteractiveMovement() }
+            }
         }
 
-        private func persistOrder() {
+        // MARK: Reorder
+
+        func collectionView(_: UICollectionView, canMoveItemAt _: IndexPath) -> Bool { true }
+
+        func collectionView(_: UICollectionView, moveItemAt src: IndexPath, to dst: IndexPath) {
+            let moved = items.remove(at: src.item)
+            items.insert(moved, at: dst.item)
             let subs = boxModel.boxData.appsubs
-            let reorderedData = items.compactMap { ordered in
-                subs.first { $0.url == ordered.url }
-            }.map { ["url": $0.url, "enable": $0.enable, "id": $0.id ?? ""] as [String: Any] }
-            boxModel.updateData(path: "usercfgs.appsubs", data: reorderedData)
+            let reordered = items.compactMap { ordered in subs.first { $0.url == ordered.url } }
+                .map { ["url": $0.url, "enable": $0.enable, "id": $0.id ?? ""] as [String: Any] }
+            boxModel.updateData(path: "usercfgs.appsubs", data: reordered)
         }
 
-        // MARK: - Jiggle Animation
+        // MARK: Jiggle
 
-        func applyEditMode(to collectionView: UICollectionView, enabled: Bool) {
-            for cell in collectionView.visibleCells {
-                if let subCell = cell as? SubCardCell {
-                    subCell.showDeleteBadge(enabled)
-                }
-                if enabled {
-                    startJiggleAnimation(for: cell)
-                } else {
-                    cell.layer.removeAnimation(forKey: "jiggle.rotation")
-                    cell.layer.removeAnimation(forKey: "jiggle.bounce")
-                    cell.transform = .identity
-                }
+        func applyEditMode(to cv: UICollectionView, enabled: Bool) {
+            for cell in cv.visibleCells {
+                (cell as? SubCardCell)?.showDeleteBadge(enabled)
+                if enabled { startJiggle(for: cell) } else { stopJiggle(for: cell) }
             }
         }
 
-        func startJiggleAnimation(for cell: UICollectionViewCell) {
-            // 旋转动画（带随机相位偏移，模拟真实 iOS 每个 icon 节奏不同）
-            let variance = Double.random(in: -0.025...0.025)
-            let rotateDuration = 0.14 + variance
-            let rotation = CAKeyframeAnimation(keyPath: "transform.rotation.z")
-            rotation.values = [-0.02, 0.02]
-            rotation.autoreverses = true
-            rotation.duration = rotateDuration
-            rotation.repeatCount = .infinity
-            rotation.isRemovedOnCompletion = false
-
-            // 纵向 bounce 动画（iOS 真实 jiggle 的标志性上下弹动）
-            let bounceDuration = 0.18 + variance
+        func startJiggle(for cell: UICollectionViewCell) {
+            let v = Double.random(in: -0.025...0.025)
+            let rot = CAKeyframeAnimation(keyPath: "transform.rotation.z")
+            rot.values = [-0.02, 0.02]; rot.autoreverses = true
+            rot.duration = 0.14 + v; rot.repeatCount = .infinity; rot.isRemovedOnCompletion = false
             let bounce = CAKeyframeAnimation(keyPath: "transform.translation.y")
-            bounce.values = [2.0, 0.0]
-            bounce.autoreverses = true
-            bounce.duration = bounceDuration
-            bounce.repeatCount = .infinity
-            bounce.isRemovedOnCompletion = false
-
-            cell.layer.add(rotation, forKey: "jiggle.rotation")
+            bounce.values = [2.0, 0.0]; bounce.autoreverses = true
+            bounce.duration = 0.18 + v; bounce.repeatCount = .infinity; bounce.isRemovedOnCompletion = false
+            cell.layer.add(rot, forKey: "jiggle.rotation")
             cell.layer.add(bounce, forKey: "jiggle.bounce")
+        }
+
+        func stopJiggle(for cell: UICollectionViewCell) {
+            cell.layer.removeAnimation(forKey: "jiggle.rotation")
+            cell.layer.removeAnimation(forKey: "jiggle.bounce")
+            cell.transform = .identity
         }
     }
 }
@@ -402,58 +428,92 @@ struct SubCollectionViewWrapper: UIViewRepresentable {
 // MARK: - SubCardCell
 
 final class SubCardCell: UICollectionViewCell {
-    private let cardView = UIView()
-    private let iconView = UIImageView()
-    private let titleLabel = UILabel()
-    private let timeLabel = UILabel()
+    let cardView = UIView()
+    private let nameLabel = UILabel()
+    private let avatarView = UIImageView()
+    private let dateLabel = UILabel()
     private let countLabel = UILabel()
-    private let errorBadge = UILabel()
     private let deleteButton = UIButton(type: .custom)
 
     var onDelete: (() -> Void)?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-
         contentView.clipsToBounds = false
         clipsToBounds = false
+        setupCard()
+    }
 
-        // Card background
-        cardView.backgroundColor = .systemBackground
-        cardView.layer.cornerRadius = 14
-        cardView.layer.shadowColor = UIColor.black.cgColor
+    private func setupCard() {
+        // Card
+        cardView.backgroundColor = .white
+        cardView.layer.cornerRadius = 20
+        cardView.layer.cornerCurve = .continuous
+        // Border
+        cardView.layer.borderWidth = 1
+        cardView.layer.borderColor = UIColor(red: 229/255, green: 228/255, blue: 225/255, alpha: 1).cgColor
+        // Shadow
+        cardView.layer.shadowColor = UIColor(red: 26/255, green: 25/255, blue: 24/255, alpha: 1).cgColor
         cardView.layer.shadowOffset = CGSize(width: 0, height: 2)
-        cardView.layer.shadowOpacity = 0.06
-        cardView.layer.shadowRadius = 6
+        cardView.layer.shadowOpacity = 0.031  // ~3% (hex 08 = 8/255)
+        cardView.layer.shadowRadius = 5
         cardView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(cardView)
 
-        iconView.contentMode = .scaleAspectFill
-        iconView.clipsToBounds = true
-        iconView.layer.cornerRadius = 18
-        iconView.backgroundColor = .systemGray5
+        // Avatar — 40pt circle
+        avatarView.contentMode = .scaleAspectFill
+        avatarView.clipsToBounds = true
+        avatarView.layer.cornerRadius = 20
+        avatarView.backgroundColor = UIColor(red: 236/255, green: 238/255, blue: 244/255, alpha: 1)
+        avatarView.tintColor = UIColor(red: 144/255, green: 152/255, blue: 173/255, alpha: 1)
+        avatarView.translatesAutoresizingMaskIntoConstraints = false
 
-        titleLabel.font = .systemFont(ofSize: 15, weight: .semibold)
-        titleLabel.numberOfLines = 2
-        timeLabel.font = .systemFont(ofSize: 12)
-        timeLabel.textColor = .secondaryLabel
-        countLabel.font = .systemFont(ofSize: 20, weight: .semibold)
+        // Name
+        nameLabel.font = .systemFont(ofSize: 15, weight: .semibold)
+        nameLabel.textColor = UIColor(red: 26/255, green: 25/255, blue: 24/255, alpha: 1)
+        nameLabel.numberOfLines = 2
+        nameLabel.lineBreakMode = .byTruncatingTail
+        nameLabel.translatesAutoresizingMaskIntoConstraints = false
 
-        errorBadge.text = "异常"
-        errorBadge.font = .systemFont(ofSize: 10, weight: .medium)
-        errorBadge.textColor = .white
-        errorBadge.backgroundColor = .systemRed
-        errorBadge.layer.cornerRadius = 8
-        errorBadge.layer.masksToBounds = true
-        errorBadge.textAlignment = .center
-        errorBadge.isHidden = true
+        // Date
+        dateLabel.font = .systemFont(ofSize: 12, weight: .regular)
+        dateLabel.textColor = UIColor(red: 156/255, green: 155/255, blue: 153/255, alpha: 1)
+        dateLabel.translatesAutoresizingMaskIntoConstraints = false
 
-        [titleLabel, iconView, timeLabel, countLabel, errorBadge].forEach {
-            $0.translatesAutoresizingMaskIntoConstraints = false
-            cardView.addSubview($0)
-        }
+        // Count
+        countLabel.font = .systemFont(ofSize: 22, weight: .bold)
+        countLabel.textColor = UIColor(red: 26/255, green: 25/255, blue: 24/255, alpha: 1)
+        countLabel.translatesAutoresizingMaskIntoConstraints = false
 
-        // Delete button - sits outside card, on contentView
+        [avatarView, nameLabel, dateLabel, countLabel].forEach { cardView.addSubview($0) }
+
+        NSLayoutConstraint.activate([
+            cardView.topAnchor.constraint(equalTo: contentView.topAnchor),
+            cardView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            cardView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            cardView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+
+            // Avatar: top-right, 40×40
+            avatarView.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 16),
+            avatarView.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -16),
+            avatarView.widthAnchor.constraint(equalToConstant: 40),
+            avatarView.heightAnchor.constraint(equalToConstant: 40),
+
+            // Name: top-left, right of avatar
+            nameLabel.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 16),
+            nameLabel.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 16),
+            nameLabel.trailingAnchor.constraint(equalTo: avatarView.leadingAnchor, constant: -8),
+
+            // Date: bottom-left
+            dateLabel.bottomAnchor.constraint(equalTo: cardView.bottomAnchor, constant: -16),
+            dateLabel.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 16),
+
+            // Count: bottom-right
+            countLabel.bottomAnchor.constraint(equalTo: cardView.bottomAnchor, constant: -14),
+            countLabel.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -16),
+        ])
+
+        // Delete badge: top-left of card
         let config = UIImage.SymbolConfiguration(pointSize: 20, weight: .bold)
             .applying(UIImage.SymbolConfiguration(paletteColors: [.white, .darkGray]))
         deleteButton.setImage(UIImage(systemName: "minus.circle.fill", withConfiguration: config), for: .normal)
@@ -461,33 +521,7 @@ final class SubCardCell: UICollectionViewCell {
         deleteButton.addTarget(self, action: #selector(deleteTapped), for: .touchUpInside)
         deleteButton.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(deleteButton)
-
         NSLayoutConstraint.activate([
-            cardView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
-            cardView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
-            cardView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            cardView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
-
-            titleLabel.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 12),
-            titleLabel.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 12),
-            titleLabel.trailingAnchor.constraint(equalTo: iconView.leadingAnchor, constant: -8),
-
-            iconView.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -12),
-            iconView.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 12),
-            iconView.widthAnchor.constraint(equalToConstant: 36),
-            iconView.heightAnchor.constraint(equalToConstant: 36),
-
-            errorBadge.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 12),
-            errorBadge.bottomAnchor.constraint(equalTo: timeLabel.topAnchor, constant: -6),
-            errorBadge.widthAnchor.constraint(equalToConstant: 34),
-            errorBadge.heightAnchor.constraint(equalToConstant: 16),
-
-            timeLabel.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 12),
-            timeLabel.bottomAnchor.constraint(equalTo: cardView.bottomAnchor, constant: -12),
-
-            countLabel.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -12),
-            countLabel.bottomAnchor.constraint(equalTo: cardView.bottomAnchor, constant: -10),
-
             deleteButton.centerXAnchor.constraint(equalTo: cardView.leadingAnchor),
             deleteButton.centerYAnchor.constraint(equalTo: cardView.topAnchor),
             deleteButton.widthAnchor.constraint(equalToConstant: 28),
@@ -495,45 +529,31 @@ final class SubCardCell: UICollectionViewCell {
         ])
     }
 
-    @objc private func deleteTapped() {
-        onDelete?()
-    }
-
     func configure(with item: AppSubCache) {
-        titleLabel.text = item.name
-        timeLabel.text = item.updateTime.isEmpty ? "N/A" : item.formatTime
+        nameLabel.text = item.name
+        dateLabel.text = item.updateTime.isEmpty ? "--" : item.formatTime
         countLabel.text = "\(item.apps.count)"
-        errorBadge.isHidden = item.isErr != true
 
-        if let url = URL(string: item.icon), !item.icon.isEmpty {
-            iconView.sd_setImage(with: url, placeholderImage: UIImage(systemName: "shippingbox.fill"))
+        if !item.icon.isEmpty, let url = URL(string: item.icon) {
+            avatarView.sd_setImage(with: url, placeholderImage: UIImage(systemName: "shippingbox"))
         } else {
-            iconView.image = UIImage(systemName: "shippingbox.fill")
-            iconView.tintColor = .systemGray3
+            avatarView.image = UIImage(systemName: "shippingbox")
         }
     }
 
-    func showDeleteBadge(_ show: Bool) {
-        deleteButton.isHidden = !show
-    }
+    func showDeleteBadge(_ show: Bool) { deleteButton.isHidden = !show }
 
-    var contextMenuPreviewView: UIView {
-        cardView
-    }
-
-    func makeContextMenuPreviewParameters() -> UIPreviewParameters {
-        let parameters = UIPreviewParameters()
-        parameters.backgroundColor = .clear
-        parameters.visiblePath = UIBezierPath(
-            roundedRect: cardView.bounds,
-            cornerRadius: cardView.layer.cornerRadius
-        )
-        return parameters
-    }
+    @objc private func deleteTapped() { onDelete?() }
 
     @available(*, unavailable)
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+    required init?(coder: NSCoder) { fatalError() }
+}
+
+// MARK: - Safe subscript
+
+private extension Array {
+    subscript(safe index: Int) -> Element? {
+        indices.contains(index) ? self[index] : nil
     }
 }
 

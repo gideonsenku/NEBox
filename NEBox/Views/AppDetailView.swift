@@ -574,7 +574,7 @@ struct AppDetailView: View {
     var body: some View {
         if let app = app {
             ZStack {
-                BackgroundView(urlString: boxModel.boxData.bgImgUrl)
+                Color(.systemGroupedBackground).ignoresSafeArea()
                 ScrollView {
                     VStack(spacing: 16) {
                         // App header

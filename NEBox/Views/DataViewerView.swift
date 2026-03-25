@@ -28,7 +28,7 @@ struct DataViewerView: View {
 
     var body: some View {
         ZStack {
-            BackgroundView(urlString: boxModel.boxData.bgImgUrl)
+            Color(.systemGroupedBackground).ignoresSafeArea()
             ScrollView {
                 VStack(spacing: 16) {
                     if !gistkeys.isEmpty {

@@ -133,7 +133,7 @@ struct AppView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                BackgroundView(urlString: boxModel.boxData.bgImgUrl)
+                Color(.systemGroupedBackground).ignoresSafeArea()
                 AppScrollView(onScroll: { offset in isScrolled = offset > 5 }) {
                     if !boxModel.favApps.isEmpty {
                         CustomDisclosureGroup(title: "收藏应用", items: boxModel.favApps, sysIcon: "star.circle.fill")

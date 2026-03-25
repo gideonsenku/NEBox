@@ -128,6 +128,7 @@ struct ContentView: View {
     @State private var showVersionSheet = false
     @State private var versions: [VersionInfo] = []
     @State private var currentVersion: String = ""
+    @State private var selectedTab: Int = 0
 
     var body: some View {
         VStack {
@@ -143,30 +144,32 @@ struct ContentView: View {
                     }
                 )
             } else {
-                TabView {
-                        HomeView(showSearch: $showSearch)
-                            .tabItem {
-                                Label("主页", systemImage: "house")
-                            }
-                        AppView()
-                            .tabItem {
-                                Label("应用", systemImage: "app")
-                            }
-                        SubcribeView()
-                            .tabItem {
-                                Label("订阅", systemImage: "cloud")
-                            }
-                        ProfileView()
-                            .tabItem {
-                                Label("我的", systemImage: "person.crop.circle")
-                            }
-                    }
+                ZStack(alignment: .bottom) {
+                    HomeView(showSearch: $showSearch)
+                        .opacity(selectedTab == 0 ? 1 : 0)
+                        .allowsHitTesting(selectedTab == 0)
+                        .zIndex(selectedTab == 0 ? 1 : 0)
+
+                    SubcribeView()
+                        .opacity(selectedTab == 1 ? 1 : 0)
+                        .allowsHitTesting(selectedTab == 1)
+                        .zIndex(selectedTab == 1 ? 1 : 0)
+
+                    ProfileView()
+                        .opacity(selectedTab == 2 ? 1 : 0)
+                        .allowsHitTesting(selectedTab == 2)
+                        .zIndex(selectedTab == 2 ? 1 : 0)
+
+                    floatingTabBar
+                        .zIndex(10)
+                }
                 .overlay(GlobalToastView())
                 .fullScreenCover(isPresented: $showSearch) {
                     SearchView()
                 }
                 .onReceive(boxModel.$boxData) { data in
-                    if let ver = data.syscfgs?.version, !ver.isEmpty, currentVersion.isEmpty {
+                    guard let ver = data.syscfgs?.version, !ver.isEmpty, currentVersion.isEmpty else { return }
+                    DispatchQueue.main.async {
                         currentVersion = ver
                         checkVersion()
                     }
@@ -176,6 +179,64 @@ struct ContentView: View {
         .sheet(isPresented: $showVersionSheet) {
             versionSheet
         }
+        // Fill bottom safe area with gradient end color
+        .background(Color(hex: "#F5F0F8").ignoresSafeArea(edges: .bottom))
+    }
+
+    // MARK: - Floating Tab Bar
+
+    private var floatingTabBar: some View {
+        HStack(spacing: 0) {
+            Button { selectedTab = 0 } label: {
+                VStack(spacing: 4) {
+                    Image(systemName: selectedTab == 0 ? "house.fill" : "house")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(selectedTab == 0 ? Color(hex: "#002FA7") : Color(hex: "#A0A8BD"))
+                    Text("HOME")
+                        .font(.system(size: 9, weight: selectedTab == 0 ? .bold : .medium))
+                        .foregroundColor(selectedTab == 0 ? Color(hex: "#002FA7") : Color(hex: "#A0A8BD"))
+                        .kerning(0.5)
+                }
+                .frame(maxWidth: .infinity)
+            }
+
+            Button { selectedTab = 1 } label: {
+                VStack(spacing: 4) {
+                    Image(systemName: selectedTab == 1 ? "square.stack.fill" : "square.stack")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(selectedTab == 1 ? Color(hex: "#002FA7") : Color(hex: "#A0A8BD"))
+                    Text("SUBS")
+                        .font(.system(size: 9, weight: selectedTab == 1 ? .bold : .medium))
+                        .foregroundColor(selectedTab == 1 ? Color(hex: "#002FA7") : Color(hex: "#A0A8BD"))
+                        .kerning(0.5)
+                }
+                .frame(maxWidth: .infinity)
+            }
+
+            Button { selectedTab = 2 } label: {
+                VStack(spacing: 4) {
+                    Image(systemName: selectedTab == 2 ? "person.fill" : "person")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(selectedTab == 2 ? Color(hex: "#002FA7") : Color(hex: "#A0A8BD"))
+                    Text("PROFILE")
+                        .font(.system(size: 9, weight: selectedTab == 2 ? .bold : .medium))
+                        .foregroundColor(selectedTab == 2 ? Color(hex: "#002FA7") : Color(hex: "#A0A8BD"))
+                        .kerning(0.5)
+                }
+                .frame(maxWidth: .infinity)
+            }
+        }
+        .frame(height: 50)
+        .padding(4)
+        .background(.ultraThinMaterial)
+        .overlay(
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .stroke(Color.white.opacity(0.4), lineWidth: 0.5)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .shadow(color: .black.opacity(0.1), radius: 16, y: 4)
+        .padding(.horizontal, 21)
+        .padding(.bottom, 4)
     }
 
     private func checkVersion() {

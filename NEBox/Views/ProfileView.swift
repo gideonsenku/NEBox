@@ -26,7 +26,7 @@ struct ProfileView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                BackgroundView(urlString: boxModel.boxData.bgImgUrl)
+                Color(.systemGroupedBackground).ignoresSafeArea()
                 ScrollView {
                     VStack(spacing: 16) {
                         profileCard

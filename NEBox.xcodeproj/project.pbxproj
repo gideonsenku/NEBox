@@ -26,6 +26,7 @@
 		E2C273642C355309004952AA /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C273632C355309004952AA /* HomeView.swift */; };
 		E2C273662C3678B1004952AA /* AppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C273652C3678B1004952AA /* AppView.swift */; };
 		E2C273682C36BB88004952AA /* SubcribeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C273672C36BB88004952AA /* SubcribeView.swift */; };
+		364D296303964521B29BE952 /* SubDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C61523AAFFC54CBBBD390BBB /* SubDetailView.swift */; };
 		E2C2736A2C379939004952AA /* SettingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C273692C379939004952AA /* SettingView.swift */; };
 		E2E8BA822C6B67BB00C2AF9E /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E8BA812C6B67BB00C2AF9E /* Utils.swift */; };
 		E2E8BA852C6CA43300C2AF9E /* ToastManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E8BA842C6CA43300C2AF9E /* ToastManager.swift */; };
@@ -63,6 +64,7 @@
 		E2C273632C355309004952AA /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		E2C273652C3678B1004952AA /* AppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppView.swift; sourceTree = "<group>"; };
 		E2C273672C36BB88004952AA /* SubcribeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubcribeView.swift; sourceTree = "<group>"; };
+		C61523AAFFC54CBBBD390BBB /* SubDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubDetailView.swift; sourceTree = "<group>"; };
 		E2C273692C379939004952AA /* SettingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingView.swift; sourceTree = "<group>"; };
 		E2E8BA812C6B67BB00C2AF9E /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		E2E8BA842C6CA43300C2AF9E /* ToastManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastManager.swift; sourceTree = "<group>"; };
@@ -160,6 +162,7 @@
 				E2E9E27C2C5273C500836E4B /* SearchBar.swift */,
 				E2C273652C3678B1004952AA /* AppView.swift */,
 				E2C273672C36BB88004952AA /* SubcribeView.swift */,
+				C61523AAFFC54CBBBD390BBB /* SubDetailView.swift */,
 				E2E9E2802C63241F00836E4B /* SubScribeCardView.swift */,
 				E2C273692C379939004952AA /* SettingView.swift */,
 				E23F56032C7DBDCD0039F1CC /* AppDetailView.swift */,
@@ -305,6 +308,7 @@
 				E2E8BA822C6B67BB00C2AF9E /* Utils.swift in Sources */,
 				E210432C2C90307000347C43 /* CheckBoxGroup.swift in Sources */,
 				E2C273682C36BB88004952AA /* SubcribeView.swift in Sources */,
+				364D296303964521B29BE952 /* SubDetailView.swift in Sources */,
 				E2C273642C355309004952AA /* HomeView.swift in Sources */,
 				E23F560F2C7F1EC10039F1CC /* SwiftUIView.swift in Sources */,
 				E2C2736A2C379939004952AA /* SettingView.swift in Sources */,

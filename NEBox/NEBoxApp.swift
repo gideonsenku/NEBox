@@ -22,9 +22,12 @@ struct NEBoxApp: App {
         let navBarAppearance = UINavigationBarAppearance()
         navBarAppearance.configureWithTransparentBackground()
         navBarAppearance.backgroundColor = .clear
+        navBarAppearance.shadowColor = .clear
+        navBarAppearance.backgroundEffect = nil
         UINavigationBar.appearance().standardAppearance = navBarAppearance
         UINavigationBar.appearance().scrollEdgeAppearance = navBarAppearance
         UINavigationBar.appearance().compactAppearance = navBarAppearance
+
     }
 
     var body: some Scene {
