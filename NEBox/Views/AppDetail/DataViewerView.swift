@@ -205,7 +205,7 @@ struct DataViewerView: View {
         isQuerying = true
         Task {
             do {
-                let resp = try await ApiRequest.queryData(key: queryKey)
+                let resp: DataQueryResp = try await NetworkProvider.request(.queryData(key: queryKey))
                 await MainActor.run {
                     if let val = resp.val {
                         if let str = val.value as? String {
@@ -242,7 +242,7 @@ struct DataViewerView: View {
         isSaving = true
         Task {
             do {
-                let resp = try await ApiRequest.saveDataKV(key: queryKey, val: queryVal)
+                let _: DataQueryResp = try await NetworkProvider.request(.saveDataKV(key: queryKey, val: queryVal))
                 await MainActor.run {
                     isSaving = false
                     toastManager.showToast(message: "保存成功!")

@@ -15,9 +15,9 @@ class BoxJsViewModel: ObservableObject {
             favApps = boxData.favApps
         }
     }
-    @Published var hasError = false
     @Published var isDataLoaded = false
 
+    var toastManager: ToastManager?
     private let iconThemeIdx = 0
 
     init(boxData: BoxDataResp = BoxDataResp(
@@ -42,18 +42,35 @@ class BoxJsViewModel: ObservableObject {
     func reset() {
         favApps = []
         isDataLoaded = false
-        hasError = false
     }
 
-func fetchData() {
+    // MARK: - Generic Error Handling
+
+    @MainActor
+    private func perform(_ hint: String, _ operation: () async throws -> BoxDataResp) async {
+        do {
+            let boxdata = try await operation()
+            self.boxData = boxdata
+        } catch {
+            let msg = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+            toastManager?.showToast(message: "\(hint)失败")
+            print("[\(hint)] \(msg)")
+        }
+    }
+
+    // MARK: - Data Fetching
+
+    func fetchData() {
         Task {
             do {
-                let boxdata = try await ApiRequest.getBoxData()
+                let boxdata: BoxDataResp = try await NetworkProvider.request(.getBoxData)
                 await updateBoxData(boxdata)
                 await MainActor.run { self.isDataLoaded = true }
             } catch {
-                await MainActor.run { self.hasError = true; self.isDataLoaded = true }
-                print("Error fetching data: \(error)")
+                await MainActor.run { self.isDataLoaded = true }
+                let msg = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+                toastManager?.showToast(message: "加载数据失败")
+                print("[fetchData] \(msg)")
             }
         }
     }
@@ -63,7 +80,9 @@ func fetchData() {
         Task {
             let result = await updateDataAsync(path: path, data: data)
             if case .failure(let err) = result {
-                print("[updateData] failed for \(path): \(err)")
+                let msg = "\(err)"
+                await MainActor.run { toastManager?.showToast(message: "更新失败") }
+                print("[updateData] failed for \(path): \(msg)")
             }
         }
     }
@@ -76,15 +95,12 @@ func fetchData() {
     /// Async version with explicit error propagation
     @discardableResult
     func updateDataAsync(path: String, data: Any) async -> Result<Void, UpdateError> {
-        // Step 1: send update to backend
         var writeSucceeded = false
         do {
-            let boxdata = try await ApiRequest.updateData(path: path, data: data)
+            let boxdata: BoxDataResp = try await NetworkProvider.request(.updateData(path: path, val: data))
             await updateBoxData(boxdata)
             writeSucceeded = true
         } catch let error as RequestError {
-            // decodeFail means the HTTP request succeeded but response didn't match BoxDataResp
-            // The write likely succeeded; we'll refetch to confirm
             if case .decodeFail = error {
                 writeSucceeded = true
             } else {
@@ -94,109 +110,63 @@ func fetchData() {
             return .failure(.writeFailed(underlying: error))
         }
 
-        // Step 2: refetch to ensure UI is in sync
         do {
-            let boxdata = try await ApiRequest.getBoxData()
+            let boxdata: BoxDataResp = try await NetworkProvider.request(.getBoxData)
             await updateBoxData(boxdata)
             return .success(())
         } catch {
-            // Write may have succeeded even if refetch fails
             return writeSucceeded ? .success(()) : .failure(.refetchFailed(underlying: error))
         }
     }
 
+    // MARK: - 订阅管理
+
     func reloadAppSub(url: String) async {
-        do {
-            let boxdata = try await ApiRequest.reloadAppSub(url: url)
-            await updateBoxData(boxdata)
-        } catch {
-            print("Error reloading sub: \(error)")
-        }
+        await perform("刷新订阅") { try await NetworkProvider.request(.reloadAppSub(url: url)) }
     }
 
     func reloadAllAppSub() async {
-        do {
-            let boxdata = try await ApiRequest.reloadAllAppSub()
-            await updateBoxData(boxdata)
-        } catch {
-            print("Error reloading all subs: \(error)")
-        }
+        await perform("刷新全部订阅") { try await NetworkProvider.request(.reloadAllAppSub) }
     }
 
     func addAppSub(url: String) async {
-        do {
-            let boxdata = try await ApiRequest.addAppSub(url: url)
-            await updateBoxData(boxdata)
-        } catch {
-            print("Error adding sub: \(error)")
-        }
+        await perform("添加订阅") { try await ApiRequest.addAppSub(url: url) }
     }
 
     func deleteAppSub(url: String) async {
-        do {
-            let boxdata = try await ApiRequest.deleteAppSub(url: url)
-            await updateBoxData(boxdata)
-        } catch {
-            print("Error deleting sub: \(error)")
-        }
+        await perform("删除订阅") { try await NetworkProvider.request(.deleteAppSub(url: url)) }
     }
 
+    // MARK: - 数据保存
+
     func saveData(params: [SessionData]) async {
-        do {
-            let boxdata = try await ApiRequest.saveData(parameters: params)
-            await updateBoxData(boxdata)
-        } catch {
-            print("Error saving data: \(error)")
-        }
+        await perform("保存数据") { try await NetworkProvider.request(.saveData(params: params)) }
     }
 
     // MARK: - 全局备份
 
     func saveGlobalBak() async {
-        do {
-            let name = "全局备份 \((boxData.globalbaks?.count ?? 0) + 1)"
-            let boxdata = try await ApiRequest.saveGlobalBak(name: name, env: "", version: "", versionType: "")
-            await updateBoxData(boxdata)
-        } catch {
-            print("Error saving backup: \(error)")
+        let name = "全局备份 \((boxData.globalbaks?.count ?? 0) + 1)"
+        await perform("保存备份") {
+            try await ApiRequest.saveGlobalBak(name: name, env: "", version: "", versionType: "")
         }
     }
 
     func delGlobalBak(id: String) async {
-        do {
-            let boxdata = try await ApiRequest.delGlobalBak(id: id)
-            await updateBoxData(boxdata)
-        } catch {
-            print("Error deleting backup: \(error)")
-        }
+        await perform("删除备份") { try await NetworkProvider.request(.delGlobalBak(id: id)) }
     }
 
     func revertGlobalBak(id: String) async {
-        do {
-            let boxdata = try await ApiRequest.revertGlobalBak(id: id)
-            await updateBoxData(boxdata)
-        } catch {
-            print("Error reverting backup: \(error)")
-        }
+        await perform("恢复备份") { try await NetworkProvider.request(.revertGlobalBak(id: id)) }
     }
 
     func updateGlobalBak(id: String, name: String) async {
-        do {
-            let boxdata = try await ApiRequest.updateGlobalBak(id: id, name: name)
-            await updateBoxData(boxdata)
-        } catch {
-            print("Error updating backup: \(error)")
-        }
+        await perform("更新备份") { try await NetworkProvider.request(.updateGlobalBak(id: id, name: name)) }
     }
 
     func impGlobalBak(bakData: String) async {
-        do {
-            let name = "全局备份 \((boxData.globalbaks?.count ?? 0) + 1)"
-            let boxdata = try await ApiRequest.impGlobalBak(bakData: bakData, name: name)
-            await updateBoxData(boxdata)
-        } catch {
-            print("Error importing backup: \(error)")
-        }
+        let name = "全局备份 \((boxData.globalbaks?.count ?? 0) + 1)"
+        await perform("导入备份") { try await ApiRequest.impGlobalBak(bakData: bakData, name: name) }
     }
 
     // MARK: - 会话管理
@@ -213,23 +183,13 @@ func fetchData() {
         )
         var allSessions = boxData.sessions
         allSessions.append(session)
-        do {
-            let boxdata = try await ApiRequest.saveSessions(allSessions)
-            await updateBoxData(boxdata)
-        } catch {
-            print("Error saving session: \(error)")
-        }
+        await perform("保存会话") { try await ApiRequest.saveSessions(allSessions) }
     }
 
     func delAppSession(sessionId: String) async {
         var allSessions = boxData.sessions
         allSessions.removeAll { $0.id == sessionId }
-        do {
-            let boxdata = try await ApiRequest.saveSessions(allSessions)
-            await updateBoxData(boxdata)
-        } catch {
-            print("Error deleting session: \(error)")
-        }
+        await perform("删除会话") { try await ApiRequest.saveSessions(allSessions) }
     }
 
     func updateAppSession(_ session: Session) async {
@@ -237,41 +197,24 @@ func fetchData() {
         if let idx = allSessions.firstIndex(where: { $0.id == session.id }) {
             allSessions[idx] = session
         }
-        do {
-            let boxdata = try await ApiRequest.saveSessions(allSessions)
-            await updateBoxData(boxdata)
-        } catch {
-            print("Error updating session: \(error)")
-        }
+        await perform("更新会话") { try await ApiRequest.saveSessions(allSessions) }
     }
 
     func useAppSession(sessionId: String, appId: String) async {
         guard let session = boxData.sessions.first(where: { $0.id == sessionId }) else { return }
         var datas = session.datas
-        let curSessionsData = SessionData(key: "chavy_boxjs_cur_sessions", val: AnyCodable("{}"))
-        datas.append(curSessionsData)
-        do {
-            let boxdata = try await ApiRequest.useAppSession(datas: datas, appId: appId)
-            await updateBoxData(boxdata)
-        } catch {
-            print("Error using session: \(error)")
-        }
+        datas.append(SessionData(key: "chavy_boxjs_cur_sessions", val: AnyCodable("{}")))
+        await perform("应用会话") { try await NetworkProvider.request(.useAppSession(datas: datas, appId: appId)) }
     }
 
     func linkAppSession(sessionId: String, appId: String) async {
         guard let session = boxData.sessions.first(where: { $0.id == sessionId }) else { return }
         var curSessions = boxData.curSessions ?? [:]
         curSessions[appId] = sessionId
-        let encoder = JSONEncoder()
-        let curSessionsJSON = (try? encoder.encode(curSessions)).flatMap { String(data: $0, encoding: .utf8) } ?? "{}"
+        let curSessionsJSON = (try? JSONEncoder().encode(curSessions)).flatMap { String(data: $0, encoding: .utf8) } ?? "{}"
         var datas = session.datas
         datas.append(SessionData(key: "chavy_boxjs_cur_sessions", val: AnyCodable(curSessionsJSON)))
-        do {
-            let boxdata = try await ApiRequest.linkAppSession(datas: datas)
-            await updateBoxData(boxdata)
-        } catch {
-            print("Error linking session: \(error)")
-        }
+        await perform("关联会话") { try await NetworkProvider.request(.linkAppSession(datas: datas)) }
     }
 
     func clearAppDatas(app: AppModel, key: String? = nil) async {

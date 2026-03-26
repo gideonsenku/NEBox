@@ -9,6 +9,24 @@ import os.log
 
 private let netLog = Logger(subsystem: "NEBox", category: "Network")
 
+// MARK: - Request Error
+
+enum RequestError: Error {
+    case networkFail
+    case statusFail(code: Int, message: String)
+    case decodeFail(message: String)
+}
+
+extension RequestError: LocalizedError {
+    var errorDescription: String? {
+        switch self {
+        case .networkFail: return "网络连接失败"
+        case .statusFail(_, let message): return message
+        case .decodeFail(let message): return "数据解析失败: \(message)"
+        }
+    }
+}
+
 // MARK: - Response Envelope
 
 /// Matches the BoxJS response envelope: { "code": 0, "message": "..." }

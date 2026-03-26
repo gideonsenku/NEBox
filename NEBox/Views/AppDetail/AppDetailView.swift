@@ -218,7 +218,7 @@ struct AppScriptsView: View {
                                         isLoading = true
                                         loadingScript = script.script
                                         do {
-                                            let resp = try await ApiRequest.runScript(url: script.script)
+                                            let resp: ScriptResp = try await NetworkProvider.request(.runScript(url: script.script))
                                             let isMute = boxModel.boxData.usercfgs?.isMute ?? false
                                             if !isMute {
                                                 onScriptResult?(resp)
@@ -625,7 +625,7 @@ struct AppDetailView: View {
                                     Button {
                                         Task {
                                             do {
-                                                let resp = try await ApiRequest.runScript(url: script)
+                                                let resp: ScriptResp = try await NetworkProvider.request(.runScript(url: script))
                                                 let isMute = boxModel.boxData.usercfgs?.isMute ?? false
                                                 if !isMute {
                                                     scriptResult = resp

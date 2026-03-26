@@ -37,6 +37,7 @@ struct NEBoxApp: App {
                 .environmentObject(toastManager)
                 .environmentObject(boxModel)
                 .onAppear {
+                    boxModel.toastManager = toastManager
                     if apiManager.isApiUrlSet() {
                         DispatchQueue.main.async {
                             boxModel.fetchData()

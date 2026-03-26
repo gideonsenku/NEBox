@@ -474,7 +474,7 @@ struct BackupDetailView: View {
         isLoadingBak = true
         Task {
             do {
-                let data = try await ApiRequest.loadGlobalBak(id: backup.id)
+                let data: AnyCodable = try await NetworkProvider.request(.loadGlobalBak(id: backup.id))
                 await MainActor.run {
                     bakData = data
                     isLoadingBak = false

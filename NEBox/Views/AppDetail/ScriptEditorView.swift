@@ -106,7 +106,7 @@ $.done()
         isRunning = true
         Task {
             do {
-                let resp = try await ApiRequest.runTxtScript(script: scriptText)
+                let resp: ScriptResp = try await NetworkProvider.request(.runTxtScript(script: scriptText))
                 await MainActor.run {
                     scriptResult = resp
                     isRunning = false

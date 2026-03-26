@@ -242,7 +242,7 @@ struct ContentView: View {
     private func checkVersion() {
         Task {
             do {
-                let resp = try await ApiRequest.getVersions()
+                let resp: VersionsResp = try await NetworkProvider.request(.getVersions)
                 if let releases = resp.releases, !releases.isEmpty {
                     await MainActor.run {
                         versions = releases
