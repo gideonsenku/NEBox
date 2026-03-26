@@ -78,6 +78,7 @@ struct HomeView: View {
                 AppDetailView(app: selectedApp)
             }
         }
+        .neboxLiquidGlassTabBarChrome()
     }
 
     // MARK: - Nav Bar
@@ -177,7 +178,7 @@ struct CollectionViewWrapper: UIViewRepresentable {
     @Binding var selectedApp: AppModel?
     @Binding var isNavigationActive: Bool
     @Binding var isEditMode: Bool
-    var bottomInset: CGFloat = 110
+    var bottomInset: CGFloat = adaptiveBottomInset()
     var allowsEdit: Bool = true
     var tapOverride: ((AppModel) -> Void)? = nil
     var favAppIds: Set<String> = []

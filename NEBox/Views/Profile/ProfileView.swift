@@ -23,194 +23,269 @@ struct ProfileView: View {
     @State private var editIcon = ""
 
     var body: some View {
-        NavigationView {
-            ZStack {
-                Color(.systemGroupedBackground).ignoresSafeArea()
+        NavigationStack {
+            ZStack(alignment: .top) {
+                // Gradient background — matches HomeView
+                LinearGradient(
+                    colors: [Color(hex: "#EEF0FA"), Color(hex: "#F0EDF8"), Color(hex: "#F5F0F8")],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
+
                 ScrollView {
                     VStack(spacing: 16) {
-                        profileCard
-                        backupListCard
+                        // Spacer for nav bar
+                        Color.clear.frame(height: 56)
+
+                        // Profile header card
+                        profileHeaderCard
+
+                        // Stats row
+                        statsRow
+
+                        // Quick actions
+                        quickActionsCard
+
+                        // Backup section
+                        backupSection
+
+                        // Bottom padding for tab bar
+                        Color.clear.frame(height: adaptiveBottomInset())
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
+                    .padding(.horizontal, 20)
+                }
+
+                // Nav bar on top
+                VStack {
+                    navBar
+                        .background(Color(hex: "#EEF0FA").ignoresSafeArea())
+                    Spacer()
                 }
             }
-            .navigationTitle("我的")
+            .toolbar(.hidden, for: .navigationBar)
+            .sheet(isPresented: $showEditProfile) {
+                editProfileSheet
+            }
+            .sheet(isPresented: $showImportBak) {
+                importBakSheet
+            }
+            .sheet(isPresented: $showApiSettings) {
+                ApiSettingsView()
+            }
         }
+        .neboxLiquidGlassTabBarChrome()
     }
 
-    // MARK: - Profile Card
+    // MARK: - Nav Bar
 
-    private var profileCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            // Header: name + edit button
-            HStack {
-                if let iconUrl = boxModel.boxData.usercfgs?.icon,
-                   !iconUrl.isEmpty,
-                   let url = URL(string: iconUrl) {
-                    WebImage(url: url)
-                        .resizable()
-                        .frame(width: 44, height: 44)
-                        .clipShape(Circle())
-                } else {
-                    Image(systemName: "person.circle.fill")
-                        .resizable()
-                        .frame(width: 44, height: 44)
-                        .foregroundColor(.gray)
+    private var navBar: some View {
+        HStack(spacing: 0) {
+            HStack(spacing: 8) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(Color(hex: "#E8EAF4"))
+                        .frame(width: 36, height: 36)
+                    Image(systemName: "person.fill")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(Color(hex: "#002FA7"))
                 }
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(boxModel.boxData.usercfgs?.name ?? "大侠, 请留名!")
-                        .font(.headline)
-                    Text("BoxJs")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-
-                Spacer()
-
-                Button {
-                    editName = boxModel.boxData.usercfgs?.name ?? ""
-                    editIcon = boxModel.boxData.usercfgs?.icon ?? ""
-                    showEditProfile = true
-                } label: {
-                    Image(systemName: "gearshape")
-                        .foregroundColor(.secondary)
-                }
+                Text("我的")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(Color(hex: "#1A1918"))
             }
 
-            Divider()
+            Spacer()
 
-            // Data stats
-            Text("我的数据")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
+            // Settings button
+            Button {
+                showApiSettings = true
+            } label: {
+                Image(systemName: "gearshape")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(Color(hex: "#002FA7"))
+            }
+        }
+        .frame(height: 56)
+        .padding(.horizontal, 20)
+    }
 
-            HStack(spacing: 12) {
-                StatChip(label: "应用", count: boxModel.boxData.apps.count)
-                StatChip(label: "订阅", count: boxModel.boxData.displayAppSubs.count)
-                StatChip(label: "会话", count: boxModel.boxData.sessions.count)
+    // MARK: - Profile Header Card
+
+    private var profileHeaderCard: some View {
+        HStack(spacing: 16) {
+            // Avatar
+            if let iconUrl = boxModel.boxData.usercfgs?.icon,
+               !iconUrl.isEmpty,
+               let url = URL(string: iconUrl) {
+                WebImage(url: url)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 64, height: 64)
+                    .clipShape(Circle())
+                    .overlay(Circle().stroke(Color.white, lineWidth: 3))
+                    .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
+            } else {
+                ZStack {
+                    Circle()
+                        .fill(LinearGradient(
+                            colors: [Color(hex: "#002FA7"), Color(hex: "#0047D4")],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ))
+                        .frame(width: 64, height: 64)
+                    Image(systemName: "person.fill")
+                        .font(.system(size: 28))
+                        .foregroundColor(.white)
+                }
+                .overlay(Circle().stroke(Color.white, lineWidth: 3))
+                .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
             }
 
-            Divider()
+            VStack(alignment: .leading, spacing: 4) {
+                Text(boxModel.boxData.usercfgs?.name ?? "大侠, 请留名!")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(Color(hex: "#1A1918"))
 
-            // Actions
-            let columns = [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())]
-            LazyVGrid(columns: columns, spacing: 8) {
-                NavigationLink(destination: PreferencesView()) {
-                    profileActionLabel("偏好设置", icon: "gearshape")
-                }
-                NavigationLink(destination: ScriptEditorView()) {
-                    profileActionLabel("脚本编辑", icon: "chevron.left.forwardslash.chevron.right")
-                }
-                NavigationLink(destination: DataViewerView()) {
-                    profileActionLabel("数据查看", icon: "cylinder")
-                }
-                Button { showImportBak = true } label: {
-                    profileActionLabel("导入备份", icon: "square.and.arrow.down")
-                }
-                Button {
-                    Task {
-                        await boxModel.saveGlobalBak()
-                        toastManager.showToast(message: "备份成功!")
-                    }
-                } label: {
-                    profileActionLabel("创建备份", icon: "externaldrive.badge.plus", highlight: true)
-                }
-            }
-
-            Divider()
-
-            // API 地址行
-            HStack(spacing: 12) {
-                Image(systemName: "creditcard")
-                    .foregroundColor(.secondary)
-                    .font(.system(size: 16))
-                    .frame(width: 24)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("API 地址")
-                        .font(.system(size: 13))
-                        .foregroundColor(.secondary)
-                    Text(apiManager.apiUrl ?? "未设置")
-                        .font(.system(size: 14))
-                        .foregroundColor(.primary)
+                HStack(spacing: 4) {
+                    Image(systemName: "link")
+                        .font(.system(size: 11))
+                    Text(apiManager.apiUrl ?? "未连接")
                         .lineLimit(1)
                 }
-                Spacer()
-                Button("修改") {
-                    showApiSettings = true
-                }
-                .font(.system(size: 14))
-                .foregroundColor(.accentColor)
+                .font(.system(size: 12))
+                .foregroundColor(Color(hex: "#9098AD"))
+            }
+
+            Spacer()
+
+            Button {
+                editName = boxModel.boxData.usercfgs?.name ?? ""
+                editIcon = boxModel.boxData.usercfgs?.icon ?? ""
+                showEditProfile = true
+            } label: {
+                Image(systemName: "pencil.circle.fill")
+                    .font(.system(size: 28))
+                    .foregroundColor(Color(hex: "#002FA7").opacity(0.8))
             }
         }
         .padding(16)
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.08), radius: 5, x: 0, y: 2)
-        .sheet(isPresented: $showEditProfile) {
-            editProfileSheet
-        }
-        .sheet(isPresented: $showImportBak) {
-            importBakSheet
-        }
-        .sheet(isPresented: $showApiSettings) {
-            ApiSettingsView()
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .shadow(color: .black.opacity(0.05), radius: 8, y: 2)
+    }
+
+    // MARK: - Stats Row
+
+    private var statsRow: some View {
+        HStack(spacing: 12) {
+            StatCard(icon: "app.badge", label: "应用", count: boxModel.boxData.apps.count, color: Color(hex: "#002FA7"))
+            StatCard(icon: "square.stack", label: "订阅", count: boxModel.boxData.displayAppSubs.count, color: Color(hex: "#7C3AED"))
+            StatCard(icon: "person.2", label: "会话", count: boxModel.boxData.sessions.count, color: Color(hex: "#059669"))
         }
     }
 
-    // MARK: - Backup List
+    // MARK: - Quick Actions Card
 
-    private var backupListCard: some View {
-        Group {
+    private var quickActionsCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("工具")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(Color(hex: "#9098AD"))
+                .padding(.horizontal, 4)
+
+            VStack(spacing: 0) {
+                NavigationLink(destination: PreferencesView()) {
+                    ActionRow(icon: "slider.horizontal.3", title: "偏好设置", subtitle: "自定义 BoxJs 行为")
+                }
+                Divider().padding(.leading, 52)
+
+                NavigationLink(destination: ScriptEditorView()) {
+                    ActionRow(icon: "chevron.left.forwardslash.chevron.right", title: "脚本编辑", subtitle: "编辑和运行脚本")
+                }
+                Divider().padding(.leading, 52)
+
+                NavigationLink(destination: DataViewerView()) {
+                    ActionRow(icon: "cylinder", title: "数据查看", subtitle: "查看存储数据")
+                }
+            }
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        }
+    }
+
+    // MARK: - Backup Section
+
+    private var backupSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("备份")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(Color(hex: "#9098AD"))
+
+                Spacer()
+
+                HStack(spacing: 16) {
+                    Button {
+                        showImportBak = true
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "square.and.arrow.down")
+                                .font(.system(size: 12))
+                            Text("导入")
+                                .font(.system(size: 12, weight: .medium))
+                        }
+                        .foregroundColor(Color(hex: "#002FA7"))
+                    }
+
+                    Button {
+                        Task {
+                            await boxModel.saveGlobalBak()
+                            toastManager.showToast(message: "备份成功!")
+                        }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.system(size: 12))
+                            Text("创建")
+                                .font(.system(size: 12, weight: .medium))
+                        }
+                        .foregroundColor(Color(hex: "#002FA7"))
+                    }
+                }
+            }
+            .padding(.horizontal, 4)
+
             if let baks = boxModel.boxData.globalbaks, !baks.isEmpty {
-                VStack(alignment: .leading, spacing: 0) {
+                VStack(spacing: 0) {
                     ForEach(Array(baks.enumerated()), id: \.element.id) { index, bak in
                         NavigationLink(destination: BackupDetailView(backup: bak)) {
-                            HStack {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(bak.name)
-                                        .font(.system(size: 15))
-                                        .foregroundColor(.primary)
-
-                                    if let createTime = bak.createTime {
-                                        Text(formatBackupTime(createTime))
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                    }
-
-                                    if let tags = bak.tags, !tags.isEmpty {
-                                        HStack(spacing: 4) {
-                                            ForEach(tags.filter { !$0.isEmpty }, id: \.self) { tag in
-                                                Text(tag)
-                                                    .font(.system(size: 10))
-                                                    .padding(.horizontal, 6)
-                                                    .padding(.vertical, 2)
-                                                    .background(Color(.systemGray5))
-                                                    .cornerRadius(4)
-                                            }
-                                        }
-                                    }
-                                }
-
-                                Spacer()
-
-                                Image(systemName: "chevron.right")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            .padding(.vertical, 12)
-                            .padding(.horizontal, 16)
+                            BackupRow(backup: bak, formatTime: formatBackupTime)
                         }
 
                         if index < baks.count - 1 {
-                            Divider().padding(.leading, 16)
+                            Divider().padding(.leading, 52)
                         }
                     }
                 }
-                .background(Color(.systemBackground))
-                .cornerRadius(12)
-                .shadow(color: Color.black.opacity(0.08), radius: 5, x: 0, y: 2)
+                .background(Color.white)
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            } else {
+                HStack {
+                    Spacer()
+                    VStack(spacing: 8) {
+                        Image(systemName: "externaldrive.badge.timemachine")
+                            .font(.system(size: 32))
+                            .foregroundColor(Color(hex: "#9098AD").opacity(0.5))
+                        Text("暂无备份")
+                            .font(.system(size: 13))
+                            .foregroundColor(Color(hex: "#9098AD"))
+                    }
+                    .padding(.vertical, 32)
+                    Spacer()
+                }
+                .background(Color.white)
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
         }
     }
@@ -218,7 +293,7 @@ struct ProfileView: View {
     // MARK: - Edit Profile Sheet
 
     private var editProfileSheet: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 Section(header: Text("个人资料")) {
                     TextField("昵称", text: $editName)
@@ -233,11 +308,6 @@ struct ProfileView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("保存") {
-                        let params = [
-                            SessionData(key: "chavy_boxjs_userCfgs_name", val: AnyCodable(editName)),
-                            SessionData(key: "chavy_boxjs_userCfgs_icon", val: AnyCodable(editIcon))
-                        ]
-                        // Save via usercfgs update
                         boxModel.updateData(path: "usercfgs.name", data: editName)
                         boxModel.updateData(path: "usercfgs.icon", data: editIcon)
                         showEditProfile = false
@@ -251,7 +321,7 @@ struct ProfileView: View {
     // MARK: - Import Backup Sheet
 
     private var importBakSheet: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 Section(header: Text("导入备份"), footer: Text("粘贴备份数据 (JSON 格式)")) {
                     TextEditor(text: $importBakText)
@@ -284,21 +354,6 @@ struct ProfileView: View {
 
     // MARK: - Helpers
 
-    private func profileActionLabel(_ title: String, icon: String, highlight: Bool = false) -> some View {
-        VStack(spacing: 4) {
-            Image(systemName: icon)
-                .font(.system(size: 16))
-                .foregroundColor(highlight ? .accentColor : .secondary)
-            Text(title)
-                .font(.system(size: 11))
-                .foregroundColor(highlight ? .accentColor : .primary)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 10)
-        .background(highlight ? Color.accentColor.opacity(0.1) : Color(.systemGray6))
-        .cornerRadius(8)
-    }
-
     private static let isoFractional: ISO8601DateFormatter = {
         let f = ISO8601DateFormatter()
         f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
@@ -307,7 +362,7 @@ struct ProfileView: View {
     private static let isoFallback = ISO8601DateFormatter()
     private static let displayFormatter: DateFormatter = {
         let f = DateFormatter()
-        f.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        f.dateFormat = "yyyy-MM-dd HH:mm"
         return f
     }()
 
@@ -322,24 +377,129 @@ struct ProfileView: View {
     }
 }
 
-// MARK: - Stat Chip
+// MARK: - Stat Card
 
-struct StatChip: View {
+private struct StatCard: View {
+    let icon: String
     let label: String
     let count: Int
+    let color: Color
 
     var body: some View {
-        HStack(spacing: 4) {
-            Text(label)
-                .font(.system(size: 12))
-                .foregroundColor(.secondary)
-            Text("\(count)")
-                .font(.system(size: 12, weight: .medium))
+        VStack(spacing: 8) {
+            HStack {
+                Image(systemName: icon)
+                    .font(.system(size: 14))
+                    .foregroundColor(color)
+                Spacer()
+                Text("\(count)")
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundColor(Color(hex: "#1A1918"))
+            }
+            HStack {
+                Text(label)
+                    .font(.system(size: 12))
+                    .foregroundColor(Color(hex: "#9098AD"))
+                Spacer()
+            }
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 5)
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
+        .padding(12)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .shadow(color: .black.opacity(0.03), radius: 4, y: 1)
+    }
+}
+
+// MARK: - Action Row
+
+private struct ActionRow: View {
+    let icon: String
+    let title: String
+    let subtitle: String
+
+    var body: some View {
+        HStack(spacing: 12) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(Color(hex: "#F5F5F7"))
+                    .frame(width: 36, height: 36)
+                Image(systemName: icon)
+                    .font(.system(size: 14))
+                    .foregroundColor(Color(hex: "#002FA7"))
+            }
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.system(size: 15))
+                    .foregroundColor(Color(hex: "#1A1918"))
+                Text(subtitle)
+                    .font(.system(size: 12))
+                    .foregroundColor(Color(hex: "#9098AD"))
+            }
+
+            Spacer()
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(Color(hex: "#C7C7CC"))
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+    }
+}
+
+// MARK: - Backup Row
+
+private struct BackupRow: View {
+    let backup: GlobalBackup
+    let formatTime: (String) -> String
+
+    var body: some View {
+        HStack(spacing: 12) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(Color(hex: "#E8F5E9"))
+                    .frame(width: 36, height: 36)
+                Image(systemName: "externaldrive.fill")
+                    .font(.system(size: 14))
+                    .foregroundColor(Color(hex: "#059669"))
+            }
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(backup.name)
+                    .font(.system(size: 15))
+                    .foregroundColor(Color(hex: "#1A1918"))
+                    .lineLimit(1)
+
+                if let createTime = backup.createTime {
+                    Text(formatTime(createTime))
+                        .font(.system(size: 12))
+                        .foregroundColor(Color(hex: "#9098AD"))
+                }
+            }
+
+            Spacer()
+
+            if let tags = backup.tags, !tags.filter({ !$0.isEmpty }).isEmpty {
+                HStack(spacing: 4) {
+                    ForEach(tags.filter { !$0.isEmpty }.prefix(2), id: \.self) { tag in
+                        Text(tag)
+                            .font(.system(size: 10))
+                            .foregroundColor(Color(hex: "#6B7280"))
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Color(hex: "#F3F4F6"))
+                            .clipShape(Capsule())
+                    }
+                }
+            }
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(Color(hex: "#C7C7CC"))
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
     }
 }
 
@@ -505,7 +665,7 @@ struct ApiSettingsView: View {
     @State private var showResetConfirm = false
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 Section(header: Text("后端地址"), footer: Text("修改后将重新拉取数据")) {
                     HStack {

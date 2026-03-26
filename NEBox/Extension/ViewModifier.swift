@@ -68,3 +68,169 @@ private extension Array {
         indices.contains(index) ? self[index] : nil
     }
 }
+
+// MARK: - Enable swipe back gesture when navigation bar is hidden
+
+private struct SwipeBackEnabler: UIViewRepresentable {
+    func makeUIView(context: Context) -> UIView {
+        let view = SwipeBackView()
+        return view
+    }
+    func updateUIView(_ uiView: UIView, context: Context) {}
+}
+
+private class SwipeBackView: UIView {
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        enableSwipeBack()
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        enableSwipeBack()
+    }
+
+    private func enableSwipeBack() {
+        guard let nav = findNavigationController() else { return }
+        nav.interactivePopGestureRecognizer?.isEnabled = true
+        nav.interactivePopGestureRecognizer?.delegate = nil
+    }
+
+    private func findNavigationController() -> UINavigationController? {
+        var responder: UIResponder? = self
+        while let next = responder?.next {
+            if let nav = next as? UINavigationController {
+                return nav
+            }
+            responder = next
+        }
+        return nil
+    }
+}
+
+extension View {
+    func enableSwipeBack() -> some View {
+        background(SwipeBackEnabler())
+    }
+}
+
+// MARK: - iOS 26 Liquid Glass Modifiers
+
+/// Glass effect for floating tab bars and pill-shaped containers
+struct GlassTabBarModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content
+                .glassEffect(.regular.interactive(), in: .capsule)
+        } else {
+            content
+                .background(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 28, style: .continuous)
+                        .stroke(Color.white.opacity(0.4), lineWidth: 0.5)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+                .shadow(color: .black.opacity(0.1), radius: 16, y: 4)
+        }
+    }
+}
+
+/// Glass effect for card containers
+struct GlassCardModifier: ViewModifier {
+    var cornerRadius: CGFloat = 16
+
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content
+                .glassEffect(.regular, in: .rect(cornerRadius: cornerRadius))
+        } else {
+            content
+                .background(
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .fill(Color(.secondarySystemGroupedBackground))
+                )
+        }
+    }
+}
+
+/// Glass effect for prominent buttons
+struct GlassButtonModifier: ViewModifier {
+    let isDisabled: Bool
+
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content
+                .buttonStyle(.glassProminent)
+                .opacity(isDisabled ? 0.5 : 1.0)
+        } else {
+            content
+                .foregroundColor(.white)
+                .background(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(isDisabled ? Color.gray.opacity(0.4) : Color.accentColor)
+                )
+        }
+    }
+}
+
+extension View {
+    func glassTabBar() -> some View {
+        modifier(GlassTabBarModifier())
+    }
+
+    func glassCard(cornerRadius: CGFloat = 16) -> some View {
+        modifier(GlassCardModifier(cornerRadius: cornerRadius))
+    }
+
+    func glassButton(isDisabled: Bool = false) -> some View {
+        modifier(GlassButtonModifier(isDisabled: isDisabled))
+    }
+}
+
+// MARK: - Tab bar colors
+
+/// Single place to tweak **native `TabView`** (`.tint` + `UITabBar` tints) and the **custom floating bar** on older iOS.
+enum NEBoxTabBarPalette {
+    static let selected = Color(hex: "#002FA7")
+    static let unselected = Color(hex: "#A0A8BD")
+
+    /// Keep RGB in sync with the hex above — `UITabBar` uses UIKit colors.
+    static let selectedUIKit = UIColor(red: 0, green: 47 / 255, blue: 167 / 255, alpha: 1)
+    static let unselectedUIKit = UIColor(red: 160 / 255, green: 168 / 255, blue: 189 / 255, alpha: 1)
+}
+
+// MARK: - iOS Version Adaptive Utilities
+
+/// Returns the appropriate bottom inset for content views
+/// - iOS 26+: Native TabView with Liquid Glass tab bar (~90pt)
+/// - iOS < 26: Account for custom floating tab bar (110pt)
+func adaptiveBottomInset() -> CGFloat {
+    if #available(iOS 26.0, *) {
+        return 90
+    } else {
+        return 110
+    }
+}
+
+// MARK: - iOS 26 Tab bar (Liquid Glass)
+
+extension View {
+    /// Per-tab toolbar chrome for native `TabView` on iOS 26+ (attach to each tab’s root, not `TabView`).
+    @ViewBuilder
+    func neboxLiquidGlassTabBarChrome() -> some View {
+        if #available(iOS 26.0, *) {
+            self
+                .toolbarBackground(
+                    LinearGradient(
+                        colors: [Color(hex: "#EEF0FA"), Color(hex: "#F0EDF8"), Color(hex: "#F5F0F8")],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    ),
+                    for: .tabBar
+                )
+                .toolbarBackgroundVisibility(.visible, for: .tabBar)
+        } else {
+            self
+        }
+    }
+}

@@ -63,6 +63,7 @@ struct SubcribeView: View {
                 SubDetailView(sub: selectedSub)
             }
         }
+        .neboxLiquidGlassTabBarChrome()
         .alert("添加订阅", isPresented: $showAddAlert) {
             TextField("输入订阅地址", text: $addUrlInput)
                 .textInputAutocapitalization(.never)
@@ -193,7 +194,7 @@ struct SubCollectionViewWrapper: UIViewRepresentable {
 
     func makeUIView(context: Context) -> UICollectionView {
         let layout = UICollectionViewFlowLayout()
-        layout.sectionInset = UIEdgeInsets(top: 16, left: 20, bottom: 110, right: 20)
+        layout.sectionInset = UIEdgeInsets(top: 16, left: 20, bottom: adaptiveBottomInset(), right: 20)
         layout.minimumInteritemSpacing = 12
         layout.minimumLineSpacing = 12
 

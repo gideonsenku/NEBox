@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 @main
 struct NEBoxApp: App {
@@ -13,11 +14,20 @@ struct NEBoxApp: App {
     @StateObject var boxModel = BoxJsViewModel()
     @StateObject private var apiManager = ApiManager.shared
     init() {
-        // Make all container backgrounds transparent so the global background shows through
-        let tabBarAppearance = UITabBarAppearance()
-        tabBarAppearance.configureWithDefaultBackground()
-        UITabBar.appearance().standardAppearance = tabBarAppearance
-        UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
+        if #unavailable(iOS 26.0) {
+            let tabBarAppearance = UITabBarAppearance()
+            tabBarAppearance.configureWithTransparentBackground()
+            tabBarAppearance.backgroundColor = .clear
+            UITabBar.appearance().standardAppearance = tabBarAppearance
+            UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
+            UITabBar.appearance().isTranslucent = true
+        }
+
+        if #available(iOS 26.0, *) {
+            // Unselected tab icons/labels (selected uses SwiftUI `.tint` on `TabView`).
+            UITabBar.appearance().unselectedItemTintColor = NEBoxTabBarPalette.unselectedUIKit
+            UITabBar.appearance().tintColor = NEBoxTabBarPalette.selectedUIKit
+        }
 
         let navBarAppearance = UINavigationBarAppearance()
         navBarAppearance.configureWithTransparentBackground()

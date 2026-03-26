@@ -91,21 +91,14 @@ struct WelcomeSetupView: View {
                         Text("连接")
                             .font(.system(size: 16, weight: .semibold))
                     }
-                    .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .fill(inputIsEmpty ? Color.gray.opacity(0.4) : Color.accentColor)
-                    )
                 }
+                .glassButton(isDisabled: inputIsEmpty)
                 .disabled(inputIsEmpty)
             }
             .padding(24)
-            .background(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(Color(.secondarySystemGroupedBackground))
-            )
+            .glassCard()
             .padding(.horizontal, 24)
 
             Spacer().frame(height: 16)
@@ -144,38 +137,60 @@ struct ContentView: View {
                     }
                 )
             } else {
-                ZStack(alignment: .bottom) {
-                    Group {
-                        switch selectedTab {
-                        case 0:  HomeView(showSearch: $showSearch)
-                        case 1:  SubcribeView()
-                        case 2:  ProfileView()
-                        default: HomeView(showSearch: $showSearch)
-                        }
+                mainContent
+                    .overlay(GlobalToastView())
+                    .fullScreenCover(isPresented: $showSearch) {
+                        SearchView()
                     }
-
-                    floatingTabBar
-                        .zIndex(10)
-                }
-                .overlay(GlobalToastView())
-                .fullScreenCover(isPresented: $showSearch) {
-                    SearchView()
-                }
-                .onReceive(boxModel.$boxData) { data in
-                    guard let ver = data.syscfgs?.version, !ver.isEmpty, currentVersion.isEmpty else { return }
-                    currentVersion = ver
-                    checkVersion()
-                }
+                    .onReceive(boxModel.$boxData) { data in
+                        guard let ver = data.syscfgs?.version, !ver.isEmpty, currentVersion.isEmpty else { return }
+                        currentVersion = ver
+                        checkVersion()
+                    }
             }
         }
         .sheet(isPresented: $showVersionSheet) {
             versionSheet
         }
-        // Fill bottom safe area with gradient end color
         .background(Color(hex: "#F5F0F8").ignoresSafeArea(edges: .bottom))
     }
 
-    // MARK: - Floating Tab Bar
+    // MARK: - Main Content (iOS version adaptive)
+
+    @ViewBuilder
+    private var mainContent: some View {
+        if #available(iOS 26.0, *) {
+            TabView(selection: $selectedTab) {
+                Tab("Home", systemImage: "house", value: 0) {
+                    HomeView(showSearch: $showSearch)
+                }
+                Tab("Subs", systemImage: "square.stack", value: 1) {
+                    SubcribeView()
+                }
+                Tab("Profile", systemImage: "person", value: 2) {
+                    ProfileView()
+                }
+            }
+            .tint(NEBoxTabBarPalette.selected)
+            .tabBarMinimizeBehavior(.onScrollDown)
+        } else {
+            ZStack(alignment: .bottom) {
+                Group {
+                    switch selectedTab {
+                    case 0:  HomeView(showSearch: $showSearch)
+                    case 1:  SubcribeView()
+                    case 2:  ProfileView()
+                    default: HomeView(showSearch: $showSearch)
+                    }
+                }
+
+                floatingTabBar
+                    .zIndex(10)
+            }
+        }
+    }
+
+    // MARK: - Floating Tab Bar (iOS < 26)
 
     private var floatingTabBar: some View {
         HStack(spacing: 0) {
@@ -183,52 +198,50 @@ struct ContentView: View {
                 VStack(spacing: 4) {
                     Image(systemName: selectedTab == 0 ? "house.fill" : "house")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(selectedTab == 0 ? Color(hex: "#002FA7") : Color(hex: "#A0A8BD"))
+                        .foregroundColor(selectedTab == 0 ? NEBoxTabBarPalette.selected : NEBoxTabBarPalette.unselected)
                     Text("HOME")
                         .font(.system(size: 9, weight: selectedTab == 0 ? .bold : .medium))
-                        .foregroundColor(selectedTab == 0 ? Color(hex: "#002FA7") : Color(hex: "#A0A8BD"))
+                        .foregroundColor(selectedTab == 0 ? NEBoxTabBarPalette.selected : NEBoxTabBarPalette.unselected)
                         .kerning(0.5)
                 }
                 .frame(maxWidth: .infinity)
             }
+            .buttonStyle(.plain)
 
             Button { selectedTab = 1 } label: {
                 VStack(spacing: 4) {
                     Image(systemName: selectedTab == 1 ? "square.stack.fill" : "square.stack")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(selectedTab == 1 ? Color(hex: "#002FA7") : Color(hex: "#A0A8BD"))
+                        .foregroundColor(selectedTab == 1 ? NEBoxTabBarPalette.selected : NEBoxTabBarPalette.unselected)
                     Text("SUBS")
                         .font(.system(size: 9, weight: selectedTab == 1 ? .bold : .medium))
-                        .foregroundColor(selectedTab == 1 ? Color(hex: "#002FA7") : Color(hex: "#A0A8BD"))
+                        .foregroundColor(selectedTab == 1 ? NEBoxTabBarPalette.selected : NEBoxTabBarPalette.unselected)
                         .kerning(0.5)
                 }
                 .frame(maxWidth: .infinity)
             }
+            .buttonStyle(.plain)
 
             Button { selectedTab = 2 } label: {
                 VStack(spacing: 4) {
                     Image(systemName: selectedTab == 2 ? "person.fill" : "person")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(selectedTab == 2 ? Color(hex: "#002FA7") : Color(hex: "#A0A8BD"))
+                        .foregroundColor(selectedTab == 2 ? NEBoxTabBarPalette.selected : NEBoxTabBarPalette.unselected)
                     Text("PROFILE")
                         .font(.system(size: 9, weight: selectedTab == 2 ? .bold : .medium))
-                        .foregroundColor(selectedTab == 2 ? Color(hex: "#002FA7") : Color(hex: "#A0A8BD"))
+                        .foregroundColor(selectedTab == 2 ? NEBoxTabBarPalette.selected : NEBoxTabBarPalette.unselected)
                         .kerning(0.5)
                 }
                 .frame(maxWidth: .infinity)
             }
+            .buttonStyle(.plain)
         }
         .frame(height: 50)
         .padding(4)
-        .background(.ultraThinMaterial)
-        .overlay(
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .stroke(Color.white.opacity(0.4), lineWidth: 0.5)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
-        .shadow(color: .black.opacity(0.1), radius: 16, y: 4)
+        .glassTabBar()
         .padding(.horizontal, 21)
         .padding(.bottom, 4)
+        .animation(nil, value: selectedTab)
     }
 
     private func checkVersion() {
@@ -263,7 +276,7 @@ struct ContentView: View {
     }
 
     private var versionSheet: some View {
-        NavigationView {
+        NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     ForEach(versions) { ver in

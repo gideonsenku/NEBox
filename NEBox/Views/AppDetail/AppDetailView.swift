@@ -838,7 +838,7 @@ struct AppDetailView: View {
     // MARK: - Import Session Sheet
 
     private func importSessionSheet(app: AppModel) -> some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 Section(header: Text("导入会话"), footer: Text("粘贴会话数据 (JSON 格式)")) {
                     TextEditor(text: $importSessionText)
@@ -872,7 +872,7 @@ struct AppDetailView: View {
     // MARK: - Script Result Sheet
 
     private var scriptResultSheet: some View {
-        NavigationView {
+        NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 8) {
                     if let resp = scriptResult {

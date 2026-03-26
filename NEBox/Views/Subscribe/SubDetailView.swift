@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import SDWebImageSwiftUI
 
 struct SubDetailView: View {
     let sub: AppSubCache?
@@ -48,7 +49,7 @@ struct SubDetailView: View {
                         selectedApp: .constant(nil),
                         isNavigationActive: .constant(false),
                         isEditMode: .constant(false),
-                        bottomInset: 80,
+                        bottomInset: adaptiveBottomInset(),
                         allowsEdit: false,
                         tapOverride: { app in
                             Task { @MainActor in
@@ -76,6 +77,7 @@ struct SubDetailView: View {
         }
         .toolbar(.hidden, for: .navigationBar)
         .background(Color(hex: "#F5F0F8").ignoresSafeArea(edges: .bottom))
+        .enableSwipeBack()
     }
 
     // MARK: - Nav Bar
@@ -92,7 +94,7 @@ struct SubDetailView: View {
                         .foregroundColor(Color(hex: "#002FA7"))
 
                     if let iconURL = sub.flatMap({ URL(string: $0.icon) }), !sub!.icon.isEmpty {
-                        AsyncImage(url: iconURL) { image in
+                        WebImage(url: iconURL) { image in
                             image.resizable().scaledToFill()
                         } placeholder: {
                             Color(hex: "#ECEEF4")
