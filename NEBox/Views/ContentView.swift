@@ -145,20 +145,14 @@ struct ContentView: View {
                 )
             } else {
                 ZStack(alignment: .bottom) {
-                    HomeView(showSearch: $showSearch)
-                        .opacity(selectedTab == 0 ? 1 : 0)
-                        .allowsHitTesting(selectedTab == 0)
-                        .zIndex(selectedTab == 0 ? 1 : 0)
-
-                    SubcribeView()
-                        .opacity(selectedTab == 1 ? 1 : 0)
-                        .allowsHitTesting(selectedTab == 1)
-                        .zIndex(selectedTab == 1 ? 1 : 0)
-
-                    ProfileView()
-                        .opacity(selectedTab == 2 ? 1 : 0)
-                        .allowsHitTesting(selectedTab == 2)
-                        .zIndex(selectedTab == 2 ? 1 : 0)
+                    Group {
+                        switch selectedTab {
+                        case 0:  HomeView(showSearch: $showSearch)
+                        case 1:  SubcribeView()
+                        case 2:  ProfileView()
+                        default: HomeView(showSearch: $showSearch)
+                        }
+                    }
 
                     floatingTabBar
                         .zIndex(10)
@@ -169,10 +163,8 @@ struct ContentView: View {
                 }
                 .onReceive(boxModel.$boxData) { data in
                     guard let ver = data.syscfgs?.version, !ver.isEmpty, currentVersion.isEmpty else { return }
-                    DispatchQueue.main.async {
-                        currentVersion = ver
-                        checkVersion()
-                    }
+                    currentVersion = ver
+                    checkVersion()
                 }
             }
         }

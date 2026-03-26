@@ -71,8 +71,8 @@ struct HomeView: View {
                     }
                 }
                 .onAppear { items = boxModel.favApps }
-                .onReceive(boxModel.$favApps) { newItems in
-                    DispatchQueue.main.async { items = newItems }
+                .onReceive(boxModel.$boxData) { data in
+                    items = data.favApps
                 }
 
                 // Tool switcher overlay — instant show/hide (no animation = no blur artifact)
@@ -108,11 +108,9 @@ struct HomeView: View {
             if let tool = knownProxyTools.first(where: {
                 envLower.contains($0.id) || envLower.contains($0.name.lowercased())
             }) {
-                DispatchQueue.main.async {
-                    switchLog.info("🔍 auto-detected: \(tool.id) from env=\(env)")
-                    apiManager.registerTool(tool.id, url: apiManager.baseURL)
-                    apiManager.selectedToolId = tool.id
-                }
+                switchLog.info("🔍 auto-detected: \(tool.id) from env=\(env)")
+                apiManager.registerTool(tool.id, url: apiManager.baseURL)
+                apiManager.selectedToolId = tool.id
             }
         }
     }
@@ -344,16 +342,16 @@ struct CollectionViewWrapper: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: UICollectionView, context: Context) {
-        let wasEditMode = context.coordinator.isEditMode
-        context.coordinator.items = items
-        context.coordinator.isEditMode = isEditMode
-        context.coordinator.tapOverride = tapOverride
-        context.coordinator.favAppIds = favAppIds
-        let editModeChanged = isEditMode != wasEditMode
+        let coord = context.coordinator
+        let editModeChanged = isEditMode != coord.prevEditMode
+        // Only update non-binding properties; @Binding already reflects parent state
+        coord.tapOverride = tapOverride
+        coord.favAppIds = favAppIds
+        coord.prevEditMode = isEditMode
         DispatchQueue.main.async {
             uiView.reloadData()
             if editModeChanged {
-                context.coordinator.applyJiggle(to: uiView, enabled: isEditMode)
+                coord.applyJiggle(to: uiView, enabled: isEditMode)
             }
         }
     }
@@ -371,6 +369,7 @@ struct CollectionViewWrapper: UIViewRepresentable {
         var allowsEdit: Bool
         var tapOverride: ((AppModel) -> Void)?
         var favAppIds: Set<String>
+        var prevEditMode: Bool = false
         weak var collectionView: UICollectionView?
 
         init(items: Binding<[AppModel]>, boxModel: BoxJsViewModel, selectedApp: Binding<AppModel?>, isNavigationActive: Binding<Bool>, isEditMode: Binding<Bool>, allowsEdit: Bool, tapOverride: ((AppModel) -> Void)?, favAppIds: Set<String>) {
@@ -415,10 +414,14 @@ struct CollectionViewWrapper: UIViewRepresentable {
                 tapOverride(app)
             } else if isEditMode {
                 let updateIds = items.map { $0.id }.filter { $0 != app.id }
-                boxModel.updateData(path: "usercfgs.favapps", data: updateIds)
+                Task { @MainActor in
+                    boxModel.updateData(path: "usercfgs.favapps", data: updateIds)
+                }
             } else {
-                selectedApp = app
-                isNavigationActive = true
+                Task { @MainActor in
+                    selectedApp = app
+                    isNavigationActive = true
+                }
             }
         }
 
@@ -478,7 +481,10 @@ struct CollectionViewWrapper: UIViewRepresentable {
         func collectionView(_: UICollectionView, moveItemAt src: IndexPath, to dst: IndexPath) {
             let moved = items.remove(at: src.item)
             items.insert(moved, at: dst.item)
-            boxModel.updateData(path: "usercfgs.favapps", data: items.map { $0.id })
+            let ids = items.map { $0.id }
+            Task { @MainActor in
+                boxModel.updateData(path: "usercfgs.favapps", data: ids)
+            }
         }
     }
 }

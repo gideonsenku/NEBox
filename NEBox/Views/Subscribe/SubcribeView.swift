@@ -77,7 +77,7 @@ struct SubcribeView: View {
         }
         .onReceive(boxModel.$boxData) { data in
             if !isDragging {
-                DispatchQueue.main.async { items = data.displayAppSubs }
+                items = data.displayAppSubs
             }
         }
     }
@@ -224,25 +224,25 @@ struct SubCollectionViewWrapper: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: UICollectionView, context: Context) {
-        let prevIds = context.coordinator.lastRenderedIds
+        let coord = context.coordinator
+        let prevIds = coord.lastRenderedIds
         let newIds = items.map { $0.id }
         let newFingerprint = items.map { $0.id + $0.updateTime }
-        let editChanged = context.coordinator.prevEditMode != isEditMode
+        let editChanged = coord.prevEditMode != isEditMode
 
-        context.coordinator.items = items
-        context.coordinator.isEditMode = isEditMode
-        context.coordinator.isDragging = isDragging
-        context.coordinator.prevEditMode = isEditMode
-        context.coordinator.reorderGesture?.isEnabled = isEditMode
+        // Only update non-binding properties; @Binding already reflects parent state
+        coord.onTap = onTap
+        coord.prevEditMode = isEditMode
+        coord.reorderGesture?.isEnabled = isEditMode
 
-        let needsReload = !isDragging && (prevIds != newIds || context.coordinator.lastFingerprint != newFingerprint)
+        let needsReload = !isDragging && (prevIds != newIds || coord.lastFingerprint != newFingerprint)
         if needsReload {
-            context.coordinator.lastRenderedIds = newIds
-            context.coordinator.lastFingerprint = newFingerprint
+            coord.lastRenderedIds = newIds
+            coord.lastFingerprint = newFingerprint
         }
         DispatchQueue.main.async {
             if needsReload { uiView.reloadData() }
-            if editChanged { context.coordinator.applyEditMode(to: uiView, enabled: isEditMode) }
+            if editChanged { coord.applyEditMode(to: uiView, enabled: isEditMode) }
         }
     }
 
@@ -417,7 +417,9 @@ struct SubCollectionViewWrapper: UIViewRepresentable {
             let subs = boxModel.boxData.appsubs
             let reordered = items.compactMap { ordered in subs.first { $0.url == ordered.url } }
                 .map { ["url": $0.url, "enable": $0.enable, "id": $0.id ?? ""] as [String: Any] }
-            boxModel.updateData(path: "usercfgs.appsubs", data: reordered)
+            Task { @MainActor in
+                boxModel.updateData(path: "usercfgs.appsubs", data: reordered)
+            }
         }
 
         // MARK: Jiggle

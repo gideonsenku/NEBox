@@ -300,19 +300,26 @@ struct ProfileView: View {
         .cornerRadius(8)
     }
 
+    private static let isoFractional: ISO8601DateFormatter = {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return f
+    }()
+    private static let isoFallback = ISO8601DateFormatter()
+    private static let displayFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        return f
+    }()
+
     private func formatBackupTime(_ isoString: String) -> String {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        guard let date = formatter.date(from: isoString) else {
-            let fallback = ISO8601DateFormatter()
-            guard let d = fallback.date(from: isoString) else { return isoString }
-            let df = DateFormatter()
-            df.dateFormat = "yyyy-MM-dd HH:mm:ss"
-            return df.string(from: d)
+        if let date = Self.isoFractional.date(from: isoString) {
+            return Self.displayFormatter.string(from: date)
         }
-        let df = DateFormatter()
-        df.dateFormat = "yyyy-MM-dd HH:mm:ss"
-        return df.string(from: date)
+        if let date = Self.isoFallback.date(from: isoString) {
+            return Self.displayFormatter.string(from: date)
+        }
+        return isoString
     }
 }
 

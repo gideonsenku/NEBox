@@ -9,13 +9,10 @@ import SwiftUI
 import AnyCodable
 
 class BoxJsViewModel: ObservableObject {
-    @Published var favApps: [AppModel]
-    @Published var boxData: BoxDataResp {
-        didSet {
-            favApps = boxData.favApps
-        }
-    }
+    @Published var boxData: BoxDataResp
     @Published var isDataLoaded = false
+
+    var favApps: [AppModel] { boxData.favApps }
 
     var toastManager: ToastManager?
     private let iconThemeIdx = 0
@@ -31,7 +28,6 @@ class BoxJsViewModel: ObservableObject {
         syscfgs: nil
     )) {
         self.boxData = boxData
-        favApps = []
     }
 
     @MainActor
@@ -40,7 +36,6 @@ class BoxJsViewModel: ObservableObject {
     }
 
     func reset() {
-        favApps = []
         isDataLoaded = false
     }
 

@@ -12,8 +12,6 @@ struct SubDetailView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var items: [AppModel]
-    @State private var selectedApp: AppModel? = nil
-    @State private var isNavActive: Bool = false
 
     init(sub: AppSubCache?) {
         self.sub = sub
@@ -47,17 +45,19 @@ struct SubDetailView: View {
                     CollectionViewWrapper(
                         items: $items,
                         boxModel: boxModel,
-                        selectedApp: $selectedApp,
-                        isNavigationActive: $isNavActive,
+                        selectedApp: .constant(nil),
+                        isNavigationActive: .constant(false),
                         isEditMode: .constant(false),
                         bottomInset: 34,
                         allowsEdit: false,
                         tapOverride: { app in
-                            let favIds = boxModel.boxData.usercfgs?.favapps ?? []
-                            if favIds.contains(app.id) {
-                                boxModel.updateData(path: "usercfgs.favapps", data: favIds.filter { $0 != app.id })
-                            } else {
-                                boxModel.updateData(path: "usercfgs.favapps", data: favIds + [app.id])
+                            Task { @MainActor in
+                                let favIds = boxModel.boxData.usercfgs?.favapps ?? []
+                                if favIds.contains(app.id) {
+                                    boxModel.updateData(path: "usercfgs.favapps", data: favIds.filter { $0 != app.id })
+                                } else {
+                                    boxModel.updateData(path: "usercfgs.favapps", data: favIds + [app.id])
+                                }
                             }
                         },
                         favAppIds: Set(boxModel.favApps.map { $0.id })
@@ -76,9 +76,6 @@ struct SubDetailView: View {
         }
         .toolbar(.hidden, for: .navigationBar)
         .background(Color(hex: "#F5F0F8").ignoresSafeArea(edges: .bottom))
-        .navigationDestination(isPresented: $isNavActive) {
-            AppDetailView(app: selectedApp)
-        }
     }
 
     // MARK: - Nav Bar
