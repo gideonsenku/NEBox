@@ -7,24 +7,25 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		364D296303964521B29BE952 /* SubDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C61523AAFFC54CBBBD390BBB /* SubDetailView.swift */; };
 		AA00000100000001000000A1 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000100000001000000A2 /* ProfileView.swift */; };
 		AA00000100000002000000A1 /* DataViewerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000100000002000000A2 /* DataViewerView.swift */; };
 		AA00000100000003000000A1 /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000100000003000000A2 /* SearchView.swift */; };
 		AA00000100000004000000A1 /* PreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000100000004000000A2 /* PreferencesView.swift */; };
 		AA00000100000005000000A1 /* ScriptEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000100000005000000A2 /* ScriptEditorView.swift */; };
+		B0A0000100000001000000A1 /* BoxJSAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A0000100000001000000A2 /* BoxJSAPI.swift */; };
+		B0A0000100000002000000A1 /* NetworkProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A0000100000002000000A2 /* NetworkProvider.swift */; };
+		B0A0000100000003000000A1 /* Moya in Frameworks */ = {isa = PBXBuildFile; productRef = B0A0000100000003000000A2 /* Moya */; };
 		E21043252C89951C00347C43 /* RadioButtonGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21043242C89951C00347C43 /* RadioButtonGroup.swift */; };
-		E21043282C8ADBC100347C43 /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = E21043272C8ADBC100347C43 /* MarkdownUI */; };
 		E210432C2C90307000347C43 /* CheckBoxGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = E210432B2C90307000347C43 /* CheckBoxGroup.swift */; };
 		E210FCEF2CBF6DCA004A8CFB /* ApiManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E210FCEE2CBF6DC7004A8CFB /* ApiManager.swift */; };
 		E23F56042C7DBDCD0039F1CC /* AppDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E23F56032C7DBDCD0039F1CC /* AppDetailView.swift */; };
-		E2AA91BE2C732E4200EB02B2 /* SwipeCellKit in Frameworks */ = {isa = PBXBuildFile; productRef = E2AA91BD2C732E4200EB02B2 /* SwipeCellKit */; };
 		E2C273562C354F4A004952AA /* NEBoxApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C273552C354F4A004952AA /* NEBoxApp.swift */; };
 		E2C273582C354F4A004952AA /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C273572C354F4A004952AA /* ContentView.swift */; };
 		E2C2735A2C354F4B004952AA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E2C273592C354F4B004952AA /* Assets.xcassets */; };
 		E2C2735D2C354F4B004952AA /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E2C2735C2C354F4B004952AA /* Preview Assets.xcassets */; };
 		E2C273642C355309004952AA /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C273632C355309004952AA /* HomeView.swift */; };
 		E2C273682C36BB88004952AA /* SubcribeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C273672C36BB88004952AA /* SubcribeView.swift */; };
-		364D296303964521B29BE952 /* SubDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C61523AAFFC54CBBBD390BBB /* SubDetailView.swift */; };
 		E2E8BA822C6B67BB00C2AF9E /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E8BA812C6B67BB00C2AF9E /* Utils.swift */; };
 		E2E8BA852C6CA43300C2AF9E /* ToastManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E8BA842C6CA43300C2AF9E /* ToastManager.swift */; };
 		E2E8BA872C6CA46400C2AF9E /* GlobalToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E8BA862C6CA46400C2AF9E /* GlobalToastView.swift */; };
@@ -35,9 +36,6 @@
 		E2E9E2592C45072F00836E4B /* AnyCodable in Frameworks */ = {isa = PBXBuildFile; productRef = E2E9E2582C45072F00836E4B /* AnyCodable */; };
 		E2E9E2612C46200D00836E4B /* BoxDataModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E9E2602C46200D00836E4B /* BoxDataModel.swift */; };
 		E2E9E2642C464CC300836E4B /* ArrayExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E9E2632C464CC300836E4B /* ArrayExtension.swift */; };
-		B0A0000100000001000000A1 /* BoxJSAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A0000100000001000000A2 /* BoxJSAPI.swift */; };
-		B0A0000100000002000000A1 /* NetworkProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A0000100000002000000A2 /* NetworkProvider.swift */; };
-		B0A0000100000003000000A1 /* Moya in Frameworks */ = {isa = PBXBuildFile; productRef = B0A0000100000003000000A2 /* Moya */; };
 		E2E9E26B2C4A7E5B00836E4B /* ViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E9E26A2C4A7E5B00836E4B /* ViewModifier.swift */; };
 		E2E9E2792C4FE81800836E4B /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = E2E9E2782C4FE81800836E4B /* SDWebImageSwiftUI */; };
 /* End PBXBuildFile section */
@@ -48,6 +46,9 @@
 		AA00000100000003000000A2 /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
 		AA00000100000004000000A2 /* PreferencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesView.swift; sourceTree = "<group>"; };
 		AA00000100000005000000A2 /* ScriptEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptEditorView.swift; sourceTree = "<group>"; };
+		B0A0000100000001000000A2 /* BoxJSAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxJSAPI.swift; sourceTree = "<group>"; };
+		B0A0000100000002000000A2 /* NetworkProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkProvider.swift; sourceTree = "<group>"; };
+		C61523AAFFC54CBBBD390BBB /* SubDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubDetailView.swift; sourceTree = "<group>"; };
 		E21043242C89951C00347C43 /* RadioButtonGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadioButtonGroup.swift; sourceTree = "<group>"; };
 		E210432B2C90307000347C43 /* CheckBoxGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckBoxGroup.swift; sourceTree = "<group>"; };
 		E210FCEE2CBF6DC7004A8CFB /* ApiManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiManager.swift; sourceTree = "<group>"; };
@@ -59,13 +60,10 @@
 		E2C2735C2C354F4B004952AA /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		E2C273632C355309004952AA /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		E2C273672C36BB88004952AA /* SubcribeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubcribeView.swift; sourceTree = "<group>"; };
-		C61523AAFFC54CBBBD390BBB /* SubDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubDetailView.swift; sourceTree = "<group>"; };
 		E2E8BA812C6B67BB00C2AF9E /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		E2E8BA842C6CA43300C2AF9E /* ToastManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastManager.swift; sourceTree = "<group>"; };
 		E2E8BA862C6CA46400C2AF9E /* GlobalToastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalToastView.swift; sourceTree = "<group>"; };
 		E2E9E24F2C3FE9A800836E4B /* Vibration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Vibration.swift; sourceTree = "<group>"; };
-		B0A0000100000001000000A2 /* BoxJSAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxJSAPI.swift; sourceTree = "<group>"; };
-		B0A0000100000002000000A2 /* NetworkProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkProvider.swift; sourceTree = "<group>"; };
 		E2E9E2512C40FD5000836E4B /* ApiRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiRequest.swift; sourceTree = "<group>"; };
 		E2E9E2552C4101AC00836E4B /* BoxJsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxJsViewModel.swift; sourceTree = "<group>"; };
 		E2E9E2602C46200D00836E4B /* BoxDataModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxDataModel.swift; sourceTree = "<group>"; };
@@ -81,8 +79,6 @@
 				E2E9E2792C4FE81800836E4B /* SDWebImageSwiftUI in Frameworks */,
 				B0A0000100000003000000A1 /* Moya in Frameworks */,
 				E2E9E2592C45072F00836E4B /* AnyCodable in Frameworks */,
-				E21043282C8ADBC100347C43 /* MarkdownUI in Frameworks */,
-				E2AA91BE2C732E4200EB02B2 /* SwipeCellKit in Frameworks */,
 				E2E9E2472C3FCA9D00836E4B /* Alamofire in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -163,6 +159,41 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
+		E2E9E24C2C3FDB0900836E4B /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				E2E9E2552C4101AC00836E4B /* BoxJsViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		E2E9E24D2C3FDB1400836E4B /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				E2E9E2602C46200D00836E4B /* BoxDataModel.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		E2E9E24E2C3FDB2300836E4B /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				E2E9E24F2C3FE9A800836E4B /* Vibration.swift */,
+				E2E8BA812C6B67BB00C2AF9E /* Utils.swift */,
+			);
+			path = Helpers;
+			sourceTree = "<group>";
+		};
+		E2E9E2622C464C9800836E4B /* Extension */ = {
+			isa = PBXGroup;
+			children = (
+				E2E9E2632C464CC300836E4B /* ArrayExtension.swift */,
+				E2E9E26A2C4A7E5B00836E4B /* ViewModifier.swift */,
+				E2E8BA862C6CA46400C2AF9E /* GlobalToastView.swift */,
+			);
+			path = Extension;
+			sourceTree = "<group>";
+		};
 		F0000001000000000000000A /* Home */ = {
 			isa = PBXGroup;
 			children = (
@@ -209,41 +240,6 @@
 			path = Components;
 			sourceTree = "<group>";
 		};
-		E2E9E24C2C3FDB0900836E4B /* ViewModels */ = {
-			isa = PBXGroup;
-			children = (
-				E2E9E2552C4101AC00836E4B /* BoxJsViewModel.swift */,
-			);
-			path = ViewModels;
-			sourceTree = "<group>";
-		};
-		E2E9E24D2C3FDB1400836E4B /* Models */ = {
-			isa = PBXGroup;
-			children = (
-				E2E9E2602C46200D00836E4B /* BoxDataModel.swift */,
-			);
-			path = Models;
-			sourceTree = "<group>";
-		};
-		E2E9E24E2C3FDB2300836E4B /* Helpers */ = {
-			isa = PBXGroup;
-			children = (
-				E2E9E24F2C3FE9A800836E4B /* Vibration.swift */,
-				E2E8BA812C6B67BB00C2AF9E /* Utils.swift */,
-			);
-			path = Helpers;
-			sourceTree = "<group>";
-		};
-		E2E9E2622C464C9800836E4B /* Extension */ = {
-			isa = PBXGroup;
-			children = (
-				E2E9E2632C464CC300836E4B /* ArrayExtension.swift */,
-				E2E9E26A2C4A7E5B00836E4B /* ViewModifier.swift */,
-				E2E8BA862C6CA46400C2AF9E /* GlobalToastView.swift */,
-			);
-			path = Extension;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -265,8 +261,6 @@
 				E2E9E2582C45072F00836E4B /* AnyCodable */,
 				B0A0000100000003000000A2 /* Moya */,
 				E2E9E2782C4FE81800836E4B /* SDWebImageSwiftUI */,
-				E2AA91BD2C732E4200EB02B2 /* SwipeCellKit */,
-				E21043272C8ADBC100347C43 /* MarkdownUI */,
 			);
 			productName = NEBox;
 			productReference = E2C273522C354F4A004952AA /* NEBox.app */;
@@ -301,8 +295,6 @@
 				E2E9E2572C45072F00836E4B /* XCRemoteSwiftPackageReference "AnyCodable" */,
 				B0A0000100000003000000B1 /* XCRemoteSwiftPackageReference "Moya" */,
 				E2E9E2772C4FE81700836E4B /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */,
-				E2AA91BC2C732E4200EB02B2 /* XCRemoteSwiftPackageReference "SwipeCellKit" */,
-				E21043262C8ADBC100347C43 /* XCRemoteSwiftPackageReference "swift-markdown-ui" */,
 			);
 			productRefGroup = E2C273532C354F4A004952AA /* Products */;
 			projectDirPath = "";
@@ -576,20 +568,12 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		E21043262C8ADBC100347C43 /* XCRemoteSwiftPackageReference "swift-markdown-ui" */ = {
+		B0A0000100000003000000B1 /* XCRemoteSwiftPackageReference "Moya" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/gonzalezreal/swift-markdown-ui";
+			repositoryURL = "https://github.com/Moya/Moya";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 2.4.0;
-			};
-		};
-		E2AA91BC2C732E4200EB02B2 /* XCRemoteSwiftPackageReference "SwipeCellKit" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/SwipeCellKit/SwipeCellKit";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.7.1;
+				minimumVersion = 15.0.3;
 			};
 		};
 		E2E9E2452C3FCA9D00836E4B /* XCRemoteSwiftPackageReference "Alamofire" */ = {
@@ -608,14 +592,6 @@
 				minimumVersion = 0.6.7;
 			};
 		};
-		B0A0000100000003000000B1 /* XCRemoteSwiftPackageReference "Moya" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/Moya/Moya";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 15.0.3;
-			};
-		};
 		E2E9E2772C4FE81700836E4B /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SDWebImage/SDWebImageSwiftUI";
@@ -627,15 +603,10 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		E21043272C8ADBC100347C43 /* MarkdownUI */ = {
+		B0A0000100000003000000A2 /* Moya */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = E21043262C8ADBC100347C43 /* XCRemoteSwiftPackageReference "swift-markdown-ui" */;
-			productName = MarkdownUI;
-		};
-		E2AA91BD2C732E4200EB02B2 /* SwipeCellKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = E2AA91BC2C732E4200EB02B2 /* XCRemoteSwiftPackageReference "SwipeCellKit" */;
-			productName = SwipeCellKit;
+			package = B0A0000100000003000000B1 /* XCRemoteSwiftPackageReference "Moya" */;
+			productName = Moya;
 		};
 		E2E9E2462C3FCA9D00836E4B /* Alamofire */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -646,11 +617,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = E2E9E2572C45072F00836E4B /* XCRemoteSwiftPackageReference "AnyCodable" */;
 			productName = AnyCodable;
-		};
-		B0A0000100000003000000A2 /* Moya */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = B0A0000100000003000000B1 /* XCRemoteSwiftPackageReference "Moya" */;
-			productName = Moya;
 		};
 		E2E9E2782C4FE81800836E4B /* SDWebImageSwiftUI */ = {
 			isa = XCSwiftPackageProductDependency;

@@ -1,5 +1,5 @@
 {
-  "originHash" : "d769922421245160ba22163118153d1130e7b25db2cd7cae4cb25b0647379350",
+  "originHash" : "dbfb4eabc32584223011c35be9eb18d578c027f3ec695b69910ac75ce26a16ae",
   "pins" : [
     {
       "identity" : "alamofire",
@@ -26,15 +26,6 @@
       "state" : {
         "revision" : "c263811c1f3dbf002be9bd83107f7cdc38992b26",
         "version" : "15.0.3"
-      }
-    },
-    {
-      "identity" : "networkimage",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/gonzalezreal/NetworkImage",
-      "state" : {
-        "revision" : "7aff8d1b31148d32c5933d75557d42f6323ee3d1",
-        "version" : "6.0.0"
       }
     },
     {
@@ -71,24 +62,6 @@
       "state" : {
         "revision" : "5d462f7530677ae0c2b9510c26383aa25ba48751",
         "version" : "3.1.1"
-      }
-    },
-    {
-      "identity" : "swift-markdown-ui",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/gonzalezreal/swift-markdown-ui",
-      "state" : {
-        "revision" : "55441810c0f678c78ed7e2ebd46dde89228e02fc",
-        "version" : "2.4.0"
-      }
-    },
-    {
-      "identity" : "swipecellkit",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/SwipeCellKit/SwipeCellKit",
-      "state" : {
-        "revision" : "7219cad3098637176ace311510d11467dbfb9bb0",
-        "version" : "2.7.1"
       }
     }
   ],
