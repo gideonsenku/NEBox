@@ -35,6 +35,7 @@ class BoxJsViewModel: ObservableObject {
         self.boxData = boxdata
     }
 
+    @MainActor
     func reset() {
         isDataLoaded = false
     }
@@ -62,9 +63,11 @@ class BoxJsViewModel: ObservableObject {
                 await updateBoxData(boxdata)
                 await MainActor.run { self.isDataLoaded = true }
             } catch {
-                await MainActor.run { self.isDataLoaded = true }
+                await MainActor.run {
+                    self.isDataLoaded = true
+                    toastManager?.showToast(message: "加载数据失败")
+                }
                 let msg = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
-                toastManager?.showToast(message: "加载数据失败")
                 print("[fetchData] \(msg)")
             }
         }

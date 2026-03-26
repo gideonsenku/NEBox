@@ -3,28 +3,29 @@ import UIKit
 import SDWebImageSwiftUI
 import os.log
 
-// MARK: - Proxy Tool Model
+private let homeLog = Logger(subsystem: "NEBox", category: "HomeView")
 
-private struct ProxyTool: Identifiable {
-    let id: String
-    let name: String
-    let iconURL: String
+/// Fallback icon URL derived from env id
+private func fallbackIconURL(for envId: String) -> String {
+    let key = envId.lowercased()
+        .replacingOccurrences(of: " ", with: "")
+        .replacingOccurrences(of: "-", with: "")
+    return "https://raw.githubusercontent.com/Orz-3/mini/master/Color/\(key).png"
 }
 
-private let knownProxyTools: [ProxyTool] = [
-    ProxyTool(id: "loon",         name: "Loon",         iconURL: "https://raw.githubusercontent.com/Orz-3/mini/master/Color/loon.png"),
-    ProxyTool(id: "surge",        name: "Surge",        iconURL: "https://raw.githubusercontent.com/Orz-3/mini/master/Color/surge.png"),
-    ProxyTool(id: "shadowrocket", name: "Shadowrocket", iconURL: "https://raw.githubusercontent.com/Orz-3/mini/master/Color/shadowrocket.png"),
-    ProxyTool(id: "quantumult-x", name: "Quantumult X", iconURL: "https://raw.githubusercontent.com/Orz-3/mini/master/Color/quantumultx.png"),
-]
-
-private let switchLog = Logger(subsystem: "NEBox", category: "ToolSwitch")
+/// Best icon URL for a SysEnv: prefer Color icon (index 1), then first, then fallback
+private func iconURL(for env: SysEnv) -> String {
+    if let icons = env.icons {
+        if icons.count > 1, !icons[1].isEmpty { return icons[1] }
+        if let first = icons.first, !first.isEmpty { return first }
+    }
+    return fallbackIconURL(for: env.id)
+}
 
 // MARK: - HomeView
 
 struct HomeView: View {
     @EnvironmentObject var boxModel: BoxJsViewModel
-    @EnvironmentObject var apiManager: ApiManager
     @Binding var showSearch: Bool
 
     @State var items: [AppModel] = []
@@ -32,13 +33,8 @@ struct HomeView: View {
     @State private var isNavigationActive: Bool = false
     @State private var isEditMode: Bool = false
 
-    // Tool switching
-    @State private var showToolSwitcher: Bool = false
-    @State private var pendingTool: ProxyTool? = nil
-    @State private var toolUrlInput: String = ""
-    @State private var showUrlAlert: Bool = false
-
-    private var activeToolId: String? { apiManager.selectedToolId }
+    private var activeEnv: String? { boxModel.boxData.syscfgs?.env }
+    private var availableEnvs: [SysEnv] { boxModel.boxData.syscfgs?.envs ?? [] }
 
     var body: some View {
         NavigationStack {
@@ -75,42 +71,11 @@ struct HomeView: View {
                     items = data.favApps
                 }
 
-                // Tool switcher overlay — instant show/hide (no animation = no blur artifact)
-                if showToolSwitcher {
-                    toolSwitcherOverlay
-                }
             }
             .toolbar(.hidden, for: .navigationBar)
             .toolbarBackground(.hidden, for: .navigationBar)
             .navigationDestination(isPresented: $isNavigationActive) {
                 AppDetailView(app: selectedApp)
-            }
-        }
-        .alert("配置 \(pendingTool?.name ?? "") 地址", isPresented: $showUrlAlert) {
-            TextField("http://127.0.0.1:9090", text: $toolUrlInput)
-                .textInputAutocapitalization(.never)
-                .autocorrectionDisabled()
-            Button("确定") {
-                guard let tool = pendingTool, !toolUrlInput.isEmpty else { return }
-                apiManager.registerTool(tool.id, url: toolUrlInput)
-                apiManager.switchToTool(tool.id)
-                boxModel.reset()
-                boxModel.fetchData()
-            }
-            Button("取消", role: .cancel) {}
-        } message: {
-            Text("请输入该代理工具的 BoxJs API 地址")
-        }
-        .onReceive(boxModel.$boxData) { data in
-            guard apiManager.selectedToolId == nil,
-                  let env = data.syscfgs?.env, !env.isEmpty else { return }
-            let envLower = env.lowercased()
-            if let tool = knownProxyTools.first(where: {
-                envLower.contains($0.id) || envLower.contains($0.name.lowercased())
-            }) {
-                switchLog.info("🔍 auto-detected: \(tool.id) from env=\(env)")
-                apiManager.registerTool(tool.id, url: apiManager.baseURL)
-                apiManager.selectedToolId = tool.id
             }
         }
     }
@@ -119,21 +84,10 @@ struct HomeView: View {
 
     private var navBar: some View {
         HStack(spacing: 0) {
-            // Left: tool switcher button
-            Button {
-                withAnimation(.easeOut(duration: 0.15)) {
-                    showToolSwitcher = true
-                }
-            } label: {
-                HStack(spacing: 6) {
-                    toolAvatarView
-                        .frame(width: 36, height: 36)
-                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                    Image(systemName: "chevron.down")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(Color(hex: "#9098AD"))
-                }
-            }
+            // Left: current tool indicator (read-only)
+            toolAvatarView
+                .frame(width: 36, height: 36)
+                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
 
             Spacer()
 
@@ -163,60 +117,28 @@ struct HomeView: View {
 
     @ViewBuilder
     private var toolAvatarView: some View {
-        if let activeId = activeToolId,
-           let tool = knownProxyTools.first(where: { $0.id == activeId }),
-           let url = URL(string: tool.iconURL) {
-            WebImage(url: url)
-                .resizable()
-                .scaledToFill()
+        if let envId = activeEnv, !envId.isEmpty {
+            let urlString: String = {
+                if let sysEnv = availableEnvs.first(where: { $0.id == envId }) {
+                    return iconURL(for: sysEnv)
+                }
+                return fallbackIconURL(for: envId)
+            }()
+            WebImage(url: URL(string: urlString)) { image in
+                image.resizable().scaledToFill()
+            } placeholder: {
+                Text(envId.prefix(1))
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(Color(hex: "#002FA7"))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color(hex: "#EEF0FA"))
+            }
         } else {
             Image(systemName: "network")
                 .font(.system(size: 18))
                 .foregroundColor(Color(hex: "#9098AD"))
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color(hex: "#EEF0FA"))
-        }
-    }
-
-    // MARK: - Tool Switcher Overlay
-    // UIKit UIVisualEffectView renders atomically — no SwiftUI top-to-bottom blur artifact
-
-    private var toolSwitcherOverlay: some View {
-        ZStack(alignment: .topLeading) {
-            // Scrim: UIKit blur (renders instantly) + 12% black tint per design
-            UIKitBlurView(style: .systemUltraThinMaterial)
-                .overlay(Color.black.opacity(0.12))
-                .ignoresSafeArea()
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    withAnimation(.easeOut(duration: 0.15)) {
-                        showToolSwitcher = false
-                    }
-                }
-
-            // Panel
-            VStack(alignment: .leading, spacing: 0) {
-                ForEach(knownProxyTools) { tool in
-                    ToolSwitcherRow(
-                        tool: tool,
-                        isActive: tool.id == activeToolId,
-                        isConfigured: apiManager.toolUrls[tool.id] != nil
-                    ) {
-                        withAnimation(.easeOut(duration: 0.15)) {
-                            showToolSwitcher = false
-                        }
-                        handleToolTap(tool)
-                    }
-                }
-            }
-            .padding(.vertical, 8)
-            .frame(width: 200)
-            .background(Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-            .shadow(color: Color(hex: "#1A1918").opacity(0.094), radius: 20, y: 4)
-            .shadow(color: Color(hex: "#1A1918").opacity(0.063), radius: 1)
-            .padding(.leading, 16)
-            .padding(.top, 56 + 8)
         }
     }
 
@@ -245,63 +167,6 @@ struct HomeView: View {
         }
     }
 
-    private func handleToolTap(_ tool: ProxyTool) {
-        let isConfigured = apiManager.toolUrls[tool.id] != nil
-        switchLog.info("👆 tap:\(tool.id) configured=\(isConfigured)")
-        if isConfigured {
-            apiManager.switchToTool(tool.id)
-            boxModel.reset()
-            boxModel.fetchData()
-        } else {
-            pendingTool = tool
-            toolUrlInput = ""
-            showUrlAlert = true
-        }
-    }
-}
-
-// MARK: - Tool Switcher Row
-
-private struct ToolSwitcherRow: View {
-    let tool: ProxyTool
-    let isActive: Bool
-    let isConfigured: Bool
-    let onTap: () -> Void
-
-    var body: some View {
-        Button(action: onTap) {
-            HStack(spacing: 12) {
-                WebImage(url: URL(string: tool.iconURL))
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 28, height: 28)
-                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-                    .opacity(isConfigured ? 1 : 0.4)
-
-                Text(tool.name)
-                    .font(.system(size: 14, weight: isActive ? .bold : .medium))
-                    .foregroundColor(isActive ? Color(hex: "#002FA7") : (isConfigured ? Color(hex: "#0F1729") : Color(hex: "#A0A8BD")))
-
-                Spacer()
-
-                if isActive {
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 12, weight: .bold))
-                        .foregroundColor(Color(hex: "#002FA7"))
-                } else if !isConfigured {
-                    Image(systemName: "plus")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(Color(hex: "#A0A8BD"))
-                }
-            }
-            .padding(.horizontal, 12)
-            .frame(height: 44)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(isActive ? Color(hex: "#E0E8F7") : Color.clear)
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-        }
-        .padding(.horizontal, 6)
-    }
 }
 
 // MARK: - CollectionViewWrapper
@@ -571,19 +436,6 @@ class MyCell: UICollectionViewCell {
 
     @available(*, unavailable)
     required init?(coder _: NSCoder) { fatalError() }
-}
-
-// MARK: - UIKit Blur View
-// Wraps UIVisualEffectView so the blur renders atomically (no SwiftUI top-to-bottom progressive render)
-
-private struct UIKitBlurView: UIViewRepresentable {
-    let style: UIBlurEffect.Style
-
-    func makeUIView(context: Context) -> UIVisualEffectView {
-        UIVisualEffectView(effect: UIBlurEffect(style: style))
-    }
-
-    func updateUIView(_ uiView: UIVisualEffectView, context: Context) {}
 }
 
 #Preview {

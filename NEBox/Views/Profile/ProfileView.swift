@@ -15,7 +15,6 @@ struct ProfileView: View {
     @EnvironmentObject var boxModel: BoxJsViewModel
     @EnvironmentObject var toastManager: ToastManager
     @EnvironmentObject var apiManager: ApiManager
-
     @State private var showEditProfile = false
     @State private var showImportBak = false
     @State private var showApiSettings = false

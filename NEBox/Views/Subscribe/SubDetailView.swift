@@ -48,7 +48,7 @@ struct SubDetailView: View {
                         selectedApp: .constant(nil),
                         isNavigationActive: .constant(false),
                         isEditMode: .constant(false),
-                        bottomInset: 34,
+                        bottomInset: 80,
                         allowsEdit: false,
                         tapOverride: { app in
                             Task { @MainActor in

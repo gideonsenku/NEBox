@@ -375,8 +375,14 @@ struct VersionsResp: Codable {
 }
 
 // Add syscfgs to BoxDataResp
+struct SysEnv: Codable, Identifiable {
+    let id: String
+    let icons: [String]?
+}
+
 struct SysCfgs: Codable {
     let version: String?
     let env: String?
+    let envs: [SysEnv]?
     let versionType: String?
 }

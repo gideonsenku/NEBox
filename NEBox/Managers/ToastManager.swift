@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 
+@MainActor
 class ToastManager: ObservableObject {
     @Published var isShowing = false
     @Published var message: String = ""
