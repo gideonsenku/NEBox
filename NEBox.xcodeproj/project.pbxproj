@@ -15,6 +15,7 @@
 		AA00000100000005000000A1 /* ScriptEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000100000005000000A2 /* ScriptEditorView.swift */; };
 		B0A0000100000001000000A1 /* BoxJSAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A0000100000001000000A2 /* BoxJSAPI.swift */; };
 		B0A0000100000002000000A1 /* NetworkProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A0000100000002000000A2 /* NetworkProvider.swift */; };
+		B0A0000100000004000000A1 /* EnvScriptLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A0000100000004000000A2 /* EnvScriptLoader.swift */; };
 		B0A0000100000003000000A1 /* Moya in Frameworks */ = {isa = PBXBuildFile; productRef = B0A0000100000003000000A2 /* Moya */; };
 		E21043252C89951C00347C43 /* RadioButtonGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21043242C89951C00347C43 /* RadioButtonGroup.swift */; };
 		E210432C2C90307000347C43 /* CheckBoxGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = E210432B2C90307000347C43 /* CheckBoxGroup.swift */; };
@@ -48,6 +49,7 @@
 		AA00000100000005000000A2 /* ScriptEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptEditorView.swift; sourceTree = "<group>"; };
 		B0A0000100000001000000A2 /* BoxJSAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxJSAPI.swift; sourceTree = "<group>"; };
 		B0A0000100000002000000A2 /* NetworkProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkProvider.swift; sourceTree = "<group>"; };
+		B0A0000100000004000000A2 /* EnvScriptLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvScriptLoader.swift; sourceTree = "<group>"; };
 		C61523AAFFC54CBBBD390BBB /* SubDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubDetailView.swift; sourceTree = "<group>"; };
 		E21043242C89951C00347C43 /* RadioButtonGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadioButtonGroup.swift; sourceTree = "<group>"; };
 		E210432B2C90307000347C43 /* CheckBoxGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckBoxGroup.swift; sourceTree = "<group>"; };
@@ -141,6 +143,7 @@
 			children = (
 				E2E9E2512C40FD5000836E4B /* ApiRequest.swift */,
 				B0A0000100000001000000A2 /* BoxJSAPI.swift */,
+				B0A0000100000004000000A2 /* EnvScriptLoader.swift */,
 				B0A0000100000002000000A2 /* NetworkProvider.swift */,
 			);
 			path = Services;
@@ -326,6 +329,7 @@
 				E2E9E2522C40FD5000836E4B /* ApiRequest.swift in Sources */,
 				B0A0000100000001000000A1 /* BoxJSAPI.swift in Sources */,
 				B0A0000100000002000000A1 /* NetworkProvider.swift in Sources */,
+				B0A0000100000004000000A1 /* EnvScriptLoader.swift in Sources */,
 				E2E8BA852C6CA43300C2AF9E /* ToastManager.swift in Sources */,
 				E2E9E2562C4101AC00836E4B /* BoxJsViewModel.swift in Sources */,
 				E2E8BA822C6B67BB00C2AF9E /* Utils.swift in Sources */,

@@ -22,6 +22,7 @@ struct ScriptEditorView: View {
  * 最后:
  * 这段脚本是可以直接运行的!
  */
+const $ = new Env('NEBox')
 const host = $.getdata("boxjs_host")
 console.log("输出的内容是返回给浏览器的!")
 $.msg($.name, host)
@@ -32,58 +33,27 @@ $.done()
     @State private var scriptResult: ScriptResp? = nil
 
     var body: some View {
-        VStack(spacing: 0) {
-            // Code editor area
-            ZStack(alignment: .topLeading) {
-                TextEditor(text: $scriptText)
+        ZStack(alignment: .topLeading) {
+            TextEditor(text: $scriptText)
+                .font(.system(size: 13, design: .monospaced))
+                .autocapitalization(.none)
+                .disableAutocorrection(true)
+                .padding(4)
+
+            if scriptText.isEmpty {
+                Text("输入脚本代码...")
                     .font(.system(size: 13, design: .monospaced))
-                    .autocapitalization(.none)
-                    .disableAutocorrection(true)
-                    .padding(4)
-
-                if scriptText.isEmpty {
-                    Text("输入脚本代码...")
-                        .font(.system(size: 13, design: .monospaced))
-                        .foregroundColor(.secondary)
-                        .padding(.top, 12)
-                        .padding(.leading, 9)
-                        .allowsHitTesting(false)
-                }
-            }
-
-            Divider()
-
-            // Result area
-            if let resp = scriptResult {
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Text("执行结果")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(.secondary)
-                        Spacer()
-                        Button {
-                            scriptResult = nil
-                        } label: {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(.secondary)
-                                .font(.system(size: 14))
-                        }
-                    }
-
-                    ScrollView {
-                        Text(resultText(resp))
-                            .font(.system(size: 12, design: .monospaced))
-                            .foregroundColor(resp.exception != nil ? .red : .primary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    .frame(maxHeight: 200)
-                }
-                .padding(12)
-                .background(Color(.systemGray6))
+                    .foregroundColor(.secondary)
+                    .padding(.top, 12)
+                    .padding(.leading, 9)
+                    .allowsHitTesting(false)
             }
         }
         .navigationTitle("脚本编辑器")
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $showResult, onDismiss: { scriptResult = nil }) {
+            scriptConsoleSheet
+        }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
@@ -106,18 +76,59 @@ $.done()
         isRunning = true
         Task {
             do {
-                let resp: ScriptResp = try await NetworkProvider.request(.runTxtScript(script: scriptText))
+                let envMin = try await EnvScriptLoader.loadEnvMinScript()
+                let scriptForRun = scriptText + "\n" + envMin
+                let resp: ScriptResp = try await NetworkProvider.request(.runTxtScript(script: scriptForRun))
                 await MainActor.run {
                     scriptResult = resp
                     isRunning = false
+                    showResult = true
                 }
             } catch {
                 await MainActor.run {
                     scriptResult = ScriptResp(exception: "请求失败: \(error.localizedDescription)", output: nil)
                     isRunning = false
+                    showResult = true
                 }
             }
         }
+    }
+
+    private var scriptConsoleSheet: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 12) {
+                    if let resp = scriptResult {
+                        Text((resp.exception?.isEmpty ?? true) ? "已完成" : "执行出错")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+
+                        Text("脚本控制台")
+                            .font(.headline)
+
+                        Text("Log:")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+
+                        Text(resultText(resp))
+                            .font(.system(size: 12, design: .monospaced))
+                            .foregroundColor(resp.exception != nil ? .red : .primary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .textSelection(.enabled)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding()
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("关闭") { showResult = false }
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
     }
 
     private func resultText(_ resp: ScriptResp) -> String {
