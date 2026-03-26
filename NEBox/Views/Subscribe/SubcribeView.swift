@@ -207,6 +207,9 @@ struct SubCollectionViewWrapper: UIViewRepresentable {
 
         context.coordinator.collectionView = cv
 
+        // Allow navigation swipe back gesture
+        context.coordinator.setupEdgeSwipeSupport(for: cv)
+
         let refresh = UIRefreshControl()
         refresh.addTarget(context.coordinator, action: #selector(context.coordinator.handleRefresh(_:)), for: .valueChanged)
         cv.refreshControl = refresh
@@ -289,6 +292,21 @@ struct SubCollectionViewWrapper: UIViewRepresentable {
                           let subCell = cell as? SubCardCell else { continue }
                     subCell.configure(with: self.items[ip.item])
                 }
+            }
+        }
+
+        /// Configure collection view's pan gesture to allow navigation back swipe from left edge
+        func setupEdgeSwipeSupport(for collectionView: UICollectionView) {
+            var responder: UIResponder? = collectionView
+            while let next = responder?.next {
+                if let nav = next as? UINavigationController,
+                   let popGesture = nav.interactivePopGestureRecognizer {
+                    collectionView.panGestureRecognizer.require(toFail: popGesture)
+                    popGesture.isEnabled = true
+                    popGesture.delegate = nil
+                    break
+                }
+                responder = next
             }
         }
 

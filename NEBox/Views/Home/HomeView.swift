@@ -197,6 +197,11 @@ struct CollectionViewWrapper: UIViewRepresentable {
 
         context.coordinator.collectionView = collectionView
 
+        // Allow navigation swipe back gesture to work alongside collection view scrolling
+        if let panGesture = collectionView.panGestureRecognizer as? UIPanGestureRecognizer {
+            context.coordinator.setupEdgeSwipeSupport(for: collectionView, panGesture: panGesture)
+        }
+
         let refreshControl = UIRefreshControl()
         refreshControl.addTarget(context.coordinator, action: #selector(context.coordinator.handleRefresh(_:)), for: .valueChanged)
         collectionView.refreshControl = refreshControl
@@ -226,7 +231,7 @@ struct CollectionViewWrapper: UIViewRepresentable {
         Coordinator(items: $items, boxModel: boxModel, selectedApp: $selectedApp, isNavigationActive: $isNavigationActive, isEditMode: $isEditMode, allowsEdit: allowsEdit, tapOverride: tapOverride, favAppIds: favAppIds)
     }
 
-    class Coordinator: NSObject, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
+    class Coordinator: NSObject, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UIGestureRecognizerDelegate {
         @Binding var items: [AppModel]
         var boxModel: BoxJsViewModel
         @Binding var selectedApp: AppModel?
@@ -237,6 +242,7 @@ struct CollectionViewWrapper: UIViewRepresentable {
         var favAppIds: Set<String>
         var prevEditMode: Bool = false
         weak var collectionView: UICollectionView?
+        private weak var navPopGesture: UIGestureRecognizer?
 
         init(items: Binding<[AppModel]>, boxModel: BoxJsViewModel, selectedApp: Binding<AppModel?>, isNavigationActive: Binding<Bool>, isEditMode: Binding<Bool>, allowsEdit: Bool, tapOverride: ((AppModel) -> Void)?, favAppIds: Set<String>) {
             _items = items
@@ -247,6 +253,26 @@ struct CollectionViewWrapper: UIViewRepresentable {
             self.allowsEdit = allowsEdit
             self.tapOverride = tapOverride
             self.favAppIds = favAppIds
+        }
+
+        /// Configure collection view's pan gesture to allow navigation back swipe from left edge
+        func setupEdgeSwipeSupport(for collectionView: UICollectionView, panGesture: UIPanGestureRecognizer) {
+            // Find the navigation controller's interactive pop gesture
+            var responder: UIResponder? = collectionView
+            while let next = responder?.next {
+                if let nav = next as? UINavigationController,
+                   let popGesture = nav.interactivePopGestureRecognizer {
+                    navPopGesture = popGesture
+                    // Make collection view's pan gesture require the pop gesture to fail
+                    // This means if pop gesture recognizes (from left edge), pan won't interfere
+                    panGesture.require(toFail: popGesture)
+                    // Enable the pop gesture
+                    popGesture.isEnabled = true
+                    popGesture.delegate = nil
+                    break
+                }
+                responder = next
+            }
         }
 
         func collectionView(_: UICollectionView, numberOfItemsInSection _: Int) -> Int { items.count }
