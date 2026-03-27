@@ -182,6 +182,7 @@ struct CollectionViewWrapper: UIViewRepresentable {
     var allowsEdit: Bool = true
     var tapOverride: ((AppModel) -> Void)? = nil
     var favAppIds: Set<String> = []
+    var contextMenuProvider: ((AppModel) -> UIMenu?)? = nil
 
     func makeUIView(context: Context) -> UICollectionView {
         let layout = UICollectionViewFlowLayout()
@@ -218,6 +219,7 @@ struct CollectionViewWrapper: UIViewRepresentable {
         // Only update non-binding properties; @Binding already reflects parent state
         coord.tapOverride = tapOverride
         coord.favAppIds = favAppIds
+        coord.contextMenuProvider = contextMenuProvider
         coord.prevEditMode = isEditMode
         DispatchQueue.main.async {
             uiView.reloadData()
@@ -228,7 +230,7 @@ struct CollectionViewWrapper: UIViewRepresentable {
     }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(items: $items, boxModel: boxModel, selectedApp: $selectedApp, isNavigationActive: $isNavigationActive, isEditMode: $isEditMode, allowsEdit: allowsEdit, tapOverride: tapOverride, favAppIds: favAppIds)
+        Coordinator(items: $items, boxModel: boxModel, selectedApp: $selectedApp, isNavigationActive: $isNavigationActive, isEditMode: $isEditMode, allowsEdit: allowsEdit, tapOverride: tapOverride, favAppIds: favAppIds, contextMenuProvider: contextMenuProvider)
     }
 
     class Coordinator: NSObject, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UIGestureRecognizerDelegate {
@@ -240,11 +242,12 @@ struct CollectionViewWrapper: UIViewRepresentable {
         var allowsEdit: Bool
         var tapOverride: ((AppModel) -> Void)?
         var favAppIds: Set<String>
+        var contextMenuProvider: ((AppModel) -> UIMenu?)?
         var prevEditMode: Bool = false
         weak var collectionView: UICollectionView?
         private weak var navPopGesture: UIGestureRecognizer?
 
-        init(items: Binding<[AppModel]>, boxModel: BoxJsViewModel, selectedApp: Binding<AppModel?>, isNavigationActive: Binding<Bool>, isEditMode: Binding<Bool>, allowsEdit: Bool, tapOverride: ((AppModel) -> Void)?, favAppIds: Set<String>) {
+        init(items: Binding<[AppModel]>, boxModel: BoxJsViewModel, selectedApp: Binding<AppModel?>, isNavigationActive: Binding<Bool>, isEditMode: Binding<Bool>, allowsEdit: Bool, tapOverride: ((AppModel) -> Void)?, favAppIds: Set<String>, contextMenuProvider: ((AppModel) -> UIMenu?)?) {
             _items = items
             self.boxModel = boxModel
             _selectedApp = selectedApp
@@ -253,6 +256,7 @@ struct CollectionViewWrapper: UIViewRepresentable {
             self.allowsEdit = allowsEdit
             self.tapOverride = tapOverride
             self.favAppIds = favAppIds
+            self.contextMenuProvider = contextMenuProvider
         }
 
         /// Configure collection view's pan gesture to allow navigation back swipe from left edge
@@ -342,6 +346,33 @@ struct CollectionViewWrapper: UIViewRepresentable {
             default:
                 collectionView.cancelInteractiveMovement()
             }
+        }
+
+        func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+            guard let contextMenuProvider else { return nil }
+            let app = items[indexPath.item]
+            guard let menu = contextMenuProvider(app) else { return nil }
+            return UIContextMenuConfiguration(identifier: indexPath as NSCopying, previewProvider: nil) { _ in menu }
+        }
+
+        func collectionView(_ collectionView: UICollectionView, previewForHighlightingContextMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
+            iconPreview(collectionView: collectionView, configuration: configuration)
+        }
+
+        func collectionView(_ collectionView: UICollectionView, previewForDismissingContextMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
+            iconPreview(collectionView: collectionView, configuration: configuration)
+        }
+
+        private func iconPreview(collectionView: UICollectionView, configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
+            guard let indexPath = configuration.identifier as? IndexPath,
+                  let cell = collectionView.cellForItem(at: indexPath) as? MyCell else { return nil }
+            let params = UIPreviewParameters()
+            params.backgroundColor = .clear
+            params.visiblePath = UIBezierPath(
+                roundedRect: cell.imageView.bounds,
+                cornerRadius: cell.imageView.layer.cornerRadius
+            )
+            return UITargetedPreview(view: cell.imageView, parameters: params)
         }
 
         func applyJiggle(to collectionView: UICollectionView, enabled: Bool) {

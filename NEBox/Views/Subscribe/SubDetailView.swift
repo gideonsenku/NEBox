@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import UIKit
 import SDWebImageSwiftUI
 
 struct SubDetailView: View {
@@ -13,6 +14,8 @@ struct SubDetailView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var items: [AppModel]
+    @State private var selectedApp: AppModel?
+    @State private var isNavigationActive: Bool = false
 
     init(sub: AppSubCache?) {
         self.sub = sub
@@ -46,22 +49,30 @@ struct SubDetailView: View {
                     CollectionViewWrapper(
                         items: $items,
                         boxModel: boxModel,
-                        selectedApp: .constant(nil),
-                        isNavigationActive: .constant(false),
+                        selectedApp: $selectedApp,
+                        isNavigationActive: $isNavigationActive,
                         isEditMode: .constant(false),
                         bottomInset: adaptiveBottomInset(),
                         allowsEdit: false,
-                        tapOverride: { app in
-                            Task { @MainActor in
-                                let favIds = boxModel.boxData.usercfgs?.favapps ?? []
-                                if favIds.contains(app.id) {
-                                    boxModel.updateData(path: "usercfgs.favapps", data: favIds.filter { $0 != app.id })
-                                } else {
-                                    boxModel.updateData(path: "usercfgs.favapps", data: favIds + [app.id])
-                                }
-                            }
-                        },
-                        favAppIds: Set(boxModel.favApps.map { $0.id })
+                        favAppIds: Set(boxModel.favApps.map { $0.id }),
+                        contextMenuProvider: { app in
+                            let favIds = boxModel.boxData.usercfgs?.favapps ?? []
+                            let isFav = favIds.contains(app.id)
+                            let title = isFav ? "取消收藏" : "加入收藏"
+                            let image = UIImage(systemName: isFav ? "star.slash" : "star.fill")
+                            return UIMenu(children: [
+                                UIAction(title: title, image: image) { _ in
+                                    Task { @MainActor in
+                                        let ids = boxModel.boxData.usercfgs?.favapps ?? []
+                                        if ids.contains(app.id) {
+                                            boxModel.updateData(path: "usercfgs.favapps", data: ids.filter { $0 != app.id })
+                                        } else {
+                                            boxModel.updateData(path: "usercfgs.favapps", data: ids + [app.id])
+                                        }
+                                    }
+                                },
+                            ])
+                        }
                     )
                     .ignoresSafeArea(edges: .bottom)
                 }
@@ -73,10 +84,12 @@ struct SubDetailView: View {
                     .background(Color(hex: "#EEF0FA").ignoresSafeArea())
                 Spacer()
             }
-
         }
         .toolbar(.hidden, for: .navigationBar)
         .background(Color(hex: "#F5F0F8").ignoresSafeArea(edges: .bottom))
+        .navigationDestination(isPresented: $isNavigationActive) {
+            AppDetailView(app: selectedApp)
+        }
         .enableSwipeBack()
     }
 
