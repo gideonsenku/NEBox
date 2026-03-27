@@ -208,6 +208,11 @@ struct ProfileView: View {
                 NavigationLink(destination: DataViewerView()) {
                     ActionRow(icon: "cylinder", title: "数据查看", subtitle: "查看存储数据")
                 }
+                Divider().padding(.leading, 52)
+
+                NavigationLink(destination: LogViewerView()) {
+                    ActionRow(icon: "doc.text.magnifyingglass", title: "日志", subtitle: "查看和导出应用日志")
+                }
             }
             .background(Color.white)
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
@@ -647,7 +652,7 @@ struct BackupDetailView: View {
                 }
             } catch {
                 await MainActor.run { isLoadingBak = false }
-                print("Failed to load backup data: \(error)")
+                appLog(.error, category: .viewModel, "Failed to load backup data: \(error)")
             }
         }
     }
@@ -671,7 +676,7 @@ struct ApiSettingsView: View {
                     HStack {
                         Image(systemName: "link")
                             .foregroundColor(.secondary)
-                        TextField("http://boxjs.com", text: $apiUrlInput)
+                        TextField(ApiManager.defaultAPIURL, text: $apiUrlInput)
                             .autocorrectionDisabled()
                             .textInputAutocapitalization(.never)
                             .onSubmit { saveAndDismiss() }
@@ -722,6 +727,7 @@ struct ApiSettingsView: View {
     private func saveAndDismiss() {
         let trimmed = apiUrlInput.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
+        appLog(.info, category: .ui, "[ApiSettings] save host: \(trimmed)")
         apiManager.apiUrl = trimmed
         boxModel.fetchData()
         toastManager.showToast(message: "API 地址已保存")

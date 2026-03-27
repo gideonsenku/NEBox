@@ -49,7 +49,7 @@ struct WelcomeSetupView: View {
                         Image(systemName: "link")
                             .foregroundColor(.secondary)
                             .font(.system(size: 14))
-                        TextField("http://boxjs.com", text: $apiUrlInput)
+                        TextField(ApiManager.defaultAPIURL, text: $apiUrlInput)
                             .textInputAutocapitalization(.never)
                             .autocorrectionDisabled()
                             .font(.system(size: 15))
@@ -71,7 +71,7 @@ struct WelcomeSetupView: View {
                 }
 
                 Button {
-                    apiUrlInput = "http://boxjs.com"
+                    apiUrlInput = ApiManager.defaultAPIURL
                 } label: {
                     HStack(spacing: 4) {
                         Image(systemName: "wand.and.stars")
@@ -132,8 +132,11 @@ struct ContentView: View {
                     onConnect: {
                         let trimmed = apiUrlInput.trimmingCharacters(in: .whitespacesAndNewlines)
                         if !trimmed.isEmpty {
+                            appLog(.info, category: .app, "[WelcomeSetup] connect tapped with host: \(trimmed)")
                             apiManager.apiUrl = trimmed
                             boxModel.fetchData()
+                        } else {
+                            appLog(.warning, category: .app, "[WelcomeSetup] connect tapped with empty host")
                         }
                     }
                 )
@@ -270,7 +273,7 @@ struct ContentView: View {
                     }
                 }
             } catch {
-                print("Version check failed: \(error)")
+                appLog(.warning, category: .app, "Version check failed: \(error)")
             }
         }
     }

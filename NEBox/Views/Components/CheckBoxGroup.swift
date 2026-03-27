@@ -83,7 +83,7 @@ struct CheckBoxGroupPrview: View {
             CheckBoxGroup(items: items, selectedKeys: $selectedOptions)
 
             Button(action: {
-                print("Selected options: \(selectedOptions)")
+                appLog(.debug, category: .ui, "Selected options: \(selectedOptions)")
             }) {
                 Text("Submit")
             }

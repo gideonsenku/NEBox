@@ -38,6 +38,7 @@ struct NEBoxApp: App {
         UINavigationBar.appearance().scrollEdgeAppearance = navBarAppearance
         UINavigationBar.appearance().compactAppearance = navBarAppearance
 
+        LogManager.shared.log(.info, category: .app, "App launched")
     }
 
     var body: some Scene {

@@ -39,6 +39,8 @@
 		E2E9E2642C464CC300836E4B /* ArrayExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E9E2632C464CC300836E4B /* ArrayExtension.swift */; };
 		E2E9E26B2C4A7E5B00836E4B /* ViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E9E26A2C4A7E5B00836E4B /* ViewModifier.swift */; };
 		E2E9E2792C4FE81800836E4B /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = E2E9E2782C4FE81800836E4B /* SDWebImageSwiftUI */; };
+		F10000010000000000000001 /* LogManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000010000000000000002 /* LogManager.swift */; };
+		F10000020000000000000001 /* LogViewerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000020000000000000002 /* LogViewerView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -71,6 +73,8 @@
 		E2E9E2602C46200D00836E4B /* BoxDataModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxDataModel.swift; sourceTree = "<group>"; };
 		E2E9E2632C464CC300836E4B /* ArrayExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArrayExtension.swift; sourceTree = "<group>"; };
 		E2E9E26A2C4A7E5B00836E4B /* ViewModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModifier.swift; sourceTree = "<group>"; };
+		F10000010000000000000002 /* LogManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogManager.swift; sourceTree = "<group>"; };
+		F10000020000000000000002 /* LogViewerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogViewerView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -133,6 +137,7 @@
 			isa = PBXGroup;
 			children = (
 				E210FCEE2CBF6DC7004A8CFB /* ApiManager.swift */,
+				F10000010000000000000002 /* LogManager.swift */,
 				E2E8BA842C6CA43300C2AF9E /* ToastManager.swift */,
 			);
 			path = Managers;
@@ -219,6 +224,7 @@
 			isa = PBXGroup;
 			children = (
 				AA00000100000001000000A2 /* ProfileView.swift */,
+				F10000020000000000000002 /* LogViewerView.swift */,
 				AA00000100000004000000A2 /* PreferencesView.swift */,
 			);
 			path = Profile;
@@ -330,6 +336,7 @@
 				B0A0000100000001000000A1 /* BoxJSAPI.swift in Sources */,
 				B0A0000100000002000000A1 /* NetworkProvider.swift in Sources */,
 				B0A0000100000004000000A1 /* EnvScriptLoader.swift in Sources */,
+				F10000010000000000000001 /* LogManager.swift in Sources */,
 				E2E8BA852C6CA43300C2AF9E /* ToastManager.swift in Sources */,
 				E2E9E2562C4101AC00836E4B /* BoxJsViewModel.swift in Sources */,
 				E2E8BA822C6B67BB00C2AF9E /* Utils.swift in Sources */,
@@ -347,6 +354,7 @@
 				E2C273562C354F4A004952AA /* NEBoxApp.swift in Sources */,
 				E21043252C89951C00347C43 /* RadioButtonGroup.swift in Sources */,
 				AA00000100000001000000A1 /* ProfileView.swift in Sources */,
+				F10000020000000000000001 /* LogViewerView.swift in Sources */,
 				AA00000100000002000000A1 /* DataViewerView.swift in Sources */,
 				AA00000100000003000000A1 /* SearchView.swift in Sources */,
 				AA00000100000004000000A1 /* PreferencesView.swift in Sources */,
@@ -499,7 +507,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.0.4;
+				MARKETING_VERSION = 0.0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.elongpaoxiao.NEBox;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -535,7 +543,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.0.4;
+				MARKETING_VERSION = 0.0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.elongpaoxiao.NEBox;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

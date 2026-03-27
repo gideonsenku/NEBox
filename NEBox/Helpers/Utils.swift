@@ -10,7 +10,7 @@ import UIKit
 
 func openInSafari(for urlString: String?) {
     guard let urlString = urlString, let url = URL(string: urlString) else {
-        print("Invalid URL")
+        appLog(.warning, category: .app, "Invalid URL: \(urlString ?? "nil")")
         return
     }
     

@@ -39,7 +39,7 @@ enum BoxJSAPI {
 extension BoxJSAPI: TargetType {
 
     var baseURL: URL {
-        URL(string: ApiManager.shared.baseURL) ?? URL(string: "http://boxjs.com")!
+        URL(string: ApiManager.shared.baseURL) ?? URL(string: ApiManager.defaultAPIURL)!
     }
 
     var path: String {

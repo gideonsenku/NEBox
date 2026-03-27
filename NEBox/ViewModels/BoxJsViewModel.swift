@@ -52,7 +52,7 @@ class BoxJsViewModel: ObservableObject {
         } catch {
             let msg = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
             toastManager?.showToast(message: "\(hint)失败")
-            print("[\(hint)] \(msg)")
+            appLog(.error, category: .viewModel, "[\(hint)] \(msg)")
         }
     }
 
@@ -60,17 +60,19 @@ class BoxJsViewModel: ObservableObject {
 
     func fetchData() {
         Task {
+            appLog(.info, category: .viewModel, "[fetchData] start, baseURL: \(ApiManager.shared.baseURL)")
             do {
                 let boxdata: BoxDataResp = try await NetworkProvider.request(.getBoxData)
                 await updateBoxData(boxdata)
                 await MainActor.run { self.isDataLoaded = true }
+                appLog(.info, category: .viewModel, "[fetchData] success")
             } catch {
                 await MainActor.run {
                     self.isDataLoaded = true
                     toastManager?.showToast(message: "加载数据失败")
                 }
                 let msg = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
-                print("[fetchData] \(msg)")
+                appLog(.error, category: .viewModel, "[fetchData] failed, baseURL: \(ApiManager.shared.baseURL), error: \(msg)")
             }
         }
     }
@@ -103,10 +105,10 @@ class BoxJsViewModel: ObservableObject {
                     continue
                 }
                 failedUpdates[path] = data
-                print("[flushPendingDataUpdates] write failed for \(path): \(error)")
+                appLog(.error, category: .viewModel, "[flushPendingDataUpdates] write failed for \(path): \(error)")
             } catch {
                 failedUpdates[path] = data
-                print("[flushPendingDataUpdates] write failed for \(path): \(error)")
+                appLog(.error, category: .viewModel, "[flushPendingDataUpdates] write failed for \(path): \(error)")
             }
         }
 
@@ -125,7 +127,7 @@ class BoxJsViewModel: ObservableObject {
             await updateBoxData(boxdata)
             return true
         } catch {
-            print("[flushPendingDataUpdates] refetch failed: \(error)")
+            appLog(.error, category: .viewModel, "[flushPendingDataUpdates] refetch failed: \(error)")
             return true
         }
     }
