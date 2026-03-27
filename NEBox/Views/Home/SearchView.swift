@@ -26,7 +26,7 @@ struct SearchView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        neboxNavigationContainer {
             VStack(spacing: 0) {
                 // Search bar
                 HStack(spacing: 8) {

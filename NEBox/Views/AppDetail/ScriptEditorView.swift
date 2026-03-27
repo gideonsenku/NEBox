@@ -12,7 +12,7 @@ struct ScriptResultSheetView: View {
     let onClose: () -> Void
 
     var body: some View {
-        NavigationStack {
+        neboxNavigationContainer {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
                     if let resp = scriptResult {
@@ -47,8 +47,7 @@ struct ScriptResultSheetView: View {
                 }
             }
         }
-        .presentationDetents([.medium, .large])
-        .presentationDragIndicator(.visible)
+        .neboxSheetPresentation()
     }
 
     private func resultText(_ resp: ScriptResp) -> String {

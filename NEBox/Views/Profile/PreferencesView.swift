@@ -49,7 +49,9 @@ struct PreferencesView: View {
                             }
                         }
                     } else {
-                        LabeledContent("HTTP-API (Surge)") {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("HTTP-API (Surge)")
+                                .font(.subheadline)
                             VStack(alignment: .leading, spacing: 6) {
                                 TextField("examplekey@127.0.0.1:6166", text: prefStringBinding(\.httpapi, default: ""))
                                     .autocorrectionDisabled()

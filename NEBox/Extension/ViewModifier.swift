@@ -114,6 +114,74 @@ extension View {
     }
 }
 
+// MARK: - iOS 15 Navigation Compatibility
+
+@ViewBuilder
+func neboxNavigationContainer<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
+    if #available(iOS 16.0, *) {
+        NavigationStack {
+            content()
+        }
+    } else {
+        NavigationView {
+            content()
+        }
+        .navigationViewStyle(StackNavigationViewStyle())
+    }
+}
+
+extension View {
+    @ViewBuilder
+    func neboxHiddenNavigationBar() -> some View {
+        if #available(iOS 16.0, *) {
+            self
+                .toolbar(.hidden, for: .navigationBar)
+                .toolbarBackground(.hidden, for: .navigationBar)
+        } else {
+            self
+                .navigationBarTitle("", displayMode: .inline)
+                .navigationBarHidden(true)
+        }
+    }
+
+    @ViewBuilder
+    func neboxNavigationDestination<Destination: View>(
+        isPresented: Binding<Bool>,
+        @ViewBuilder destination: @escaping () -> Destination
+    ) -> some View {
+        if #available(iOS 16.0, *) {
+            self.navigationDestination(isPresented: isPresented, destination: destination)
+        } else {
+            self.background(
+                NavigationLink(destination: destination(), isActive: isPresented) {
+                    EmptyView()
+                }
+                .hidden()
+            )
+        }
+    }
+
+    @ViewBuilder
+    func neboxSheetPresentation() -> some View {
+        if #available(iOS 16.0, *) {
+            self
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
+        } else {
+            self
+        }
+    }
+
+    @ViewBuilder
+    func neboxHideTabBar() -> some View {
+        if #available(iOS 16.0, *) {
+            self.toolbar(.hidden, for: .tabBar)
+        } else {
+            self
+        }
+    }
+}
+
 // MARK: - iOS 26 Liquid Glass Modifiers
 
 /// Glass effect for floating tab bars and pill-shaped containers

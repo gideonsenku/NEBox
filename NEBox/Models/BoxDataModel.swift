@@ -133,6 +133,27 @@ struct AppModel: Codable, Identifiable {
                (desc_html != nil && !desc_html!.isEmpty) ||
                (descs_html != nil && !descs_html!.isEmpty)
     }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(String.self, forKey: .id)
+        name = try c.decode(String.self, forKey: .name)
+        author = try c.decodeIfPresent(String.self, forKey: .author) ?? "@anonymous"
+        repo = try c.decodeIfPresent(String.self, forKey: .repo)
+        descs = try c.decodeIfPresent([String].self, forKey: .descs)
+        keys = try c.decodeIfPresent([String].self, forKey: .keys)
+        icons = try c.decode([String].self, forKey: .icons)
+        desc = try c.decodeIfPresent(String.self, forKey: .desc)
+        script = try c.decodeIfPresent(String.self, forKey: .script)
+        scripts = try c.decodeIfPresent([RunScript].self, forKey: .scripts)
+        desc_html = try c.decodeIfPresent(String.self, forKey: .desc_html)
+        descs_html = try c.decodeIfPresent([String].self, forKey: .descs_html)
+        settings = try c.decodeIfPresent([Setting].self, forKey: .settings)
+        favIcon = try c.decodeIfPresent(String.self, forKey: .favIcon)
+        icon = try c.decodeIfPresent(String.self, forKey: .icon)
+        favIconColor = try c.decodeIfPresent(String.self, forKey: .favIconColor)
+        isFav = try c.decodeIfPresent(Bool.self, forKey: .isFav)
+    }
 }
 
 extension AppModel {

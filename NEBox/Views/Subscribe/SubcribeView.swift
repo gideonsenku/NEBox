@@ -19,7 +19,7 @@ struct SubcribeView: View {
     @State private var isNavActive: Bool = false
 
     var body: some View {
-        NavigationStack {
+        neboxNavigationContainer {
             ZStack(alignment: .top) {
                 // Gradient background — matches HomeView
                 LinearGradient(
@@ -57,9 +57,8 @@ struct SubcribeView: View {
                     Spacer()
                 }
             }
-            .toolbar(.hidden, for: .navigationBar)
-            .toolbarBackground(.hidden, for: .navigationBar)
-            .navigationDestination(isPresented: $isNavActive) {
+            .neboxHiddenNavigationBar()
+            .neboxNavigationDestination(isPresented: $isNavActive) {
                 SubDetailView(sub: selectedSub)
             }
         }

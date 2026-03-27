@@ -37,7 +37,7 @@ struct HomeView: View {
     private var availableEnvs: [SysEnv] { boxModel.boxData.syscfgs?.envs ?? [] }
 
     var body: some View {
-        NavigationStack {
+        neboxNavigationContainer {
             ZStack(alignment: .top) {
                 // Gradient background
                 LinearGradient(
@@ -72,9 +72,8 @@ struct HomeView: View {
                 }
 
             }
-            .toolbar(.hidden, for: .navigationBar)
-            .toolbarBackground(.hidden, for: .navigationBar)
-            .navigationDestination(isPresented: $isNavigationActive) {
+            .neboxHiddenNavigationBar()
+            .neboxNavigationDestination(isPresented: $isNavigationActive) {
                 AppDetailView(app: selectedApp)
             }
         }

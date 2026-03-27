@@ -23,7 +23,7 @@ struct ProfileView: View {
     @State private var editIcon = ""
 
     var body: some View {
-        NavigationStack {
+        neboxNavigationContainer {
             ZStack(alignment: .top) {
                 // Gradient background — matches HomeView
                 LinearGradient(
@@ -63,7 +63,7 @@ struct ProfileView: View {
                     Spacer()
                 }
             }
-            .toolbar(.hidden, for: .navigationBar)
+            .neboxHiddenNavigationBar()
             .sheet(isPresented: $showEditProfile) {
                 editProfileSheet
             }
@@ -298,7 +298,7 @@ struct ProfileView: View {
     // MARK: - Edit Profile Sheet
 
     private var editProfileSheet: some View {
-        NavigationStack {
+        neboxNavigationContainer {
             Form {
                 Section(header: Text("个人资料")) {
                     TextField("昵称", text: $editName)
@@ -326,7 +326,7 @@ struct ProfileView: View {
     // MARK: - Import Backup Sheet
 
     private var importBakSheet: some View {
-        NavigationStack {
+        neboxNavigationContainer {
             Form {
                 Section(header: Text("导入备份"), footer: Text("粘贴备份数据 (JSON 格式)")) {
                     TextEditor(text: $importBakText)
@@ -670,7 +670,7 @@ struct ApiSettingsView: View {
     @State private var showResetConfirm = false
 
     var body: some View {
-        NavigationStack {
+        neboxNavigationContainer {
             Form {
                 Section(header: Text("后端地址"), footer: Text("修改后将重新拉取数据")) {
                     HStack {

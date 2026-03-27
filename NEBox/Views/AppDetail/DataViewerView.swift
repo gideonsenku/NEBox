@@ -53,13 +53,14 @@ struct DataViewerView: View {
     private func collapsibleChipSection(title: String, keys: [String], removeType: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             DisclosureGroup {
-                FlowLayout(spacing: 6) {
-                    ForEach(keys, id: \.self) { key in
-                        ChipView(label: key) {
-                            queryKey = key
-                            queryData()
-                        } onDelete: {
-                            removeKey(key, type: removeType)
+                Group {
+                    if #available(iOS 16.0, *) {
+                        FlowLayout(spacing: 6) {
+                            chipItems(keys: keys, removeType: removeType)
+                        }
+                    } else {
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 90), spacing: 6)], alignment: .leading, spacing: 6) {
+                            chipItems(keys: keys, removeType: removeType)
                         }
                     }
                 }
@@ -73,6 +74,18 @@ struct DataViewerView: View {
         .background(Color(.systemBackground))
         .cornerRadius(12)
         .shadow(color: Color.black.opacity(0.08), radius: 5, x: 0, y: 2)
+    }
+
+    @ViewBuilder
+    private func chipItems(keys: [String], removeType: String) -> some View {
+        ForEach(keys, id: \.self) { key in
+            ChipView(label: key) {
+                queryKey = key
+                queryData()
+            } onDelete: {
+                removeKey(key, type: removeType)
+            }
+        }
     }
 
     // MARK: - Data Viewer Card
@@ -300,6 +313,7 @@ struct ChipView: View {
 
 // MARK: - Flow Layout
 
+@available(iOS 16.0, *)
 struct FlowLayout: Layout {
     var spacing: CGFloat = 6
 

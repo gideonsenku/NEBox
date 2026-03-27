@@ -622,7 +622,7 @@ struct AppDetailView: View {
                     .ignoresSafeArea(edges: .bottom)
             }
             .frame(width: UIScreen.main.bounds.width)
-            .toolbar(.hidden, for: .tabBar)
+            .neboxHideTabBar()
             .sheet(isPresented: $showImportSession) {
                 importSessionSheet(app: app)
             }
@@ -825,7 +825,7 @@ struct AppDetailView: View {
     // MARK: - Import Session Sheet
 
     private func importSessionSheet(app: AppModel) -> some View {
-        NavigationStack {
+        neboxNavigationContainer {
             Form {
                 Section(header: Text("导入会话"), footer: Text("粘贴会话数据 (JSON 格式)")) {
                     TextEditor(text: $importSessionText)

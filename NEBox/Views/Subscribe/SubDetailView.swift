@@ -85,9 +85,9 @@ struct SubDetailView: View {
                 Spacer()
             }
         }
-        .toolbar(.hidden, for: .navigationBar)
+        .neboxHiddenNavigationBar()
         .background(Color(hex: "#F5F0F8").ignoresSafeArea(edges: .bottom))
-        .navigationDestination(isPresented: $isNavigationActive) {
+        .neboxNavigationDestination(isPresented: $isNavigationActive) {
             AppDetailView(app: selectedApp)
         }
         .onDisappear {

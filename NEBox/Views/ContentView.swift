@@ -291,7 +291,7 @@ struct ContentView: View {
     }
 
     private var versionSheet: some View {
-        NavigationStack {
+        neboxNavigationContainer {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     ForEach(versions) { ver in
