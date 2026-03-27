@@ -13,72 +13,73 @@ struct PreferencesView: View {
 
     var usercfgs: UserConfig? { boxModel.boxData.usercfgs }
 
-    var bgimgItems: [(name: String, url: String)] {
-        guard let bgimgs = usercfgs?.bgimgs, !bgimgs.isEmpty else { return [] }
-        return bgimgs.split(separator: "\n").compactMap { line in
-            let parts = line.split(separator: ",", maxSplits: 1)
-            guard parts.count == 2 else { return nil }
-            return (name: String(parts[0]), url: String(parts[1]))
-        }
+    private var isSurgeEnv: Bool {
+        boxModel.boxData.syscfgs?.env == "Surge"
+    }
+
+    /// 与网页版一致：`httpapis` 为逗号分隔列表时使用选择器
+    private var httpapiPickerItems: [String] {
+        guard let raw = usercfgs?.httpapis, !raw.isEmpty else { return [] }
+        return raw.split(separator: ",")
+            .map { String($0).trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+    }
+
+    /// 当前值若不在列表中，前置一项以免 Picker 无匹配
+    private var httpapiPickerResolvedItems: [String] {
+        let items = httpapiPickerItems
+        guard let cur = usercfgs?.httpapi, !cur.isEmpty, !items.contains(cur) else { return items }
+        return [cur] + items
     }
 
     var body: some View {
         Form {
-            Section(header: Text("外观")) {
-                Picker("主题", selection: prefBinding(\.theme, default: "auto")) {
-                    Text("自动").tag("auto")
-                    Text("明亮").tag("light")
-                    Text("暗黑").tag("dark")
-                }
-
-                if !bgimgItems.isEmpty {
-                    Picker("背景图", selection: bgimgPickerBinding) {
-                        Text("无").tag("")
-                        ForEach(bgimgItems, id: \.url) { item in
-                            Text(item.name).tag(item.url)
-                        }
-                    }
-                }
-
-                Toggle("透明图标", isOn: prefBoolBinding(\.isTransparentIcons))
-                Toggle("壁纸模式", isOn: prefBoolBinding(\.isWallpaperMode))
-            }
-
             Section(header: Text("通知")) {
                 Toggle("勿扰模式", isOn: prefBoolBinding(\.isMute))
                 Toggle("不显示查询警告", isOn: prefBoolBinding(\.isMuteQueryAlert))
             }
 
-            Section(header: Text("界面")) {
-                Toggle("隐藏帮助按钮", isOn: prefBoolBinding(\.isHideHelp))
-                Toggle("隐藏悬浮按钮", isOn: prefBoolBinding(\.isHideBoxIcon))
-                Toggle("隐藏我的标题", isOn: prefBoolBinding(\.isHideMyTitle))
-                Toggle("隐藏编码按钮", isOn: prefBoolBinding(\.isHideCoding))
-                Toggle("隐藏刷新按钮", isOn: prefBoolBinding(\.isHideRefresh))
-            }
-
-            Section(header: Text("调试")) {
-                Toggle("调试模式", isOn: prefBoolBinding(\.isDebugWeb))
+            if isSurgeEnv {
+                Section {
+                    if !httpapiPickerItems.isEmpty {
+                        Picker("HTTP-API (Surge)", selection: prefStringBinding(\.httpapi, default: "")) {
+                            ForEach(httpapiPickerResolvedItems, id: \.self) { item in
+                                Text(item).tag(item)
+                            }
+                        }
+                    } else {
+                        LabeledContent("HTTP-API (Surge)") {
+                            VStack(alignment: .leading, spacing: 6) {
+                                TextField("examplekey@127.0.0.1:6166", text: prefStringBinding(\.httpapi, default: ""))
+                                    .autocorrectionDisabled()
+                                    .textInputAutocapitalization(.never)
+                                if let v = usercfgs?.httpapi, !v.isEmpty, !isValidSurgeHttpApiFormat(v) {
+                                    Text("格式错误，示例: examplekey@127.0.0.1:6166")
+                                        .font(.caption)
+                                        .foregroundStyle(.red)
+                                }
+                            }
+                        }
+                    }
+                } footer: {
+                    if httpapiPickerItems.isEmpty {
+                        Text("Surge http-api 地址，用于脚本与 Surge 交互。")
+                    }
+                }
             }
         }
         .navigationTitle("偏好设置")
         .navigationBarTitleDisplayMode(.inline)
     }
 
-    // MARK: - Background Image
-
-    private var bgimgPickerBinding: Binding<String> {
-        Binding<String>(
-            get: { usercfgs?.bgimg ?? "" },
-            set: { newValue in
-                boxModel.updateData(path: "usercfgs.bgimg", data: newValue)
-            }
-        )
+    /// 与网页版校验一致：`.*?@.*?:[0-9]+`
+    private func isValidSurgeHttpApiFormat(_ value: String) -> Bool {
+        value.range(of: ".*?@.*?:[0-9]+", options: .regularExpression) != nil
     }
 
     // MARK: - Binding Helpers
 
-    private func prefBinding(_ keyPath: KeyPath<UserConfig, String?>, default defaultVal: String) -> Binding<String> {
+    private func prefStringBinding(_ keyPath: KeyPath<UserConfig, String?>, default defaultVal: String) -> Binding<String> {
         let path = prefPath(for: keyPath)
         return Binding<String>(
             get: { usercfgs?[keyPath: keyPath] ?? defaultVal },
@@ -100,18 +101,9 @@ struct PreferencesView: View {
 
     private func prefPath<T>(for keyPath: KeyPath<UserConfig, T>) -> String {
         let map: [PartialKeyPath<UserConfig>: String] = [
-            \UserConfig.theme: "usercfgs.theme",
-            \UserConfig.bgimg: "usercfgs.bgimg",
-            \UserConfig.isTransparentIcons: "usercfgs.isTransparentIcons",
-            \UserConfig.isWallpaperMode: "usercfgs.isWallpaperMode",
             \UserConfig.isMute: "usercfgs.isMute",
             \UserConfig.isMuteQueryAlert: "usercfgs.isMuteQueryAlert",
-            \UserConfig.isHideHelp: "usercfgs.isHideHelp",
-            \UserConfig.isHideBoxIcon: "usercfgs.isHideBoxIcon",
-            \UserConfig.isHideMyTitle: "usercfgs.isHideMyTitle",
-            \UserConfig.isHideCoding: "usercfgs.isHideCoding",
-            \UserConfig.isHideRefresh: "usercfgs.isHideRefresh",
-            \UserConfig.isDebugWeb: "usercfgs.isDebugWeb",
+            \UserConfig.httpapi: "usercfgs.httpapi",
         ]
         return map[keyPath] ?? "usercfgs.unknown"
     }

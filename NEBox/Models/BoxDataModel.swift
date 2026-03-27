@@ -168,7 +168,98 @@ struct UserConfig: Codable {
     let isHideRefresh: Bool?
     let isDebugWeb: Bool?
     let lang: String?
+    /// Surge HTTP-API 地址，如 `examplekey@127.0.0.1:6166`
     let httpapi: String?
+    /// 逗号分隔的候选列表；有值时 UI 用选择器，否则为自由输入
+    let httpapis: String?
+}
+
+extension UserConfig {
+    /// 合并覆盖（`nil` 表示保留原值），供乐观更新使用
+    func with(
+        appsubs: [AppSub]? = nil,
+        favapps: [String]? = nil,
+        bgimgs: String? = nil,
+        bgimg: String? = nil,
+        name: String? = nil,
+        icon: String? = nil,
+        viewkeys: [String]? = nil,
+        gist_cache_key: [String]? = nil,
+        theme: String? = nil,
+        isTransparentIcons: Bool? = nil,
+        isWallpaperMode: Bool? = nil,
+        isMute: Bool? = nil,
+        isMuteQueryAlert: Bool? = nil,
+        isHideHelp: Bool? = nil,
+        isHideBoxIcon: Bool? = nil,
+        isHideMyTitle: Bool? = nil,
+        isHideCoding: Bool? = nil,
+        isHideRefresh: Bool? = nil,
+        isDebugWeb: Bool? = nil,
+        lang: String? = nil,
+        httpapi: String? = nil,
+        httpapis: String? = nil
+    ) -> UserConfig {
+        UserConfig(
+            appsubs: appsubs ?? self.appsubs,
+            favapps: favapps ?? self.favapps,
+            bgimgs: bgimgs ?? self.bgimgs,
+            bgimg: bgimg ?? self.bgimg,
+            name: name ?? self.name,
+            icon: icon ?? self.icon,
+            viewkeys: viewkeys ?? self.viewkeys,
+            gist_cache_key: gist_cache_key ?? self.gist_cache_key,
+            theme: theme ?? self.theme,
+            isTransparentIcons: isTransparentIcons ?? self.isTransparentIcons,
+            isWallpaperMode: isWallpaperMode ?? self.isWallpaperMode,
+            isMute: isMute ?? self.isMute,
+            isMuteQueryAlert: isMuteQueryAlert ?? self.isMuteQueryAlert,
+            isHideHelp: isHideHelp ?? self.isHideHelp,
+            isHideBoxIcon: isHideBoxIcon ?? self.isHideBoxIcon,
+            isHideMyTitle: isHideMyTitle ?? self.isHideMyTitle,
+            isHideCoding: isHideCoding ?? self.isHideCoding,
+            isHideRefresh: isHideRefresh ?? self.isHideRefresh,
+            isDebugWeb: isDebugWeb ?? self.isDebugWeb,
+            lang: lang ?? self.lang,
+            httpapi: httpapi ?? self.httpapi,
+            httpapis: httpapis ?? self.httpapis
+        )
+    }
+
+    /// `pathSuffix` 为 `usercfgs.` 之后的片段，如 `isMute`
+    func updating(pathSuffix: String, value: Any) -> UserConfig? {
+        switch pathSuffix {
+        case "isMute":
+            guard let v = value as? Bool else { return nil }
+            return with(isMute: v)
+        case "isMuteQueryAlert":
+            guard let v = value as? Bool else { return nil }
+            return with(isMuteQueryAlert: v)
+        case "httpapi":
+            guard let v = value as? String else { return nil }
+            return with(httpapi: v)
+        case "favapps":
+            guard let v = value as? [String] else { return nil }
+            return with(favapps: v)
+        case "appsubs":
+            guard let v = value as? [AppSub] else { return nil }
+            return with(appsubs: v)
+        case "name":
+            guard let v = value as? String else { return nil }
+            return with(name: v)
+        case "icon":
+            guard let v = value as? String else { return nil }
+            return with(icon: v)
+        case "viewkeys":
+            guard let v = value as? [String] else { return nil }
+            return with(viewkeys: v)
+        case "gist_cache_key":
+            guard let v = value as? [String] else { return nil }
+            return with(gist_cache_key: v)
+        default:
+            return nil
+        }
+    }
 }
 
 struct AppSub: Codable {
@@ -344,6 +435,19 @@ struct BoxDataResp: Codable {
         
         let newApp = app.withIcon(icons, icons.last ?? icons[0], isFav: isFav)
         return newApp
+    }
+
+    func replacingUsercfgs(_ usercfgs: UserConfig?) -> BoxDataResp {
+        BoxDataResp(
+            appSubCaches: appSubCaches,
+            datas: datas,
+            sessions: sessions,
+            usercfgs: usercfgs,
+            sysapps: sysapps,
+            globalbaks: globalbaks,
+            curSessions: curSessions,
+            syscfgs: syscfgs
+        )
     }
 }
 

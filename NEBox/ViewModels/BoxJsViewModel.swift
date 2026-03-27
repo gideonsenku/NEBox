@@ -21,7 +21,7 @@ class BoxJsViewModel: ObservableObject {
         appSubCaches: [:],
         datas: [:],
         sessions: [],
-        usercfgs: UserConfig(appsubs: [], favapps: [], bgimgs: "", bgimg: "", name: nil, icon: nil, viewkeys: nil, gist_cache_key: nil, theme: nil, isTransparentIcons: nil, isWallpaperMode: nil, isMute: nil, isMuteQueryAlert: nil, isHideHelp: nil, isHideBoxIcon: nil, isHideMyTitle: nil, isHideCoding: nil, isHideRefresh: nil, isDebugWeb: nil, lang: nil, httpapi: nil),
+        usercfgs: UserConfig(appsubs: [], favapps: [], bgimgs: "", bgimg: "", name: nil, icon: nil, viewkeys: nil, gist_cache_key: nil, theme: nil, isTransparentIcons: nil, isWallpaperMode: nil, isMute: nil, isMuteQueryAlert: nil, isHideHelp: nil, isHideBoxIcon: nil, isHideMyTitle: nil, isHideCoding: nil, isHideRefresh: nil, isDebugWeb: nil, lang: nil, httpapi: nil, httpapis: nil),
         sysapps: [],
         globalbaks: nil,
         curSessions: nil,
@@ -75,14 +75,31 @@ class BoxJsViewModel: ObservableObject {
 
     /// Fire-and-forget version (existing callers)
     func updateData(path: String, data: Any) {
+        let rollbackUsercfgs: UserConfig? = path.hasPrefix("usercfgs.") ? boxData.usercfgs : nil
+        if path.hasPrefix("usercfgs.") {
+            applyOptimisticUsercfgsUpdate(path: path, data: data)
+        }
         Task {
             let result = await updateDataAsync(path: path, data: data)
-            if case .failure(let err) = result {
-                let msg = "\(err)"
-                await MainActor.run { toastManager?.showToast(message: "更新失败") }
-                print("[updateData] failed for \(path): \(msg)")
+            await MainActor.run {
+                if case .failure(let err) = result {
+                    if let snap = rollbackUsercfgs {
+                        boxData = boxData.replacingUsercfgs(snap)
+                    }
+                    toastManager?.showToast(message: "更新失败")
+                    print("[updateData] failed for \(path): \(err)")
+                }
             }
         }
+    }
+
+    /// 先改本地 `usercfgs`，避免 Toggle 等控件等网络往返才刷新
+    private func applyOptimisticUsercfgsUpdate(path: String, data: Any) {
+        guard path.hasPrefix("usercfgs.") else { return }
+        let suffix = String(path.dropFirst("usercfgs.".count))
+        guard let cfg = boxData.usercfgs,
+              let updated = cfg.updating(pathSuffix: suffix, value: data) else { return }
+        boxData = boxData.replacingUsercfgs(updated)
     }
 
     enum UpdateError: Error {
