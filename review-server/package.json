@@ -1,0 +1,14 @@
+{
+  "name": "nebox-review-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Mock BoxJS-compatible API for TestFlight review",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1"
+  }
+}

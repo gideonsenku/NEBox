@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: nebox-review-server
+    runtime: node
+    rootDir: review-server
+    buildCommand: npm install
+    startCommand: npm start
+    plan: free
+    autoDeploy: true
+
