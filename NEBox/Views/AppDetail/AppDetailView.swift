@@ -375,7 +375,6 @@ struct AppSettingsView: View {
                                     Spacer()
                                     Toggle("", isOn: boolBinding(for: index))
                                         .labelsHidden()
-                                        .scaleEffect(0.8)
                                 }
                                 if let desc = setting.desc, desc != "" {
                                     Text(desc)
@@ -591,7 +590,7 @@ struct AppDetailView: View {
 
     var body: some View {
         if let app = app {
-            ZStack {
+            ZStack(alignment: .bottom) {
                 Color(.systemGroupedBackground).ignoresSafeArea()
                 ScrollView {
                     VStack(spacing: 16) {
@@ -615,57 +614,15 @@ struct AppDetailView: View {
                             sessionCard(session: session, index: index, app: app)
                         }
                     }
-                    .padding(.bottom, 16)
-                    .toolbar {
-                        ToolbarItem {
-                            HStack {
-                                Button {
-                                    Task {
-                                        await boxModel.saveData(params: (app.settings ?? []).map { setting in
-                                            let transformedVal: AnyCodable = {
-                                                if setting.type == "checkboxes", let arrayVal = setting.val?.value as? [String] {
-                                                    return AnyCodable(arrayVal.joined(separator: ","))
-                                                } else if let val = setting.val {
-                                                    return val
-                                                } else {
-                                                    return AnyCodable(nil)
-                                                }
-                                            }()
-                                            return SessionData(key: setting.id, val: transformedVal)
-                                        })
-                                        toastManager.showToast(message: "保存成功!")
-                                    }
-                                } label: {
-                                    Label("保存", systemImage: "square.and.arrow.down")
-                                }
-
-                                if let script = app.script {
-                                    Button {
-                                        Task {
-                                            do {
-                                                let resp: ScriptResp = try await NetworkProvider.request(.runScript(url: script))
-                                                let isMute = boxModel.boxData.usercfgs?.isMute ?? false
-                                                if !isMute {
-                                                    scriptResult = resp
-                                                    showScriptResult = true
-                                                }
-                                                boxModel.fetchData()
-                                            } catch {
-                                                print("Error: \(error)")
-                                            }
-                                        }
-                                    } label: {
-                                        Label("运行", systemImage: "play.circle.fill")
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    .padding(.bottom, 84)
                     .navigationTitle(app.name)
                 }
+
+                appBottomActionBar(app: app)
             }
             .frame(width: UIScreen.main.bounds.width)
-                        .sheet(isPresented: $showImportSession) {
+            .toolbar(.hidden, for: .tabBar)
+            .sheet(isPresented: $showImportSession) {
                 importSessionSheet(app: app)
             }
             .sheet(isPresented: $showScriptResult) {
@@ -930,7 +887,140 @@ struct AppDetailView: View {
         }
     }
 
+    private func appBottomActionBar(app: AppModel) -> some View {
+        let hasRun = app.script?.isEmpty == false
+
+        return VStack(spacing: 0) {
+            Divider()
+
+            HStack(spacing: 10) {
+                Menu {
+                    Button {
+                        showImportSession = true
+                    } label: {
+                        Label("导入会话", systemImage: "square.and.arrow.down")
+                    }
+                    Button {
+                        copyAppDatas()
+                    } label: {
+                        Label("复制数据", systemImage: "doc.on.clipboard")
+                    }
+                    Button(role: .destructive) {
+                        Task {
+                            await boxModel.clearAppDatas(app: app)
+                            toastManager.showToast(message: "已清除")
+                        }
+                    } label: {
+                        Label("清除数据", systemImage: "trash")
+                    }
+                } label: {
+                    Label("更多", systemImage: "ellipsis")
+                        .labelStyle(.iconOnly)
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundColor(Color(hex: "#0F1729"))
+                        .frame(width: 48, height: 48)
+                        .background(
+                            Color(hex: "#ECEEF4"),
+                            in: RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        )
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("更多操作")
+
+                Button {
+                    Task {
+                        await saveCurrentAppSettings(app: app)
+                    }
+                } label: {
+                    Label("保存", systemImage: "square.and.arrow.down")
+                        .font(.system(size: 15, weight: .semibold))
+                        .labelStyle(.titleAndIcon)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 48)
+                }
+                .buttonStyle(.plain)
+                .foregroundColor(hasRun ? Color(hex: "#0F1729") : .white)
+                .background(
+                    hasRun ? Color(hex: "#ECEEF4") : Color(hex: "#002FA7"),
+                    in: RoundedRectangle(cornerRadius: 14, style: .continuous)
+                )
+                .accessibilityLabel("保存")
+
+                if let script = app.script, !script.isEmpty {
+                    Button {
+                        Task {
+                            await runAppScript(script)
+                        }
+                    } label: {
+                        Label("运行", systemImage: "play.circle.fill")
+                            .font(.system(size: 15, weight: .semibold))
+                            .labelStyle(.titleAndIcon)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 48)
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundColor(.white)
+                    .background(
+                        Color(hex: "#002FA7"),
+                        in: RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    )
+                    .shadow(color: Color(hex: "#002FA7").opacity(0.13), radius: 10, x: 0, y: 4)
+                    .accessibilityLabel("运行")
+                }
+            }
+            .padding(.leading, 20)
+            .padding(.trailing, 20)
+            .padding(.top, 10)
+            .padding(.bottom, 12)
+        }
+        .frame(maxWidth: .infinity)
+        .background(
+            ZStack {
+                Color.white.opacity(0.8)
+                Rectangle().fill(.ultraThinMaterial).opacity(0.35)
+            }
+            .ignoresSafeArea(edges: .bottom)
+        )
+        .overlay(
+            Rectangle()
+                .fill(Color.white.opacity(0.25))
+                .frame(height: 0.5),
+            alignment: .top
+        )
+        .shadow(color: Color.black.opacity(0.1), radius: 16, x: 0, y: -4)
+    }
+
     // MARK: - Helpers
+
+    private func saveCurrentAppSettings(app: AppModel) async {
+        await boxModel.saveData(params: (app.settings ?? []).map { setting in
+            let transformedVal: AnyCodable = {
+                if setting.type == "checkboxes", let arrayVal = setting.val?.value as? [String] {
+                    return AnyCodable(arrayVal.joined(separator: ","))
+                } else if let val = setting.val {
+                    return val
+                } else {
+                    return AnyCodable(nil)
+                }
+            }()
+            return SessionData(key: setting.id, val: transformedVal)
+        })
+        toastManager.showToast(message: "保存成功!")
+    }
+
+    private func runAppScript(_ script: String) async {
+        do {
+            let resp: ScriptResp = try await NetworkProvider.request(.runScript(url: script))
+            let isMute = boxModel.boxData.usercfgs?.isMute ?? false
+            if !isMute {
+                scriptResult = resp
+                showScriptResult = true
+            }
+            boxModel.fetchData()
+        } catch {
+            print("Error: \(error)")
+        }
+    }
 
     private func refreshCachedAppDataInfo() {
         guard let app = app else {
@@ -970,4 +1060,5 @@ struct AppDetailView: View {
             toastManager.showToast(message: "已复制数据")
         }
     }
+
 }

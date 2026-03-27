@@ -32,17 +32,17 @@ BoxJSAPI (Moya TargetType) → NetworkProvider (async request + envelope validat
 ### Key layers:
 
 - **Models/BoxDataModel.swift** — All data models (BoxDataResp, AppModel, AppSubCache, Session, Setting, etc.). This is the foundation — read it first.
-- **Services/BoxJSAPI.swift** — Moya `TargetType` enum defining all 17 API endpoints with paths, methods, and parameter encoding.
+- **Services/BoxJSAPI.swift** — Moya `TargetType` enum defining all 20 API endpoints with paths, methods, and parameter encoding.
 - **Services/NetworkProvider.swift** — Generic `request<T>()` with `mapBoxJS<T>()` envelope validation (checks HTTP status + `code` field in JSON response).
 - **Services/ApiRequest.swift** — High-level API helpers that compose ViewModel calls.
 - **ViewModels/BoxJsViewModel.swift** — Single shared ViewModel holding all app state via `@Published` properties. Injected as `@EnvironmentObject`.
-- **Managers/ApiManager.swift** — Singleton managing per-tool API URLs, tool switching, persisted to UserDefaults.
+- **Managers/ApiManager.swift** — Singleton managing the BoxJS API base URL, persisted to UserDefaults.
 - **Managers/ToastManager.swift** — Singleton for toast notifications.
 
 ### View hierarchy:
 
 `ContentView` (welcome setup + TabView) routes to:
-- `HomeView` — Favorite apps grid using UICollectionView wrapper, tool switching overlay, edit mode with jiggle animation
+- `HomeView` — Favorite apps grid using UICollectionView wrapper, edit mode with jiggle animation
 - `SubcribeView` — Subscription card management with drag-to-reorder
 - `ProfileView` — User profile, global backup/restore
 - `AppDetailView` — App settings forms (radio/checkbox/text), session management, data viewer, script execution
@@ -56,7 +56,7 @@ All responses use envelope format: `{ "code": 0, "message": "...", ...payload }`
 - **Async/await** throughout the networking layer (no callbacks)
 - **UICollectionView wrappers** (`CollectionViewWrapper`, `SubCollectionViewWrapper`) for high-performance grid layouts bridged into SwiftUI
 - **Fire-and-forget vs explicit errors**: `updateData()` is fire-and-forget; `updateDataAsync()` returns `Result<Void, UpdateError>`
-- **Tool auto-detection**: Reads `syscfgs.env` from BoxDataResp to identify the active proxy tool
+- **Proxy tool detection**: Reads `syscfgs.env` from BoxDataResp to identify the active proxy tool (Loon/Surge/etc.)
 - **NSAllowsArbitraryLoads** enabled in Info.plist (required — BoxJS runs on local HTTP)
 
 ## Dependencies (SPM)
@@ -66,5 +66,3 @@ All responses use envelope format: `{ "code": 0, "message": "...", ...payload }`
 | Moya / Alamofire | Network abstraction + HTTP |
 | AnyCodable | Dynamic JSON type support |
 | SDWebImageSwiftUI | Image loading & caching |
-| SwipeCellKit | Swipe-to-delete list actions |
-| swift-markdown-ui | Markdown/HTML rendering |
