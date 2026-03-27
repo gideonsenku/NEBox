@@ -335,6 +335,22 @@ struct AppSettingsView: View {
         )
     }
 
+    // 选择器绑定：保证返回值始终存在于 tag 列表中，避免 Picker invalid selection 警告
+    private func pickerBinding(for index: Int, items: [RadioItem]) -> Binding<String> {
+        return Binding<String>(
+            get: {
+                let current = (settings[index].val?.value as? String) ?? ""
+                if items.contains(where: { $0.key == current }) {
+                    return current
+                }
+                return items.first?.key ?? ""
+            },
+            set: { newValue in
+                settings[index].val = AnyCodable(newValue)
+            }
+        )
+    }
+
     // TODO: 需要拆分到子页面中
     var body: some View {
         @State var selectedFruit = "Apple"
@@ -434,13 +450,19 @@ struct AppSettingsView: View {
                                         .lineLimit(1)
                                     
                                     Spacer()
-
-                                    Picker("Select", selection: binding(for: index)) {
-                                        ForEach((setting.items ?? [])) { item in
-                                            Text(item.label).tag(item.key)
+                                    let pickerItems = setting.items ?? []
+                                    if pickerItems.isEmpty {
+                                        Text("-")
+                                            .font(.system(size: 13))
+                                            .foregroundColor(.secondary)
+                                    } else {
+                                        Picker("Select", selection: pickerBinding(for: index, items: pickerItems)) {
+                                            ForEach(pickerItems) { item in
+                                                Text(item.label).tag(item.key)
+                                            }
                                         }
+                                        .pickerStyle(MenuPickerStyle())
                                     }
-                                    .pickerStyle(MenuPickerStyle())
                                 }
                                 if let desc = setting.desc, desc != "" {
                                     Text(desc)
@@ -565,11 +587,7 @@ struct AppDetailView: View {
     @State private var importSessionText = ""
     @State private var showScriptResult = false
     @State private var scriptResult: ScriptResp? = nil
-
-    var appDataInfo: AppDataInfo {
-        guard let app = app else { return AppDataInfo(datas: [], sessions: [], curSession: nil) }
-        return boxModel.boxData.loadAppDataInfo(for: app)
-    }
+    @State private var cachedAppDataInfo = AppDataInfo(datas: [], sessions: [], curSession: nil)
 
     var body: some View {
         if let app = app {
@@ -588,12 +606,12 @@ struct AppDetailView: View {
                         AppSettingsView(settings: bindingForSettings())
 
                         // Session data section
-                        if app.keys != nil && !appDataInfo.datas.isEmpty {
+                        if app.keys != nil && !cachedAppDataInfo.datas.isEmpty {
                             appSessionDataCard(app: app)
                         }
 
                         // Session list
-                        ForEach(Array(appDataInfo.sessions.enumerated()), id: \.element.id) { index, session in
+                        ForEach(Array(cachedAppDataInfo.sessions.enumerated()), id: \.element.id) { index, session in
                             sessionCard(session: session, index: index, app: app)
                         }
                     }
@@ -618,7 +636,7 @@ struct AppDetailView: View {
                                         toastManager.showToast(message: "保存成功!")
                                     }
                                 } label: {
-                                    Label("保存", systemImage: "externaldrive.fill.badge.checkmark")
+                                    Label("保存", systemImage: "square.and.arrow.down")
                                 }
 
                                 if let script = app.script {
@@ -653,6 +671,17 @@ struct AppDetailView: View {
             .sheet(isPresented: $showScriptResult) {
                 scriptResultSheet
             }
+            .onDisappear {
+                Task {
+                    await boxModel.flushPendingDataUpdates()
+                }
+            }
+            .onAppear {
+                refreshCachedAppDataInfo()
+            }
+            .onReceive(boxModel.$boxData) { _ in
+                refreshCachedAppDataInfo()
+            }
         }
     }
 
@@ -664,7 +693,7 @@ struct AppDetailView: View {
                 Text("当前会话")
                     .font(.system(size: 14))
                     .foregroundColor(.gray)
-                if let curSession = appDataInfo.curSession {
+                if let curSession = cachedAppDataInfo.curSession {
                     Text(curSession.name)
                         .font(.system(size: 13))
                         .foregroundColor(.accentColor)
@@ -712,7 +741,7 @@ struct AppDetailView: View {
                 }
             }
 
-            ForEach(appDataInfo.datas, id: \.key) { data in
+            ForEach(cachedAppDataInfo.datas, id: \.key) { data in
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(data.key)
@@ -743,7 +772,7 @@ struct AppDetailView: View {
                 Spacer()
                 Button {
                     Task {
-                        await boxModel.saveAppSession(app: app, datas: appDataInfo.datas)
+                        await boxModel.saveAppSession(app: app, datas: cachedAppDataInfo.datas)
                         toastManager.showToast(message: "已克隆会话")
                     }
                 } label: {
@@ -765,7 +794,7 @@ struct AppDetailView: View {
     private func sessionCard(session: Session, index: Int, app: AppModel) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                let isCurrent = appDataInfo.curSession?.id == session.id
+                let isCurrent = cachedAppDataInfo.curSession?.id == session.id
                 Text("#\(index + 1) \(session.name)")
                     .font(.system(size: 14, weight: isCurrent ? .bold : .regular))
                     .foregroundColor(isCurrent ? .accentColor : .primary)
@@ -903,6 +932,14 @@ struct AppDetailView: View {
 
     // MARK: - Helpers
 
+    private func refreshCachedAppDataInfo() {
+        guard let app = app else {
+            cachedAppDataInfo = AppDataInfo(datas: [], sessions: [], curSession: nil)
+            return
+        }
+        cachedAppDataInfo = boxModel.boxData.loadAppDataInfo(for: app)
+    }
+
     private func bindingForSettings() -> Binding<[Setting]> {
         return Binding<[Setting]>(
             get: { app?.settings ?? [] },
@@ -924,7 +961,7 @@ struct AppDetailView: View {
 
     private func copyAppDatas() {
         var result: [String: String] = [:]
-        for data in appDataInfo.datas {
+        for data in cachedAppDataInfo.datas {
             result[data.key] = dataValString(data.val)
         }
         if let jsonData = try? JSONSerialization.data(withJSONObject: result),

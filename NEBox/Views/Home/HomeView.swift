@@ -215,17 +215,25 @@ struct CollectionViewWrapper: UIViewRepresentable {
 
     func updateUIView(_ uiView: UICollectionView, context: Context) {
         let coord = context.coordinator
+        let itemIDs = items.map(\.id)
         let editModeChanged = isEditMode != coord.prevEditMode
+        let itemsChanged = itemIDs != coord.prevItemIDs
+        let favChanged = favAppIds != coord.prevFavAppIds
+        let shouldReload = itemsChanged || favChanged || editModeChanged
+
         // Only update non-binding properties; @Binding already reflects parent state
         coord.tapOverride = tapOverride
         coord.favAppIds = favAppIds
         coord.contextMenuProvider = contextMenuProvider
         coord.prevEditMode = isEditMode
-        DispatchQueue.main.async {
+        coord.prevItemIDs = itemIDs
+        coord.prevFavAppIds = favAppIds
+
+        if shouldReload {
             uiView.reloadData()
-            if editModeChanged {
-                coord.applyJiggle(to: uiView, enabled: isEditMode)
-            }
+        }
+        if editModeChanged {
+            coord.applyJiggle(to: uiView, enabled: isEditMode)
         }
     }
 
@@ -244,6 +252,8 @@ struct CollectionViewWrapper: UIViewRepresentable {
         var favAppIds: Set<String>
         var contextMenuProvider: ((AppModel) -> UIMenu?)?
         var prevEditMode: Bool = false
+        var prevItemIDs: [String]
+        var prevFavAppIds: Set<String>
         weak var collectionView: UICollectionView?
         private weak var navPopGesture: UIGestureRecognizer?
 
@@ -257,6 +267,8 @@ struct CollectionViewWrapper: UIViewRepresentable {
             self.tapOverride = tapOverride
             self.favAppIds = favAppIds
             self.contextMenuProvider = contextMenuProvider
+            self.prevItemIDs = items.wrappedValue.map(\.id)
+            self.prevFavAppIds = favAppIds
         }
 
         /// Configure collection view's pan gesture to allow navigation back swipe from left edge
@@ -314,10 +326,8 @@ struct CollectionViewWrapper: UIViewRepresentable {
                     boxModel.updateData(path: "usercfgs.favapps", data: updateIds)
                 }
             } else {
-                Task { @MainActor in
-                    selectedApp = app
-                    isNavigationActive = true
-                }
+                selectedApp = app
+                isNavigationActive = true
             }
         }
 

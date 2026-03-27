@@ -116,6 +116,7 @@ struct WelcomeSetupView: View {
 struct ContentView: View {
     @EnvironmentObject var apiManager: ApiManager
     @EnvironmentObject var boxModel: BoxJsViewModel
+    @Environment(\.scenePhase) private var scenePhase
     @State private var apiUrlInput: String = ""
     @State private var showSearch = false
     @State private var showVersionSheet = false
@@ -153,6 +154,17 @@ struct ContentView: View {
             versionSheet
         }
         .background(Color(hex: "#F5F0F8").ignoresSafeArea(edges: .bottom))
+        .onChange(of: selectedTab) { _ in
+            Task {
+                await boxModel.flushPendingDataUpdates()
+            }
+        }
+        .onChange(of: scenePhase) { phase in
+            guard phase != .active else { return }
+            Task {
+                await boxModel.flushPendingDataUpdates()
+            }
+        }
     }
 
     // MARK: - Main Content (iOS version adaptive)

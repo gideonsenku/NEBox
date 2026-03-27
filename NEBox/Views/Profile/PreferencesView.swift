@@ -43,6 +43,7 @@ struct PreferencesView: View {
                 Section {
                     if !httpapiPickerItems.isEmpty {
                         Picker("HTTP-API (Surge)", selection: prefStringBinding(\.httpapi, default: "")) {
+                            Text("未设置").tag("")
                             ForEach(httpapiPickerResolvedItems, id: \.self) { item in
                                 Text(item).tag(item)
                             }
@@ -70,6 +71,11 @@ struct PreferencesView: View {
         }
         .navigationTitle("偏好设置")
         .navigationBarTitleDisplayMode(.inline)
+        .onDisappear {
+            Task {
+                await boxModel.flushPendingDataUpdates()
+            }
+        }
     }
 
     /// 与网页版校验一致：`.*?@.*?:[0-9]+`

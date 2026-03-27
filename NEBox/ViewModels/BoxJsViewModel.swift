@@ -16,6 +16,8 @@ class BoxJsViewModel: ObservableObject {
 
     var toastManager: ToastManager?
     private let iconThemeIdx = 0
+    private var pendingDataUpdates: [String: Any] = [:]
+    private var isFlushingPendingDataUpdates = false
 
     init(boxData: BoxDataResp = BoxDataResp(
         appSubCaches: [:],
@@ -75,21 +77,56 @@ class BoxJsViewModel: ObservableObject {
 
     /// Fire-and-forget version (existing callers)
     func updateData(path: String, data: Any) {
-        let rollbackUsercfgs: UserConfig? = path.hasPrefix("usercfgs.") ? boxData.usercfgs : nil
         if path.hasPrefix("usercfgs.") {
             applyOptimisticUsercfgsUpdate(path: path, data: data)
         }
-        Task {
-            let result = await updateDataAsync(path: path, data: data)
-            await MainActor.run {
-                if case .failure(let err) = result {
-                    if let snap = rollbackUsercfgs {
-                        boxData = boxData.replacingUsercfgs(snap)
-                    }
-                    toastManager?.showToast(message: "更新失败")
-                    print("[updateData] failed for \(path): \(err)")
+        pendingDataUpdates[path] = data
+    }
+
+    @discardableResult
+    func flushPendingDataUpdates() async -> Bool {
+        guard !isFlushingPendingDataUpdates else { return false }
+        guard !pendingDataUpdates.isEmpty else { return true }
+
+        isFlushingPendingDataUpdates = true
+        let updates = pendingDataUpdates
+        pendingDataUpdates.removeAll()
+        defer { isFlushingPendingDataUpdates = false }
+
+        var failedUpdates: [String: Any] = [:]
+
+        for (path, data) in updates {
+            do {
+                let _: BoxDataResp = try await NetworkProvider.request(.updateData(path: path, val: data))
+            } catch let error as RequestError {
+                if case .decodeFail = error {
+                    continue
                 }
+                failedUpdates[path] = data
+                print("[flushPendingDataUpdates] write failed for \(path): \(error)")
+            } catch {
+                failedUpdates[path] = data
+                print("[flushPendingDataUpdates] write failed for \(path): \(error)")
             }
+        }
+
+        if !failedUpdates.isEmpty {
+            for (path, data) in failedUpdates {
+                pendingDataUpdates[path] = data
+            }
+            await MainActor.run {
+                toastManager?.showToast(message: "部分更新失败，已保留待重试")
+            }
+            return false
+        }
+
+        do {
+            let boxdata: BoxDataResp = try await NetworkProvider.request(.getBoxData)
+            await updateBoxData(boxdata)
+            return true
+        } catch {
+            print("[flushPendingDataUpdates] refetch failed: \(error)")
+            return true
         }
     }
 

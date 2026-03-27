@@ -90,6 +90,11 @@ struct SubDetailView: View {
         .navigationDestination(isPresented: $isNavigationActive) {
             AppDetailView(app: selectedApp)
         }
+        .onDisappear {
+            Task {
+                await boxModel.flushPendingDataUpdates()
+            }
+        }
         .enableSwipeBack()
     }
 
