@@ -7,6 +7,57 @@
 
 import SwiftUI
 
+struct ScriptResultSheetView: View {
+    let scriptResult: ScriptResp?
+    let onClose: () -> Void
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 12) {
+                    if let resp = scriptResult {
+                        Text((resp.exception?.isEmpty ?? true) ? "已完成" : "执行出错")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+
+                        Text("脚本控制台")
+                            .font(.headline)
+
+                        Text("Log:")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+
+                        Text(resultText(resp))
+                            .font(.system(size: 12, design: .monospaced))
+                            .foregroundColor((resp.exception?.isEmpty ?? true) ? .primary : .red)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .textSelection(.enabled)
+                    } else {
+                        Text("无输出")
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding()
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("关闭", action: onClose)
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
+    }
+
+    private func resultText(_ resp: ScriptResp) -> String {
+        if let ex = resp.exception, !ex.isEmpty { return ex }
+        if let out = resp.output, !out.isEmpty { return out }
+        return "无输出"
+    }
+}
+
 struct ScriptEditorView: View {
     @EnvironmentObject var boxModel: BoxJsViewModel
     @EnvironmentObject var toastManager: ToastManager
@@ -95,45 +146,9 @@ $.done()
     }
 
     private var scriptConsoleSheet: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
-                    if let resp = scriptResult {
-                        Text((resp.exception?.isEmpty ?? true) ? "已完成" : "执行出错")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-
-                        Text("脚本控制台")
-                            .font(.headline)
-
-                        Text("Log:")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-
-                        Text(resultText(resp))
-                            .font(.system(size: 12, design: .monospaced))
-                            .foregroundColor(resp.exception != nil ? .red : .primary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .textSelection(.enabled)
-                    }
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding()
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("关闭") { showResult = false }
-                }
-            }
+        ScriptResultSheetView(
+            scriptResult: scriptResult,
+            onClose: { showResult = false }
+        )
         }
-        .presentationDetents([.medium, .large])
-        .presentationDragIndicator(.visible)
-    }
-
-    private func resultText(_ resp: ScriptResp) -> String {
-        if let ex = resp.exception, !ex.isEmpty { return ex }
-        if let out = resp.output, !out.isEmpty { return out }
-        return "无输出"
-    }
 }

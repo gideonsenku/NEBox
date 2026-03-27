@@ -219,13 +219,10 @@ struct AppScriptsView: View {
                                         loadingScript = script.script
                                         do {
                                             let resp: ScriptResp = try await NetworkProvider.request(.runScript(url: script.script))
-                                            let isMute = boxModel.boxData.usercfgs?.isMute ?? false
-                                            if !isMute {
-                                                onScriptResult?(resp)
-                                            }
+                                            onScriptResult?(resp)
                                             boxModel.fetchData()
                                         } catch {
-                                            print("Error running script: \(error)")
+                                            onScriptResult?(ScriptResp(exception: "请求失败: \(error.localizedDescription)", output: nil))
                                         }
                                         isLoading = false
                                         loadingScript = nil
@@ -587,10 +584,11 @@ struct AppDetailView: View {
     @State private var showScriptResult = false
     @State private var scriptResult: ScriptResp? = nil
     @State private var cachedAppDataInfo = AppDataInfo(datas: [], sessions: [], curSession: nil)
+    @State private var isRunningScript = false
 
     var body: some View {
         if let app = app {
-            ZStack(alignment: .bottom) {
+            ZStack {
                 Color(.systemGroupedBackground).ignoresSafeArea()
                 ScrollView {
                     VStack(spacing: 16) {
@@ -617,8 +615,11 @@ struct AppDetailView: View {
                     .padding(.bottom, 84)
                     .navigationTitle(app.name)
                 }
-
+            }
+            .overlay(alignment: .bottom) {
                 appBottomActionBar(app: app)
+                    .ignoresSafeArea(.keyboard, edges: .bottom)
+                    .ignoresSafeArea(edges: .bottom)
             }
             .frame(width: UIScreen.main.bounds.width)
             .toolbar(.hidden, for: .tabBar)
@@ -858,33 +859,10 @@ struct AppDetailView: View {
     // MARK: - Script Result Sheet
 
     private var scriptResultSheet: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 8) {
-                    if let resp = scriptResult {
-                        if let exception = resp.exception, !exception.isEmpty {
-                            Text(exception)
-                                .font(.system(size: 13, design: .monospaced))
-                                .foregroundColor(.red)
-                        } else if let output = resp.output, !output.isEmpty {
-                            Text(output)
-                                .font(.system(size: 13, design: .monospaced))
-                        } else {
-                            Text("无输出")
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                }
-                .padding()
-            }
-            .navigationTitle("执行结果")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("关闭") { showScriptResult = false }
-                }
-            }
-        }
+        ScriptResultSheetView(
+            scriptResult: scriptResult,
+            onClose: { showScriptResult = false }
+        )
     }
 
     private func appBottomActionBar(app: AppModel) -> some View {
@@ -949,14 +927,25 @@ struct AppDetailView: View {
                 if let script = app.script, !script.isEmpty {
                     Button {
                         Task {
+                            guard !isRunningScript else { return }
+                            isRunningScript = true
                             await runAppScript(script)
+                            isRunningScript = false
                         }
                     } label: {
-                        Label("运行", systemImage: "play.circle.fill")
-                            .font(.system(size: 15, weight: .semibold))
-                            .labelStyle(.titleAndIcon)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 48)
+                        HStack(spacing: 8) {
+                            if isRunningScript {
+                                ProgressView()
+                                    .progressViewStyle(.circular)
+                                    .tint(.white)
+                            } else {
+                                Image(systemName: "play.circle.fill")
+                            }
+                            Text("运行")
+                        }
+                        .font(.system(size: 15, weight: .semibold))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 48)
                     }
                     .buttonStyle(.plain)
                     .foregroundColor(.white)
@@ -965,6 +954,8 @@ struct AppDetailView: View {
                         in: RoundedRectangle(cornerRadius: 14, style: .continuous)
                     )
                     .shadow(color: Color(hex: "#002FA7").opacity(0.13), radius: 10, x: 0, y: 4)
+                    .opacity(isRunningScript ? 0.85 : 1)
+                    .disabled(isRunningScript)
                     .accessibilityLabel("运行")
                 }
             }
@@ -1011,14 +1002,12 @@ struct AppDetailView: View {
     private func runAppScript(_ script: String) async {
         do {
             let resp: ScriptResp = try await NetworkProvider.request(.runScript(url: script))
-            let isMute = boxModel.boxData.usercfgs?.isMute ?? false
-            if !isMute {
-                scriptResult = resp
-                showScriptResult = true
-            }
+            scriptResult = resp
+            showScriptResult = true
             boxModel.fetchData()
         } catch {
-            print("Error: \(error)")
+            scriptResult = ScriptResp(exception: "请求失败: \(error.localizedDescription)", output: nil)
+            showScriptResult = true
         }
     }
 
