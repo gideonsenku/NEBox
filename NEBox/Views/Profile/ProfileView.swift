@@ -8,6 +8,7 @@
 import SwiftUI
 import SDWebImageSwiftUI
 import AnyCodable
+import UniformTypeIdentifiers
 
 // MARK: - Profile Main View
 
@@ -19,6 +20,7 @@ struct ProfileView: View {
     @State private var showImportBak = false
     @State private var showApiSettings = false
     @State private var importBakText = ""
+    @State private var showImportFilePickerBak = false
     @State private var editName = ""
     @State private var editIcon = ""
 
@@ -328,9 +330,32 @@ struct ProfileView: View {
     private var importBakSheet: some View {
         neboxNavigationContainer {
             Form {
-                Section(header: Text("导入备份"), footer: Text("粘贴备份数据 (JSON 格式)")) {
-                    TextEditor(text: $importBakText)
-                        .frame(minHeight: 150)
+                Section(footer: Text("支持 JSON 格式的备份数据")) {
+                    Button {
+                        guard let str = UIPasteboard.general.string, !str.isEmpty else {
+                            toastManager.showToast(message: "剪贴板为空")
+                            return
+                        }
+                        importBakText = str
+                        performImportBak()
+                    } label: {
+                        Label("从剪贴板粘贴", systemImage: "doc.on.clipboard")
+                    }
+
+                    Button {
+                        showImportFilePickerBak = true
+                    } label: {
+                        Label("从文件导入", systemImage: "doc")
+                    }
+                }
+
+                if !importBakText.isEmpty {
+                    Section(header: Text("数据预览")) {
+                        Text(importBakText.prefix(500) + (importBakText.count > 500 ? "..." : ""))
+                            .font(.system(size: 11, design: .monospaced))
+                            .foregroundColor(.secondary)
+                            .lineLimit(10)
+                    }
                 }
             }
             .navigationTitle("导入备份")
@@ -342,18 +367,34 @@ struct ProfileView: View {
                         importBakText = ""
                     }
                 }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("导入") {
-                        guard !importBakText.isEmpty else { return }
-                        Task {
-                            await boxModel.impGlobalBak(bakData: importBakText)
-                            toastManager.showToast(message: "导入成功!")
-                            showImportBak = false
-                            importBakText = ""
-                        }
+            }
+            .fileImporter(
+                isPresented: $showImportFilePickerBak,
+                allowedContentTypes: [.json, .plainText],
+                allowsMultipleSelection: false
+            ) { result in
+                if case .success(let urls) = result, let url = urls.first {
+                    guard url.startAccessingSecurityScopedResource() else { return }
+                    defer { url.stopAccessingSecurityScopedResource() }
+                    if let data = try? Data(contentsOf: url),
+                       let str = String(data: data, encoding: .utf8), !str.isEmpty {
+                        importBakText = str
+                        performImportBak()
+                    } else {
+                        toastManager.showToast(message: "文件读取失败")
                     }
                 }
             }
+        }
+    }
+
+    private func performImportBak() {
+        guard !importBakText.isEmpty else { return }
+        Task {
+            await boxModel.impGlobalBak(bakData: importBakText)
+            toastManager.showToast(message: "导入成功!")
+            showImportBak = false
+            importBakText = ""
         }
     }
 
@@ -520,6 +561,8 @@ struct BackupDetailView: View {
     @State private var editedName: String = ""
     @State private var bakData: AnyCodable? = nil
     @State private var isLoadingBak = false
+    @State private var exportFileURL: URL? = nil
+    @State private var showExportShare = false
 
     var body: some View {
         Form {
@@ -614,6 +657,26 @@ struct BackupDetailView: View {
                         Spacer()
                     }
                 }
+
+                Button {
+                    if exportFileURL != nil {
+                        showExportShare = true
+                    } else {
+                        toastManager.showToast(message: "备份数据加载中...")
+                    }
+                } label: {
+                    HStack {
+                        Spacer()
+                        if isLoadingBak && exportFileURL == nil {
+                            ProgressView()
+                                .frame(height: 20)
+                        } else {
+                            Text("导出 JSON 文件")
+                        }
+                        Spacer()
+                    }
+                }
+                .disabled(exportFileURL == nil)
             }
 
             Section {
@@ -634,8 +697,12 @@ struct BackupDetailView: View {
         }
         .navigationTitle(backup.name)
         .navigationBarTitleDisplayMode(.inline)
+        .background(
+            ActivityViewPresenter(isPresented: $showExportShare, items: exportFileURL.map { [$0] } ?? [])
+        )
         .onAppear {
             editedName = backup.name
+            prepareExportFile(from: backup.bak)
             loadBakData()
         }
     }
@@ -649,10 +716,54 @@ struct BackupDetailView: View {
                 await MainActor.run {
                     bakData = data
                     isLoadingBak = false
+                    prepareExportFile(from: data)
                 }
             } catch {
                 await MainActor.run { isLoadingBak = false }
                 appLog(.error, category: .viewModel, "Failed to load backup data: \(error)")
+            }
+        }
+    }
+
+    private func prepareExportFile(from bak: AnyCodable?) {
+        guard let bak = bak, exportFileURL == nil else { return }
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        if let data = try? encoder.encode(bak) {
+            let fileName = "\(backup.name)_\(backup.id).json"
+            let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
+            try? data.write(to: tempURL)
+            exportFileURL = tempURL
+        }
+    }
+}
+
+// MARK: - Activity View Presenter
+
+/// Bridges UIActivityViewController into SwiftUI via a hidden UIViewController.
+/// The host VC sits invisibly in the view hierarchy, so `present()` works
+/// correctly and the share sheet slides up from the bottom as expected.
+/// Compatible with iOS 15+.
+private struct ActivityViewPresenter: UIViewControllerRepresentable {
+    @Binding var isPresented: Bool
+    let items: [Any]
+
+    func makeUIViewController(context: Context) -> UIViewController {
+        UIViewController()
+    }
+
+    func updateUIViewController(_ host: UIViewController, context: Context) {
+        if isPresented {
+            // Prevent presenting twice
+            guard host.presentedViewController == nil else { return }
+            let ac = UIActivityViewController(activityItems: items, applicationActivities: nil)
+            ac.completionWithItemsHandler = { _, _, _, _ in
+                isPresented = false
+            }
+            host.present(ac, animated: true)
+        } else {
+            if host.presentedViewController is UIActivityViewController {
+                host.dismiss(animated: true)
             }
         }
     }

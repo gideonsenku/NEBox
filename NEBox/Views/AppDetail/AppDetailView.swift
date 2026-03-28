@@ -10,6 +10,7 @@ import UIKit
 import WebKit
 import AnyCodable
 import SDWebImageSwiftUI
+import UniformTypeIdentifiers
 
 struct HTMLWebView: UIViewRepresentable {
     let html: String
@@ -636,6 +637,7 @@ struct AppDetailView: View {
 
     @State private var showImportSession = false
     @State private var importSessionText = ""
+    @State private var showImportFilePickerSession = false
     @State private var showScriptResult = false
     @State private var scriptResult: ScriptResp? = nil
     @State private var cachedAppDataInfo = AppDataInfo(datas: [], sessions: [], curSession: nil)
@@ -873,9 +875,32 @@ struct AppDetailView: View {
     private func importSessionSheet(app: AppModel) -> some View {
         neboxNavigationContainer {
             Form {
-                Section(header: Text("导入会话"), footer: Text("粘贴会话数据 (JSON 格式)")) {
-                    TextEditor(text: $importSessionText)
-                        .frame(minHeight: 150)
+                Section(footer: Text("支持 JSON 格式的会话数据")) {
+                    Button {
+                        guard let str = UIPasteboard.general.string, !str.isEmpty else {
+                            toastManager.showToast(message: "剪贴板为空")
+                            return
+                        }
+                        importSessionText = str
+                        performImportSession()
+                    } label: {
+                        Label("从剪贴板粘贴", systemImage: "doc.on.clipboard")
+                    }
+
+                    Button {
+                        showImportFilePickerSession = true
+                    } label: {
+                        Label("从文件导入", systemImage: "doc")
+                    }
+                }
+
+                if !importSessionText.isEmpty {
+                    Section(header: Text("数据预览")) {
+                        Text(importSessionText.prefix(500) + (importSessionText.count > 500 ? "..." : ""))
+                            .font(.system(size: 11, design: .monospaced))
+                            .foregroundColor(.secondary)
+                            .lineLimit(10)
+                    }
                 }
             }
             .navigationTitle("导入会话")
@@ -887,18 +912,34 @@ struct AppDetailView: View {
                         importSessionText = ""
                     }
                 }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("导入") {
-                        guard !importSessionText.isEmpty else { return }
-                        Task {
-                            await boxModel.impAppDatas(jsonString: importSessionText)
-                            toastManager.showToast(message: "导入成功!")
-                            showImportSession = false
-                            importSessionText = ""
-                        }
+            }
+            .fileImporter(
+                isPresented: $showImportFilePickerSession,
+                allowedContentTypes: [.json, .plainText],
+                allowsMultipleSelection: false
+            ) { result in
+                if case .success(let urls) = result, let url = urls.first {
+                    guard url.startAccessingSecurityScopedResource() else { return }
+                    defer { url.stopAccessingSecurityScopedResource() }
+                    if let data = try? Data(contentsOf: url),
+                       let str = String(data: data, encoding: .utf8), !str.isEmpty {
+                        importSessionText = str
+                        performImportSession()
+                    } else {
+                        toastManager.showToast(message: "文件读取失败")
                     }
                 }
             }
+        }
+    }
+
+    private func performImportSession() {
+        guard !importSessionText.isEmpty else { return }
+        Task {
+            await boxModel.impAppDatas(jsonString: importSessionText)
+            toastManager.showToast(message: "导入成功!")
+            showImportSession = false
+            importSessionText = ""
         }
     }
 
