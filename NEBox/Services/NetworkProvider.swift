@@ -3,6 +3,7 @@
 //  NEBox
 //
 
+import Alamofire
 import Foundation
 import Moya
 
@@ -69,7 +70,14 @@ extension Response {
 // MARK: - Provider
 
 enum NetworkProvider {
-    static let shared = MoyaProvider<BoxJSAPI>()
+    private static let session: Alamofire.Session = {
+        let configuration = URLSessionConfiguration.default
+        configuration.waitsForConnectivity = true
+        configuration.timeoutIntervalForResource = 30
+        return Alamofire.Session(configuration: configuration)
+    }()
+
+    static let shared = MoyaProvider<BoxJSAPI>(session: session)
 
     /// Generic async request with BoxJS envelope validation.
     static func request<T: Decodable>(_ target: BoxJSAPI) async throws -> T {
