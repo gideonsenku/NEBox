@@ -1,7 +1,19 @@
 {
   "images" : [
     {
-      "filename" : "NEBox.png",
+      "filename" : "01.png",
+      "idiom" : "universal",
+      "platform" : "ios",
+      "size" : "1024x1024"
+    },
+    {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "02.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"

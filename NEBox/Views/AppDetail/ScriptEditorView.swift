@@ -72,7 +72,7 @@ struct ScriptEditorView: View {
  * 最后:
  * 这段脚本是可以直接运行的!
  */
-const $ = new Env('NEBox')
+const $ = new Env('Relay')
 const host = $.getdata("boxjs_host")
 console.log("输出的内容是返回给浏览器的!")
 $.msg($.name, host)

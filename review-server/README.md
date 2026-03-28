@@ -1,4 +1,4 @@
-# NEBox Review Server
+# Relay Review Server
 
 Minimal BoxJS-compatible mock backend for TestFlight review.
 
@@ -30,7 +30,7 @@ This repository includes `render.yaml`.
 
 1. Push this branch to GitHub.
 2. In Render, create **Blueprint** from this repo.
-3. Deploy service `nebox-review-server`.
+3. Deploy service `relay-review-server`.
 4. Copy the HTTPS URL and set it in app `ApiManager.defaultAPIURL` for TF review builds.
 
 ## Health Check

@@ -103,6 +103,61 @@ struct HTMLWebView: UIViewRepresentable {
     }
 }
 
+// MARK: - UIMenu Button Wrapper
+
+private final class NoHighlightMenuUIButton: UIButton {
+    override var isHighlighted: Bool {
+        get { false }
+        set { }
+    }
+}
+
+private struct UIMenuButton: UIViewRepresentable {
+    let systemImage: String
+    var tintColor: UIColor = .secondaryLabel
+    var backgroundColor: UIColor = .clear
+    var cornerRadius: CGFloat = 0
+    let menu: UIMenu
+
+    func makeUIView(context: Context) -> UIButton {
+        let button = NoHighlightMenuUIButton(type: .system)
+        var configuration = UIButton.Configuration.plain()
+        configuration.contentInsets = .zero
+        configuration.baseBackgroundColor = backgroundColor
+        configuration.background.backgroundColor = backgroundColor
+        configuration.background.cornerRadius = cornerRadius
+        configuration.background.strokeColor = .clear
+        configuration.background.visualEffect = nil
+        button.configuration = configuration
+        button.showsMenuAsPrimaryAction = true
+        button.adjustsImageWhenHighlighted = false
+        button.backgroundColor = .clear
+        button.layer.cornerRadius = 0
+        button.layer.masksToBounds = false
+        button.contentHorizontalAlignment = .center
+        button.contentVerticalAlignment = .center
+        button.configurationUpdateHandler = { control in
+            guard var cfg = control.configuration else { return }
+            cfg.baseBackgroundColor = backgroundColor
+            cfg.background.backgroundColor = backgroundColor
+            cfg.background.cornerRadius = cornerRadius
+            cfg.background.strokeColor = .clear
+            cfg.background.visualEffect = nil
+            control.configuration = cfg
+        }
+        return button
+    }
+
+    func updateUIView(_ button: UIButton, context: Context) {
+        let symbolConfig = UIImage.SymbolConfiguration(pointSize: 20, weight: .semibold)
+        let image = UIImage(systemName: systemImage, withConfiguration: symbolConfig)
+        button.setImage(image, for: .normal)
+        button.setImage(image, for: .highlighted)
+        button.tintColor = tintColor
+        button.menu = menu
+    }
+}
+
 struct HTMLTextView: View {
     let html: String
     @State private var webViewHeight: CGFloat = 1
@@ -584,6 +639,7 @@ struct AppDetailView: View {
     @State private var showScriptResult = false
     @State private var scriptResult: ScriptResp? = nil
     @State private var cachedAppDataInfo = AppDataInfo(datas: [], sessions: [], curSession: nil)
+    @State private var isSavingSettings = false
     @State private var isRunningScript = false
 
     var body: some View {
@@ -658,45 +714,35 @@ struct AppDetailView: View {
                 }
                 Spacer()
 
-                Menu {
-                    Button {
-                        let encoder = JSONEncoder()
-                        encoder.outputFormatting = .prettyPrinted
-                        if let data = try? encoder.encode(app),
-                           let str = String(data: data, encoding: .utf8) {
-                            copyToClipboard(text: str)
-                            toastManager.showToast(message: "已复制")
+                UIMenuButton(
+                    systemImage: "ellipsis",
+                    menu: UIMenu(children: [
+                              UIMenu(options: .displayInline, children: [
+                                    UIAction(title: "清除数据", image: UIImage(systemName: "trash"), attributes: .destructive) { [self] _ in
+                                        Task {
+                                            await boxModel.clearAppDatas(app: app)
+                                            toastManager.showToast(message: "已清除")
+                                        }
+                                    }
+                        ]),
+                        UIAction(title: "复制", image: UIImage(systemName: "doc.on.doc")) { [self] _ in
+                            let encoder = JSONEncoder()
+                            encoder.outputFormatting = .prettyPrinted
+                            if let data = try? encoder.encode(app),
+                               let str = String(data: data, encoding: .utf8) {
+                                copyToClipboard(text: str)
+                                toastManager.showToast(message: "已复制")
+                            }
+                        },
+                        UIAction(title: "导入", image: UIImage(systemName: "square.and.arrow.down")) { [self] _ in
+                            showImportSession = true
+                        },
+                        UIAction(title: "复制数据", image: UIImage(systemName: "doc.on.clipboard")) { [self] _ in
+                            copyAppDatas()
                         }
-                    } label: {
-                        Label("复制", systemImage: "doc.on.doc")
-                    }
-
-                    Button {
-                        showImportSession = true
-                    } label: {
-                        Label("导入", systemImage: "square.and.arrow.down")
-                    }
-
-                    Button {
-                        copyAppDatas()
-                    } label: {
-                        Label("复制数据", systemImage: "doc.on.clipboard")
-                    }
-
-                    Divider()
-
-                    Button(role: .destructive) {
-                        Task {
-                            await boxModel.clearAppDatas(app: app)
-                            toastManager.showToast(message: "已清除")
-                        }
-                    } label: {
-                        Label("清除数据", systemImage: "trash")
-                    }
-                } label: {
-                    Image(systemName: "ellipsis.circle")
-                        .foregroundColor(.secondary)
-                }
+                    ])
+                )
+                .fixedSize(horizontal: true, vertical: true)
             }
 
             ForEach(cachedAppDataInfo.datas, id: \.key) { data in
@@ -872,47 +918,50 @@ struct AppDetailView: View {
             Divider()
 
             HStack(spacing: 10) {
-                Menu {
-                    Button {
-                        showImportSession = true
-                    } label: {
-                        Label("导入会话", systemImage: "square.and.arrow.down")
-                    }
-                    Button {
-                        copyAppDatas()
-                    } label: {
-                        Label("复制数据", systemImage: "doc.on.clipboard")
-                    }
-                    Button(role: .destructive) {
-                        Task {
-                            await boxModel.clearAppDatas(app: app)
-                            toastManager.showToast(message: "已清除")
+                UIMenuButton(
+                    systemImage: "ellipsis",
+                    tintColor: UIColor(Color(hex: "#0F1729")),
+                    menu: UIMenu(children: [
+                        UIAction(title: "导入会话", image: UIImage(systemName: "square.and.arrow.down")) { [self] _ in
+                            showImportSession = true
+                        },
+                        UIAction(title: "复制数据", image: UIImage(systemName: "doc.on.clipboard")) { [self] _ in
+                            copyAppDatas()
+                        },
+                        UIAction(title: "清除数据", image: UIImage(systemName: "trash"), attributes: .destructive) { [self] _ in
+                            Task {
+                                await boxModel.clearAppDatas(app: app)
+                                toastManager.showToast(message: "已清除")
+                            }
                         }
-                    } label: {
-                        Label("清除数据", systemImage: "trash")
-                    }
-                } label: {
-                    Label("更多", systemImage: "ellipsis")
-                        .labelStyle(.iconOnly)
-                        .font(.system(size: 20, weight: .semibold))
-                        .foregroundColor(Color(hex: "#0F1729"))
-                        .frame(width: 48, height: 48)
-                        .background(
-                            Color(hex: "#ECEEF4"),
-                            in: RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        )
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("更多操作")
+                    ])
+                )
+                .frame(width: 48, height: 48)
+                .background(
+                    Color(hex: "#ECEEF4"),
+                    in: RoundedRectangle(cornerRadius: 14, style: .continuous)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
 
                 Button {
                     Task {
+                        guard !isSavingSettings else { return }
+                        await MainActor.run { isSavingSettings = true }
                         await saveCurrentAppSettings(app: app)
+                        await MainActor.run { isSavingSettings = false }
                     }
                 } label: {
-                    Label("保存", systemImage: "square.and.arrow.down")
+                    HStack(spacing: 8) {
+                        if isSavingSettings {
+                            ProgressView()
+                                .progressViewStyle(.circular)
+                                .tint(hasRun ? Color(hex: "#0F1729") : .white)
+                        } else {
+                            Image(systemName: "square.and.arrow.down")
+                        }
+                        Text("保存")
+                    }
                         .font(.system(size: 15, weight: .semibold))
-                        .labelStyle(.titleAndIcon)
                         .frame(maxWidth: .infinity)
                         .frame(height: 48)
                 }
@@ -922,6 +971,8 @@ struct AppDetailView: View {
                     hasRun ? Color(hex: "#ECEEF4") : Color(hex: "#002FA7"),
                     in: RoundedRectangle(cornerRadius: 14, style: .continuous)
                 )
+                .opacity(isSavingSettings ? 0.85 : 1)
+                .disabled(isSavingSettings)
                 .accessibilityLabel("保存")
 
                 if let script = app.script, !script.isEmpty {

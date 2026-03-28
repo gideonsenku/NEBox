@@ -3,7 +3,7 @@ import UIKit
 import SDWebImageSwiftUI
 import os.log
 
-private let homeLog = Logger(subsystem: "NEBox", category: "HomeView")
+private let homeLog = Logger(subsystem: "Relay", category: "HomeView")
 
 /// Fallback icon URL derived from env id
 private func fallbackIconURL(for envId: String) -> String {

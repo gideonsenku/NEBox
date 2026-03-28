@@ -55,14 +55,14 @@ final class LogManager: @unchecked Sendable {
     static let shared = LogManager()
 
     private let fileURL: URL
-    private let queue = DispatchQueue(label: "com.nebox.logmanager", qos: .utility)
+    private let queue = DispatchQueue(label: "com.relay.logmanager", qos: .utility)
     private let maxFileSize: UInt64 = 2 * 1024 * 1024 // 2 MB
     private let fileHandle: LockedFileHandle
 
     private let osLoggers: [LogCategory: Logger] = {
         var map = [LogCategory: Logger]()
         for cat in [LogCategory.network, .viewModel, .ui, .app] {
-            map[cat] = Logger(subsystem: "NEBox", category: cat.rawValue)
+            map[cat] = Logger(subsystem: "Relay", category: cat.rawValue)
         }
         return map
     }()
@@ -76,9 +76,9 @@ final class LogManager: @unchecked Sendable {
 
     private init() {
         let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
-        let logDir = caches.appendingPathComponent("NEBox/logs", isDirectory: true)
+        let logDir = caches.appendingPathComponent("Relay/logs", isDirectory: true)
         try? FileManager.default.createDirectory(at: logDir, withIntermediateDirectories: true)
-        self.fileURL = logDir.appendingPathComponent("nebox.log")
+        self.fileURL = logDir.appendingPathComponent("relay.log")
 
         // Create file if needed
         if !FileManager.default.fileExists(atPath: fileURL.path) {
@@ -92,7 +92,7 @@ final class LogManager: @unchecked Sendable {
         let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"
         let device = UIDevice.current.model
         let systemVersion = UIDevice.current.systemVersion
-        let banner = "NEBox v\(appVersion)(\(build)) | \(device) | iOS \(systemVersion)"
+        let banner = "Relay v\(appVersion)(\(build)) | \(device) | iOS \(systemVersion)"
         log(.info, category: .app, "──── App Launched ────")
         log(.info, category: .app, banner)
     }
@@ -105,7 +105,7 @@ final class LogManager: @unchecked Sendable {
         let entry = "[\(timestamp)] [\(level.rawValue)] [\(category.rawValue)] \(message)\n"
 
         // os.log
-        let logger = osLoggers[category] ?? Logger(subsystem: "NEBox", category: category.rawValue)
+        let logger = osLoggers[category] ?? Logger(subsystem: "Relay", category: category.rawValue)
         logger.log(level: level.osLogType, "\(message, privacy: .public)")
 
         // File write

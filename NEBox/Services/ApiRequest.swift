@@ -15,7 +15,41 @@ enum ApiRequest {
     // MARK: - Subscriptions
 
     static func addAppSub(url: String) async throws -> BoxDataResp {
-        try await NetworkProvider.request(.addAppSub(url: url, id: UUID().uuidString))
+        try await validateSubscriptionSource(url: url)
+        return try await NetworkProvider.request(.addAppSub(url: url, id: UUID().uuidString))
+    }
+
+    private static func validateSubscriptionSource(url: String) async throws {
+        guard let requestURL = URL(string: url) else {
+            throw RequestError.statusFail(code: -1, message: "订阅地址无效")
+        }
+
+        var request = URLRequest(url: requestURL)
+        request.httpMethod = "GET"
+        request.timeoutInterval = 12
+        request.cachePolicy = .reloadIgnoringLocalCacheData
+
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let http = response as? HTTPURLResponse else {
+                throw RequestError.statusFail(code: -1, message: "订阅地址响应异常")
+            }
+            guard (200 ... 299).contains(http.statusCode) else {
+                throw RequestError.statusFail(code: http.statusCode, message: "订阅地址请求失败")
+            }
+
+            let hasContent = !data.isEmpty &&
+                !String(decoding: data, as: UTF8.self)
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                    .isEmpty
+            guard hasContent else {
+                throw RequestError.statusFail(code: -1, message: "订阅地址暂无可用数据")
+            }
+        } catch let error as RequestError {
+            throw error
+        } catch {
+            throw RequestError.networkFail
+        }
     }
 
     // MARK: - Sessions

@@ -22,6 +22,72 @@ struct AppSubCache: Codable, Identifiable {
     var enable: Bool?
     var url: String?
     var raw: AppSub?
+
+    init(
+        id: String,
+        name: String,
+        icon: String,
+        author: String,
+        repo: String,
+        updateTime: String,
+        apps: [AppModel],
+        isErr: Bool? = nil,
+        enable: Bool? = nil,
+        url: String? = nil,
+        raw: AppSub? = nil
+    ) {
+        self.id = id
+        self.name = name
+        self.icon = icon
+        self.author = author
+        self.repo = repo
+        self.updateTime = updateTime
+        self.apps = apps
+        self.isErr = isErr
+        self.enable = enable
+        self.url = url
+        self.raw = raw
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case name
+        case icon
+        case author
+        case repo
+        case updateTime
+        case apps
+        case isErr
+        case enable
+        case url
+        case raw
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+
+        id = try c.decodeIfPresent(String.self, forKey: .id) ?? ""
+        name = try c.decodeIfPresent(String.self, forKey: .name) ?? "匿名订阅"
+        icon = try c.decodeIfPresent(String.self, forKey: .icon) ?? ""
+        author = try c.decodeIfPresent(String.self, forKey: .author) ?? "@anonymous"
+        repo = try c.decodeIfPresent(String.self, forKey: .repo) ?? ""
+        updateTime = try c.decodeIfPresent(String.self, forKey: .updateTime) ?? ""
+        apps = try c.decodeIfPresent([AppModel].self, forKey: .apps) ?? []
+
+        isErr = try c.decodeIfPresent(Bool.self, forKey: .isErr)
+        enable = try c.decodeIfPresent(Bool.self, forKey: .enable)
+        url = try c.decodeIfPresent(String.self, forKey: .url)
+
+        // BoxJS ecosystem has mixed formats here:
+        // - object: { "enable": true, "url": "...", ... }
+        // - string: "https://..."
+        // Keep object when possible and gracefully ignore string format.
+        if let rawSub = try? c.decodeIfPresent(AppSub.self, forKey: .raw) {
+            raw = rawSub
+        } else {
+            raw = nil
+        }
+    }
     
     var formatTime: String {
         return formattedTimeDifference(from: self.updateTime)
@@ -146,8 +212,20 @@ struct AppModel: Codable, Identifiable {
         desc = try c.decodeIfPresent(String.self, forKey: .desc)
         script = try c.decodeIfPresent(String.self, forKey: .script)
         scripts = try c.decodeIfPresent([RunScript].self, forKey: .scripts)
-        desc_html = try c.decodeIfPresent(String.self, forKey: .desc_html)
-        descs_html = try c.decodeIfPresent([String].self, forKey: .descs_html)
+
+        // Some subscriptions return `desc_html` as [String] instead of String.
+        // Keep backward compatibility by accepting both shapes.
+        let descHTMLString = try? c.decodeIfPresent(String.self, forKey: .desc_html)
+        let descHTMLArray = try? c.decodeIfPresent([String].self, forKey: .desc_html)
+        let descsHTMLArray = try? c.decodeIfPresent([String].self, forKey: .descs_html)
+        let descsHTMLString = try? c.decodeIfPresent(String.self, forKey: .descs_html)
+
+        desc_html = descHTMLString ?? descHTMLArray?.joined(separator: "<br>")
+        descs_html = descsHTMLArray
+            ?? descHTMLArray
+            ?? descsHTMLString.map { [$0] }
+            ?? descHTMLString.map { [$0] }
+
         settings = try c.decodeIfPresent([Setting].self, forKey: .settings)
         favIcon = try c.decodeIfPresent(String.self, forKey: .favIcon)
         icon = try c.decodeIfPresent(String.self, forKey: .icon)

@@ -175,10 +175,21 @@ extension View {
     @ViewBuilder
     func neboxHideTabBar() -> some View {
         if #available(iOS 16.0, *) {
-            self.toolbar(.hidden, for: .tabBar)
+            self
+                .toolbar(.hidden, for: .tabBar)
+                .preference(key: NEBoxHideTabBarPreferenceKey.self, value: true)
         } else {
             self
+                .preference(key: NEBoxHideTabBarPreferenceKey.self, value: true)
         }
+    }
+}
+
+struct NEBoxHideTabBarPreferenceKey: PreferenceKey {
+    static var defaultValue: Bool = false
+
+    static func reduce(value: inout Bool, nextValue: () -> Bool) {
+        value = value || nextValue()
     }
 }
 

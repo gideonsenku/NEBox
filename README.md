@@ -1,7 +1,7 @@
-# NEBox
+# Relay
 
 <p align="center">
-  <img src="NEBox/Assets.xcassets/BoxJs.imageset/BoxJs.png" width="120" alt="NEBox Icon" />
+  <img src="NEBox/Assets.xcassets/BoxJs.imageset/BoxJs.png" width="120" alt="Relay Icon" />
 </p>
 
 <p align="center">
@@ -61,7 +61,7 @@
 ## 项目结构
 
 ```
-NEBox/
+Relay/
 ├── Models/            # 数据模型 (BoxDataResp, AppModel, AppSubCache, Session 等)
 ├── Views/             # SwiftUI 视图
 │   ├── HomeView       # 收藏应用主页
@@ -108,7 +108,7 @@ NEBox/
 
 ## API 兼容性
 
-NEBox 通过 REST API 与 BoxJS 后端通信：
+Relay 通过 REST API 与 BoxJS 后端通信：
 
 - **查询**: `/query/boxdata`, `/query/data/*`, `/query/versions`
 - **更新**: `/api/update`, `/api/save`

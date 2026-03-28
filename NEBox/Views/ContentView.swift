@@ -22,14 +22,14 @@ struct WelcomeSetupView: View {
             Spacer()
 
             VStack(spacing: 16) {
-                Image("BoxJs")
+                Image("AppIcon-Light")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 80, height: 80)
                     .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                     .shadow(color: .black.opacity(0.1), radius: 8, y: 4)
 
-                Text("NEBox")
+                Text("Relay")
                     .font(.system(size: 28, weight: .bold, design: .rounded))
 
                 Text("BoxJs 客户端")
@@ -123,6 +123,7 @@ struct ContentView: View {
     @State private var versions: [VersionInfo] = []
     @State private var currentVersion: String = ""
     @State private var selectedTab: Int = 0
+    @State private var hideFloatingTabBar: Bool = false
 
     var body: some View {
         VStack {
@@ -168,6 +169,9 @@ struct ContentView: View {
                 await boxModel.flushPendingDataUpdates()
             }
         }
+        .onPreferenceChange(NEBoxHideTabBarPreferenceKey.self) { shouldHide in
+            hideFloatingTabBar = shouldHide
+        }
     }
 
     // MARK: - Main Content (iOS version adaptive)
@@ -199,8 +203,10 @@ struct ContentView: View {
                     }
                 }
 
-                floatingTabBar
-                    .zIndex(10)
+                if !hideFloatingTabBar {
+                    floatingTabBar
+                        .zIndex(10)
+                }
             }
         }
     }

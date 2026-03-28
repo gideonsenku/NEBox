@@ -1,6 +1,6 @@
 //
-//  NEBoxApp.swift
-//  NEBoxApp
+//  RelayApp.swift
+//  Relay
 //
 //  Created by Senku on 7/3/24.
 //
@@ -9,7 +9,7 @@ import SwiftUI
 import UIKit
 
 @main
-struct NEBoxApp: App {
+struct RelayApp: App {
     @StateObject private var toastManager = ToastManager()
     @StateObject var boxModel = BoxJsViewModel()
     @StateObject private var apiManager = ApiManager.shared

@@ -73,7 +73,7 @@ const sysapps = [
   {
     id: "demo.app.settings",
     name: "Demo Settings App",
-    author: "@NEBox",
+    author: "@Relay",
     repo: "https://example.com/review",
     descs: ["用于 TestFlight 审核的模拟应用配置"],
     keys: ["demo_bool", "demo_text", "demo_select", "demo_multi"],
@@ -140,7 +140,7 @@ const sysapps = [
   {
     id: "demo.app.viewer",
     name: "Demo Viewer",
-    author: "@NEBox",
+    author: "@Relay",
     repo: "https://example.com/review",
     descs: ["用于展示列表和图标渲染"],
     keys: ["viewer_key"],
@@ -174,9 +174,9 @@ function boxDataResp() {
     appSubCaches: {
       [BASE_SUB_URL]: {
         id: "demo-sub-1",
-        name: "NEBox Review Feed",
+        name: "Relay Review Feed",
         icon: "",
-        author: "@NEBox",
+        author: "@Relay",
         repo: "https://example.com/review",
         updateTime: nowISO(),
         apps: sysapps,
@@ -211,7 +211,7 @@ function ok(extra = {}) {
 
 app.get("/", (_req, res) => {
   res.json({
-    name: "NEBox Review Mock API",
+    name: "Relay Review Mock API",
     status: "ok",
     endpoints: ["/query/boxdata", "/query/versions", "/api/runScript"],
   });

@@ -16,8 +16,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "E2C273512C354F4A004952AA"
-               BuildableName = "NEBox.app"
-               BlueprintName = "NEBox"
+               BuildableName = "Relay.app"
+               BlueprintName = "Relay"
                ReferencedContainer = "container:NEBox.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -45,8 +45,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E2C273512C354F4A004952AA"
-            BuildableName = "NEBox.app"
-            BlueprintName = "NEBox"
+            BuildableName = "Relay.app"
+            BlueprintName = "Relay"
             ReferencedContainer = "container:NEBox.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -73,8 +73,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E2C273512C354F4A004952AA"
-            BuildableName = "NEBox.app"
-            BlueprintName = "NEBox"
+            BuildableName = "Relay.app"
+            BlueprintName = "Relay"
             ReferencedContainer = "container:NEBox.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
