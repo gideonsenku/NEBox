@@ -535,15 +535,15 @@ struct BoxDataResp: Codable {
     }
 
     func loadAppBaseInfo(_ app: AppModel) -> AppModel {
-        var icons = app.icons.isEmpty ? ["https://raw.githubusercontent.com/Orz-3/mini/master/Alpha/appstore.png", "https://raw.githubusercontent.com/Orz-3/mini/master/Color/appstore.png"] : app.icons
-        
+        var icons = app.icons
+
         if app.icons.first(where: { $0.contains("/Orz-3/task/master/") }) != nil {
             icons[0] = app.icons[0].replacingOccurrences(of: "/Orz-3/mini/master/", with: "/Orz-3/mini/master/Alpha/")
             icons[1] = app.icons[1].replacingOccurrences(of: "/Orz-3/task/master/", with: "/Orz-3/mini/master/Color/")
         }
         let isFav = usercfgs?.favapps.contains(app.id) ?? false
-        
-        let newApp = app.withIcon(icons, icons.last ?? icons[0], isFav: isFav)
+
+        let newApp = app.withIcon(icons, icons.last ?? icons.first ?? "", isFav: isFav)
         return newApp
     }
 

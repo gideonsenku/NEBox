@@ -605,16 +605,50 @@ final class SubCardCell: UICollectionViewCell {
         ])
     }
 
+    private lazy var fallbackLabel: UILabel = {
+        let label = UILabel()
+        label.textAlignment = .center
+        label.textColor = UIColor(.textSecondary)
+        if let descriptor = UIFont.systemFont(ofSize: 40 * 0.42, weight: .semibold)
+            .fontDescriptor.withDesign(.rounded) {
+            label.font = UIFont(descriptor: descriptor, size: 0)
+        } else {
+            label.font = .systemFont(ofSize: 40 * 0.42, weight: .semibold)
+        }
+        label.isHidden = true
+        label.translatesAutoresizingMaskIntoConstraints = false
+        avatarView.addSubview(label)
+        NSLayoutConstraint.activate([
+            label.centerXAnchor.constraint(equalTo: avatarView.centerXAnchor),
+            label.centerYAnchor.constraint(equalTo: avatarView.centerYAnchor),
+        ])
+        return label
+    }()
+
     func configure(with item: AppSubCache) {
         nameLabel.text = item.name
         dateLabel.text = item.updateTime.isEmpty ? "--" : item.formatTime
         countLabel.text = "\(item.apps.count)"
 
         if !item.icon.isEmpty, let url = URL(string: item.icon) {
-            avatarView.sd_setImage(with: url, placeholderImage: UIImage(systemName: "shippingbox"))
+            avatarView.sd_setImage(with: url, placeholderImage: nil) { [weak self] image, _, _, _ in
+                guard let self else { return }
+                if image == nil {
+                    self.showFallbackLabel(for: item.name)
+                } else {
+                    self.fallbackLabel.isHidden = true
+                }
+            }
         } else {
-            avatarView.image = UIImage(systemName: "shippingbox")
+            showFallbackLabel(for: item.name)
         }
+    }
+
+    private func showFallbackLabel(for name: String) {
+        avatarView.image = nil
+        avatarView.backgroundColor = UIColor(.bgMuted)
+        fallbackLabel.text = name.first.map(String.init)
+        fallbackLabel.isHidden = false
     }
 
     func showDeleteBadge(_ show: Bool) { deleteButton.isHidden = !show }

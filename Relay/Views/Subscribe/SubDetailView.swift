@@ -111,14 +111,26 @@ struct SubDetailView: View {
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(.accent)
 
-                    if let iconURL = sub.flatMap({ URL(string: $0.icon) }), !sub!.icon.isEmpty {
-                        WebImage(url: iconURL) { image in
-                            image.resizable().scaledToFill()
-                        } placeholder: {
-                            Color.bgMuted
+                    if let sub = sub {
+                        if let iconURL = URL(string: sub.icon), !sub.icon.isEmpty {
+                            WebImage(url: iconURL) { image in
+                                image.resizable().scaledToFill()
+                            } placeholder: {
+                                Text(String(sub.name.prefix(1)))
+                                    .font(.system(size: 28 * 0.42, weight: .semibold, design: .rounded))
+                                    .foregroundColor(.textSecondary)
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                    .background(Color.bgMuted)
+                            }
+                            .frame(width: 28, height: 28)
+                            .clipShape(Circle())
+                        } else {
+                            Text(String(sub.name.prefix(1)))
+                                .font(.system(size: 28 * 0.42, weight: .semibold, design: .rounded))
+                                .foregroundColor(.textSecondary)
+                                .frame(width: 28, height: 28)
+                                .background(Color.bgMuted, in: Circle())
                         }
-                        .frame(width: 28, height: 28)
-                        .clipShape(Circle())
                     }
 
                     Text(sub?.name ?? "")

@@ -19,10 +19,11 @@ struct AppIconView: View {
 
     private var isDark: Bool { colorScheme == .dark }
 
+    @State private var loadFailed = false
+
     var body: some View {
-        if let url = app.adaptiveIconURL(isDark: isDark) {
+        if let url = app.adaptiveIconURL(isDark: isDark), !loadFailed {
             ZStack {
-                // Dark mode alpha icons need a visible background
                 if isDark {
                     RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                         .fill(Color.bgCard)
@@ -32,6 +33,9 @@ struct AppIconView: View {
                     image.resizable().scaledToFill()
                 } placeholder: {
                     placeholderView
+                }
+                .onFailure { _ in
+                    loadFailed = true
                 }
             }
             .frame(width: size, height: size)
@@ -47,8 +51,16 @@ struct AppIconView: View {
         RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
             .fill(Color.bgMuted)
             .overlay(
-                Image(systemName: "app.fill")
-                    .foregroundColor(.textTertiary)
+                Group {
+                    if let first = app.name.first {
+                        Text(String(first))
+                            .font(.system(size: size * 0.42, weight: .semibold, design: .rounded))
+                            .foregroundColor(.textSecondary)
+                    } else {
+                        Image(systemName: "app.fill")
+                            .foregroundColor(.textTertiary)
+                    }
+                }
             )
     }
 }

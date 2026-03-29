@@ -445,16 +445,53 @@ class MyCell: UICollectionViewCell {
         didSet { updateIcon() }
     }
 
+    private lazy var fallbackLabel: UILabel = {
+        let label = UILabel()
+        label.textAlignment = .center
+        label.textColor = UIColor(.textSecondary)
+        if let descriptor = UIFont.systemFont(ofSize: 60 * 0.42, weight: .semibold)
+            .fontDescriptor.withDesign(.rounded) {
+            label.font = UIFont(descriptor: descriptor, size: 0)
+        } else {
+            label.font = .systemFont(ofSize: 60 * 0.42, weight: .semibold)
+        }
+        label.isHidden = true
+        label.translatesAutoresizingMaskIntoConstraints = false
+        imageView.addSubview(label)
+        NSLayoutConstraint.activate([
+            label.centerXAnchor.constraint(equalTo: imageView.centerXAnchor),
+            label.centerYAnchor.constraint(equalTo: imageView.centerYAnchor),
+        ])
+        return label
+    }()
+
     private func updateIcon() {
-        guard let app else { imageView.image = nil; return }
+        guard let app else { imageView.image = nil; hideFallbackLabel(); return }
         let isDark = traitCollection.userInterfaceStyle == .dark
-        // Dark mode alpha icons need a visible background
         imageView.backgroundColor = isDark ? UIColor(.bgCard) : .clear
         if let url = app.adaptiveIconURL(isDark: isDark) {
-            imageView.sd_setImage(with: url, placeholderImage: UIImage(systemName: "placeholdertext.fill"))
+            imageView.sd_setImage(with: url, placeholderImage: nil) { [weak self] image, _, _, _ in
+                guard let self else { return }
+                if image == nil {
+                    self.showFallbackLabel(for: app.name)
+                } else {
+                    self.hideFallbackLabel()
+                }
+            }
         } else {
-            imageView.image = UIImage(systemName: "placeholdertext.fill")
+            showFallbackLabel(for: app.name)
         }
+    }
+
+    private func showFallbackLabel(for name: String) {
+        imageView.image = nil
+        imageView.backgroundColor = UIColor(.bgMuted)
+        fallbackLabel.text = name.first.map(String.init)
+        fallbackLabel.isHidden = false
+    }
+
+    private func hideFallbackLabel() {
+        fallbackLabel.isHidden = true
     }
 
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
