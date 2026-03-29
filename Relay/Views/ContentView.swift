@@ -119,6 +119,7 @@ struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var apiUrlInput: String = ""
     @State private var showSearch = false
+    @State private var searchText = ""
     @State private var showVersionSheet = false
     @State private var versions: [VersionInfo] = []
     @State private var currentVersion: String = ""
@@ -144,9 +145,7 @@ struct ContentView: View {
             } else {
                 mainContent
                     .overlay(GlobalToastView())
-                    .fullScreenCover(isPresented: $showSearch) {
-                        SearchView()
-                    }
+                    .modifier(LegacySearchCoverModifier(isPresented: $showSearch))
                     .onReceive(boxModel.$boxData) { data in
                         guard let ver = data.syscfgs?.version, !ver.isEmpty, currentVersion.isEmpty else { return }
                         currentVersion = ver
@@ -181,13 +180,16 @@ struct ContentView: View {
         if #available(iOS 26.0, *) {
             TabView(selection: $selectedTab) {
                 Tab("Home", systemImage: "house", value: 0) {
-                    HomeView(showSearch: $showSearch)
+                    HomeView(onSearch: { selectedTab = 3 })
                 }
                 Tab("Subs", systemImage: "square.stack", value: 1) {
                     SubcribeView()
                 }
                 Tab("Profile", systemImage: "person", value: 2) {
                     ProfileView()
+                }
+                Tab("Search", systemImage: "magnifyingglass", value: 3, role: .search) {
+                    SearchTabView(searchText: $searchText)
                 }
             }
             .tint(NEBoxTabBarPalette.selected)
@@ -196,10 +198,10 @@ struct ContentView: View {
             ZStack(alignment: .bottom) {
                 Group {
                     switch selectedTab {
-                    case 0:  HomeView(showSearch: $showSearch)
+                    case 0:  HomeView(onSearch: { showSearch = true })
                     case 1:  SubcribeView()
                     case 2:  ProfileView()
-                    default: HomeView(showSearch: $showSearch)
+                    default: HomeView(onSearch: { showSearch = true })
                     }
                 }
 
@@ -332,6 +334,22 @@ struct ContentView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("关闭") { showVersionSheet = false }
                 }
+            }
+        }
+    }
+}
+
+// MARK: - Legacy Search Cover (iOS < 26 only)
+
+private struct LegacySearchCoverModifier: ViewModifier {
+    @Binding var isPresented: Bool
+
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content
+        } else {
+            content.fullScreenCover(isPresented: $isPresented) {
+                SearchView()
             }
         }
     }

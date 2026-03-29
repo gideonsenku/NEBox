@@ -26,7 +26,7 @@ private func iconURL(for env: SysEnv) -> String {
 
 struct HomeView: View {
     @EnvironmentObject var boxModel: BoxJsViewModel
-    @Binding var showSearch: Bool
+    var onSearch: () -> Void
 
     @State var items: [AppModel] = []
     @State private var selectedApp: AppModel? = nil
@@ -67,6 +67,7 @@ struct HomeView: View {
                     }
                 }
                 .onAppear { items = boxModel.favApps }
+                .onDisappear { isEditMode = false }
                 .onReceive(boxModel.$boxData) { data in
                     items = data.favApps
                 }
@@ -103,7 +104,7 @@ struct HomeView: View {
                     }
                 }
                 Button {
-                    showSearch = true
+                    onSearch()
                 } label: {
                     Image(systemName: "magnifyingglass")
                         .font(.system(size: 17, weight: .medium))
@@ -153,7 +154,7 @@ struct HomeView: View {
             Text("还没有收藏应用")
                 .foregroundColor(.textSecondary.opacity(0.7))
             Button {
-                showSearch = true
+                onSearch()
             } label: {
                 Text("搜索并添加")
                     .font(.system(size: 14))
@@ -520,5 +521,5 @@ class MyCell: UICollectionViewCell {
 }
 
 #Preview {
-    HomeView(showSearch: .constant(false))
+    HomeView(onSearch: {})
 }

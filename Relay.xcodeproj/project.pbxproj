@@ -11,6 +11,7 @@
 		AA00000100000001000000A1 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000100000001000000A2 /* ProfileView.swift */; };
 		AA00000100000002000000A1 /* DataViewerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000100000002000000A2 /* DataViewerView.swift */; };
 		AA00000100000003000000A1 /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000100000003000000A2 /* SearchView.swift */; };
+		AA00000100000006000000A1 /* SearchTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000100000006000000A2 /* SearchTabView.swift */; };
 		AA00000100000004000000A1 /* PreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000100000004000000A2 /* PreferencesView.swift */; };
 		AA00000100000005000000A1 /* ScriptEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000100000005000000A2 /* ScriptEditorView.swift */; };
 		B0A0000100000001000000A1 /* BoxJSAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A0000100000001000000A2 /* BoxJSAPI.swift */; };
@@ -48,6 +49,7 @@
 		AA00000100000001000000A2 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		AA00000100000002000000A2 /* DataViewerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataViewerView.swift; sourceTree = "<group>"; };
 		AA00000100000003000000A2 /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
+		AA00000100000006000000A2 /* SearchTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchTabView.swift; sourceTree = "<group>"; };
 		AA00000100000004000000A2 /* PreferencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesView.swift; sourceTree = "<group>"; };
 		AA00000100000005000000A2 /* ScriptEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptEditorView.swift; sourceTree = "<group>"; };
 		B0A0000100000001000000A2 /* BoxJSAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxJSAPI.swift; sourceTree = "<group>"; };
@@ -210,6 +212,7 @@
 			children = (
 				E2C273632C355309004952AA /* HomeView.swift */,
 				AA00000100000003000000A2 /* SearchView.swift */,
+				AA00000100000006000000A2 /* SearchTabView.swift */,
 			);
 			path = Home;
 			sourceTree = "<group>";
@@ -361,6 +364,7 @@
 				F10000020000000000000001 /* LogViewerView.swift in Sources */,
 				AA00000100000002000000A1 /* DataViewerView.swift in Sources */,
 				AA00000100000003000000A1 /* SearchView.swift in Sources */,
+				AA00000100000006000000A1 /* SearchTabView.swift in Sources */,
 				AA00000100000004000000A1 /* PreferencesView.swift in Sources */,
 				AA00000100000005000000A1 /* ScriptEditorView.swift in Sources */,
 				F10000030000000000000001 /* BackupDetailView.swift in Sources */,
