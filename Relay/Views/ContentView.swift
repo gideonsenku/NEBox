@@ -121,7 +121,6 @@ struct ContentView: View {
     @State private var showSearch = false
     @State private var searchText = ""
     @State private var showVersionSheet = false
-    @State private var versions: [VersionInfo] = []
     @State private var currentVersion: String = ""
     @State private var selectedTab: Int = 0
     @State private var hideFloatingTabBar: Bool = false
@@ -154,7 +153,14 @@ struct ContentView: View {
             }
         }
         .sheet(isPresented: $showVersionSheet) {
-            versionSheet
+            neboxNavigationContainer {
+                VersionHistoryView()
+                    .toolbar {
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("关闭") { showVersionSheet = false }
+                        }
+                    }
+            }
         }
         .background(Color(hex: "#F5F0F8").ignoresSafeArea(edges: .bottom))
         .onChange(of: selectedTab) { _ in
@@ -273,7 +279,6 @@ struct ContentView: View {
                 let resp: VersionsResp = try await NetworkProvider.request(.getVersions)
                 if let releases = resp.releases, !releases.isEmpty {
                     await MainActor.run {
-                        versions = releases
                         if let latest = releases.first,
                            compareVersion(latest.version, currentVersion) > 0 {
                             showVersionSheet = true
@@ -296,46 +301,6 @@ struct ContentView: View {
             if a != b { return a - b }
         }
         return 0
-    }
-
-    private var versionSheet: some View {
-        neboxNavigationContainer {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    ForEach(versions) { ver in
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("v\(ver.version)")
-                                .font(.system(size: 18, weight: .bold))
-                                .foregroundColor(ver.version == currentVersion ? .accentColor : .primary)
-                            ForEach(ver.notes, id: \.name) { note in
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(note.name)
-                                        .font(.system(size: 14, weight: .semibold))
-                                    ForEach(note.descs, id: \.self) { desc in
-                                        HStack(alignment: .top, spacing: 6) {
-                                            Text("\u{2022}")
-                                                .font(.system(size: 12))
-                                            Text(desc)
-                                                .font(.system(size: 13))
-                                                .foregroundColor(.secondary)
-                                        }
-                                    }
-                                }
-                                .padding(.leading, 12)
-                            }
-                        }
-                    }
-                }
-                .padding()
-            }
-            .navigationTitle("版本更新")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("关闭") { showVersionSheet = false }
-                }
-            }
-        }
     }
 }
 

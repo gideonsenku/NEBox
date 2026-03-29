@@ -11,9 +11,9 @@
 		AA00000100000001000000A1 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000100000001000000A2 /* ProfileView.swift */; };
 		AA00000100000002000000A1 /* DataViewerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000100000002000000A2 /* DataViewerView.swift */; };
 		AA00000100000003000000A1 /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000100000003000000A2 /* SearchView.swift */; };
-		AA00000100000006000000A1 /* SearchTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000100000006000000A2 /* SearchTabView.swift */; };
 		AA00000100000004000000A1 /* PreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000100000004000000A2 /* PreferencesView.swift */; };
 		AA00000100000005000000A1 /* ScriptEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000100000005000000A2 /* ScriptEditorView.swift */; };
+		AA00000100000006000000A1 /* SearchTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000100000006000000A2 /* SearchTabView.swift */; };
 		B0A0000100000001000000A1 /* BoxJSAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A0000100000001000000A2 /* BoxJSAPI.swift */; };
 		B0A0000100000002000000A1 /* NetworkProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A0000100000002000000A2 /* NetworkProvider.swift */; };
 		B0A0000100000003000000A1 /* Moya in Frameworks */ = {isa = PBXBuildFile; productRef = B0A0000100000003000000A2 /* Moya */; };
@@ -43,15 +43,16 @@
 		F10000010000000000000001 /* LogManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000010000000000000002 /* LogManager.swift */; };
 		F10000020000000000000001 /* LogViewerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000020000000000000002 /* LogViewerView.swift */; };
 		F10000030000000000000001 /* BackupDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000030000000000000002 /* BackupDetailView.swift */; };
+		F10000040000000000000001 /* VersionHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000040000000000000002 /* VersionHistoryView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		AA00000100000001000000A2 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		AA00000100000002000000A2 /* DataViewerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataViewerView.swift; sourceTree = "<group>"; };
 		AA00000100000003000000A2 /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
-		AA00000100000006000000A2 /* SearchTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchTabView.swift; sourceTree = "<group>"; };
 		AA00000100000004000000A2 /* PreferencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesView.swift; sourceTree = "<group>"; };
 		AA00000100000005000000A2 /* ScriptEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptEditorView.swift; sourceTree = "<group>"; };
+		AA00000100000006000000A2 /* SearchTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchTabView.swift; sourceTree = "<group>"; };
 		B0A0000100000001000000A2 /* BoxJSAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxJSAPI.swift; sourceTree = "<group>"; };
 		B0A0000100000002000000A2 /* NetworkProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkProvider.swift; sourceTree = "<group>"; };
 		B0A0000100000004000000A2 /* EnvScriptLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvScriptLoader.swift; sourceTree = "<group>"; };
@@ -79,6 +80,7 @@
 		F10000010000000000000002 /* LogManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogManager.swift; sourceTree = "<group>"; };
 		F10000020000000000000002 /* LogViewerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogViewerView.swift; sourceTree = "<group>"; };
 		F10000030000000000000002 /* BackupDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupDetailView.swift; sourceTree = "<group>"; };
+		F10000040000000000000002 /* VersionHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VersionHistoryView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -126,7 +128,6 @@
 				E2C273592C354F4B004952AA /* Assets.xcassets */,
 				E2C2735B2C354F4B004952AA /* Preview Content */,
 			);
-			name = Relay;
 			path = Relay;
 			sourceTree = "<group>";
 		};
@@ -233,6 +234,7 @@
 				F10000020000000000000002 /* LogViewerView.swift */,
 				AA00000100000004000000A2 /* PreferencesView.swift */,
 				F10000030000000000000002 /* BackupDetailView.swift */,
+				F10000040000000000000002 /* VersionHistoryView.swift */,
 			);
 			path = Profile;
 			sourceTree = "<group>";
@@ -368,6 +370,7 @@
 				AA00000100000004000000A1 /* PreferencesView.swift in Sources */,
 				AA00000100000005000000A1 /* ScriptEditorView.swift in Sources */,
 				F10000030000000000000001 /* BackupDetailView.swift in Sources */,
+				F10000040000000000000001 /* VersionHistoryView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -500,7 +503,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_ASSET_PATHS = "\"Relay/Preview Content\"";
 				DEVELOPMENT_TEAM = M3BZ2W43WM;
 				ENABLE_PREVIEWS = YES;
@@ -540,7 +543,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_ASSET_PATHS = "\"Relay/Preview Content\"";
 				DEVELOPMENT_TEAM = M3BZ2W43WM;
 				ENABLE_PREVIEWS = YES;

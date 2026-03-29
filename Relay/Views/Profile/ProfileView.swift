@@ -341,6 +341,11 @@ private struct ProfileQuickActions: View {
                 NavigationLink(destination: LogViewerView()) {
                     ActionRow(icon: "doc.text.magnifyingglass", title: "日志", subtitle: "查看和导出应用日志")
                 }
+                Divider().padding(.leading, 52)
+
+                NavigationLink(destination: VersionHistoryView()) {
+                    ActionRow(icon: "clock.arrow.circlepath", title: "BoxJs更新日志", subtitle: "查看版本历史和更新内容")
+                }
             }
             .background(Color.white)
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
