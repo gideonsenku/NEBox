@@ -172,6 +172,12 @@ struct HTMLTextView: View {
 
 struct AppHeaderView: View {
     let app: AppModel
+    @Environment(\.openURL) private var openURL
+
+    private var repoURL: URL? {
+        guard let repo = app.repo, !repo.isEmpty else { return nil }
+        return URL(string: repo)
+    }
 
     var body: some View {
         HStack(spacing: 12) {
@@ -189,19 +195,35 @@ struct AppHeaderView: View {
                     .font(.system(size: 13))
                     .foregroundColor(.secondary)
                 if let repo = app.repo, !repo.isEmpty {
-                    Text(repo)
-                        .font(.system(size: 11))
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
+                    HStack(spacing: 3) {
+                        if repoURL != nil {
+                            Image(systemName: "link")
+                                .font(.system(size: 9))
+                        }
+                        Text(repo)
+                            .lineLimit(1)
+                    }
+                    .font(.system(size: 11))
+                    .foregroundColor(repoURL != nil ? .accent : .secondary)
                 }
             }
             Spacer()
+            if repoURL != nil {
+                Image(systemName: "arrow.up.right")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.textTertiary)
+            }
         }
         .frame(width: UIScreen.main.bounds.width - 60, alignment: .leading)
         .padding(12)
         .background(Color(.systemBackground))
         .cornerRadius(12)
         .shadow(color: Color.black.opacity(0.08), radius: 5, x: 0, y: 2)
+        .onTapGesture {
+            if let url = repoURL {
+                openURL(url)
+            }
+        }
     }
 }
 
@@ -605,7 +627,7 @@ struct AppSettingsView: View {
                                     }()
                                     return SessionData(key: setting.id, val: transformedVal)
                                 }
-                                await boxModel.saveData(params: params)
+                                boxModel.saveData(params: params)
                                 toastManager.showToast(message: "保存成功!")
                             }
                         } label: {
@@ -722,7 +744,7 @@ struct AppDetailView: View {
                               UIMenu(options: .displayInline, children: [
                                     UIAction(title: "清除数据", image: UIImage(systemName: "trash"), attributes: .destructive) { [self] _ in
                                         Task {
-                                            await boxModel.clearAppDatas(app: app)
+                                            boxModel.clearAppDatas(app: app)
                                             toastManager.showToast(message: "已清除")
                                         }
                                     }
@@ -760,7 +782,7 @@ struct AppDetailView: View {
                     Spacer()
                     Button {
                         Task {
-                            await boxModel.clearAppDatas(app: app, key: data.key)
+                            boxModel.clearAppDatas(app: app, key: data.key)
                             toastManager.showToast(message: "已清除")
                         }
                     } label: {
@@ -778,7 +800,7 @@ struct AppDetailView: View {
                 Spacer()
                 Button {
                     Task {
-                        await boxModel.saveAppSession(app: app, datas: cachedAppDataInfo.datas)
+                        boxModel.saveAppSession(app: app, datas: cachedAppDataInfo.datas)
                         toastManager.showToast(message: "已克隆会话")
                     }
                 } label: {
@@ -809,7 +831,7 @@ struct AppDetailView: View {
                 Menu {
                     Button(role: .destructive) {
                         Task {
-                            await boxModel.delAppSession(sessionId: session.id)
+                            boxModel.delAppSession(sessionId: session.id)
                             toastManager.showToast(message: "已删除")
                         }
                     } label: {
@@ -842,7 +864,7 @@ struct AppDetailView: View {
                 Spacer()
                 Button {
                     Task {
-                        await boxModel.useAppSession(sessionId: session.id, appId: app.id)
+                        boxModel.useAppSession(sessionId: session.id, appId: app.id)
                         toastManager.showToast(message: "已使用")
                     }
                 } label: {
@@ -852,7 +874,7 @@ struct AppDetailView: View {
                 }
                 Button {
                     Task {
-                        await boxModel.linkAppSession(sessionId: session.id, appId: app.id)
+                        boxModel.linkAppSession(sessionId: session.id, appId: app.id)
                         toastManager.showToast(message: "已关联")
                     }
                 } label: {
@@ -936,7 +958,7 @@ struct AppDetailView: View {
     private func performImportSession() {
         guard !importSessionText.isEmpty else { return }
         Task {
-            await boxModel.impAppDatas(jsonString: importSessionText)
+            boxModel.impAppDatas(jsonString: importSessionText)
             toastManager.showToast(message: "导入成功!")
             showImportSession = false
             importSessionText = ""
@@ -971,7 +993,7 @@ struct AppDetailView: View {
                         },
                         UIAction(title: "清除数据", image: UIImage(systemName: "trash"), attributes: .destructive) { [self] _ in
                             Task {
-                                await boxModel.clearAppDatas(app: app)
+                                boxModel.clearAppDatas(app: app)
                                 toastManager.showToast(message: "已清除")
                             }
                         }
@@ -985,11 +1007,11 @@ struct AppDetailView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
 
                 Button {
-                    Task {
+                    Task { @MainActor in
                         guard !isSavingSettings else { return }
-                        await MainActor.run { isSavingSettings = true }
-                        await saveCurrentAppSettings(app: app)
-                        await MainActor.run { isSavingSettings = false }
+                        isSavingSettings = true
+                        saveCurrentAppSettings(app: app)
+                        isSavingSettings = false
                     }
                 } label: {
                     HStack(spacing: 8) {
@@ -1075,8 +1097,9 @@ struct AppDetailView: View {
 
     // MARK: - Helpers
 
-    private func saveCurrentAppSettings(app: AppModel) async {
-        await boxModel.saveData(params: (app.settings ?? []).map { setting in
+    @MainActor
+    private func saveCurrentAppSettings(app: AppModel) {
+        boxModel.saveData(params: (app.settings ?? []).map { setting in
             let transformedVal: AnyCodable = {
                 if setting.type == "checkboxes", let arrayVal = setting.val?.value as? [String] {
                     return AnyCodable(arrayVal.joined(separator: ","))

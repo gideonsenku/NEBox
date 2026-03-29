@@ -56,6 +56,23 @@ class BoxJsViewModel: ObservableObject {
         }
     }
 
+    /// Apply local state immediately, then sync to backend in background.
+    /// On failure, refetch from server to restore consistent state.
+    @MainActor
+    private func optimistic(_ hint: String, apply: (BoxDataResp) -> BoxDataResp, sync: @escaping () async throws -> BoxDataResp) {
+        boxData = apply(boxData)
+        Task {
+            do {
+                let boxdata = try await sync()
+                await updateBoxData(boxdata)
+            } catch {
+                appLog(.error, category: .viewModel, "[optimistic/\(hint)] sync failed: \(error), refetching...")
+                toastManager?.showToast(message: "\(hint)同步失败，正在刷新…")
+                await fetchDataAsync()
+            }
+        }
+    }
+
     // MARK: - Data Fetching
 
     func fetchData() {
@@ -195,8 +212,18 @@ class BoxJsViewModel: ObservableObject {
 
     // MARK: - 数据保存
 
-    func saveData(params: [SessionData]) async {
-        await perform("保存数据") { try await NetworkProvider.request(.saveData(params: params)) }
+    @MainActor
+    func saveData(params: [SessionData]) {
+        let syncParams = params
+        optimistic("保存数据", apply: { boxData in
+            var newDatas = boxData.datas
+            for p in params {
+                newDatas[p.key] = p.val
+            }
+            return boxData.replacingDatas(newDatas)
+        }) {
+            try await NetworkProvider.request(.saveData(params: syncParams))
+        }
     }
 
     // MARK: - 全局备份
@@ -227,7 +254,8 @@ class BoxJsViewModel: ObservableObject {
 
     // MARK: - 会话管理
 
-    func saveAppSession(app: AppModel, datas: [SessionData]) async {
+    @MainActor
+    func saveAppSession(app: AppModel, datas: [SessionData]) {
         let session = Session(
             id: UUID().uuidString,
             name: "会话 \(boxData.sessions.filter { $0.appId == app.id }.count + 1)",
@@ -239,41 +267,68 @@ class BoxJsViewModel: ObservableObject {
         )
         var allSessions = boxData.sessions
         allSessions.append(session)
-        await perform("保存会话") { try await ApiRequest.saveSessions(allSessions) }
+        let sessions = allSessions
+        optimistic("保存会话", apply: { $0.replacingSessions(sessions) }) {
+            try await ApiRequest.saveSessions(sessions)
+        }
     }
 
-    func delAppSession(sessionId: String) async {
+    @MainActor
+    func delAppSession(sessionId: String) {
         var allSessions = boxData.sessions
         allSessions.removeAll { $0.id == sessionId }
-        await perform("删除会话") { try await ApiRequest.saveSessions(allSessions) }
+        let sessions = allSessions
+        optimistic("删除会话", apply: { $0.replacingSessions(sessions) }) {
+            try await ApiRequest.saveSessions(sessions)
+        }
     }
 
-    func updateAppSession(_ session: Session) async {
+    @MainActor
+    func updateAppSession(_ session: Session) {
         var allSessions = boxData.sessions
         if let idx = allSessions.firstIndex(where: { $0.id == session.id }) {
             allSessions[idx] = session
         }
-        await perform("更新会话") { try await ApiRequest.saveSessions(allSessions) }
+        let sessions = allSessions
+        optimistic("更新会话", apply: { $0.replacingSessions(sessions) }) {
+            try await ApiRequest.saveSessions(sessions)
+        }
     }
 
-    func useAppSession(sessionId: String, appId: String) async {
+    @MainActor
+    func useAppSession(sessionId: String, appId: String) {
         guard let session = boxData.sessions.first(where: { $0.id == sessionId }) else { return }
         var datas = session.datas
         datas.append(SessionData(key: "chavy_boxjs_cur_sessions", val: AnyCodable("{}")))
-        await perform("应用会话") { try await NetworkProvider.request(.useAppSession(datas: datas, appId: appId)) }
+
+        // Optimistically apply session datas to local state
+        var newDatasDict = boxData.datas
+        for d in session.datas {
+            newDatasDict[d.key] = d.val
+        }
+        let syncDatas = datas
+        let appIdCopy = appId
+        optimistic("应用会话", apply: { $0.replacingDatas(newDatasDict) }) {
+            try await NetworkProvider.request(.useAppSession(datas: syncDatas, appId: appIdCopy))
+        }
     }
 
-    func linkAppSession(sessionId: String, appId: String) async {
+    @MainActor
+    func linkAppSession(sessionId: String, appId: String) {
         guard let session = boxData.sessions.first(where: { $0.id == sessionId }) else { return }
         var curSessions = boxData.curSessions ?? [:]
         curSessions[appId] = sessionId
         let curSessionsJSON = (try? JSONEncoder().encode(curSessions)).flatMap { String(data: $0, encoding: .utf8) } ?? "{}"
         var datas = session.datas
         datas.append(SessionData(key: "chavy_boxjs_cur_sessions", val: AnyCodable(curSessionsJSON)))
-        await perform("关联会话") { try await NetworkProvider.request(.linkAppSession(datas: datas)) }
+        let syncDatas = datas
+        optimistic("关联会话", apply: { $0.replacingCurSessions(curSessions) }) {
+            try await NetworkProvider.request(.linkAppSession(datas: syncDatas))
+        }
     }
 
-    func clearAppDatas(app: AppModel, key: String? = nil) async {
+    @MainActor
+    func clearAppDatas(app: AppModel, key: String? = nil) {
         let dataInfo = boxData.loadAppDataInfo(for: app)
         var datas: [SessionData]
         if let key = key {
@@ -285,16 +340,26 @@ class BoxJsViewModel: ObservableObject {
                 SessionData(key: d.key, val: AnyCodable(""))
             }
         }
-        await saveData(params: datas)
+
+        // Optimistically clear local datas
+        var newDatasDict = boxData.datas
+        for d in datas {
+            newDatasDict[d.key] = d.val
+        }
+        let syncDatas = datas
+        optimistic("清除数据", apply: { $0.replacingDatas(newDatasDict) }) {
+            try await NetworkProvider.request(.saveData(params: syncDatas))
+        }
     }
 
-    func impAppDatas(jsonString: String) async {
+    @MainActor
+    func impAppDatas(jsonString: String) {
         guard let jsonData = jsonString.data(using: .utf8),
               let impapp = try? JSONDecoder().decode(AppModel.self, from: jsonData) else { return }
         var datas: [SessionData] = []
         if let settings = impapp.settings {
             datas = settings.map { SessionData(key: $0.id, val: $0.val) }
         }
-        await saveData(params: datas)
+        saveData(params: datas)
     }
 }

@@ -253,14 +253,23 @@ struct DataViewerView: View {
     private func saveData() {
         guard !queryKey.isEmpty, isValEditable else { return }
         isSaving = true
+
+        // Optimistically update local state
+        var newDatas = boxModel.boxData.datas
+        newDatas[queryKey] = AnyCodable(queryVal)
+        boxModel.boxData = boxModel.boxData.replacingDatas(newDatas)
+
+        let key = queryKey, val = queryVal
         Task {
             do {
-                let _: DataQueryResp = try await NetworkProvider.request(.saveDataKV(key: queryKey, val: queryVal))
+                let _: DataQueryResp = try await NetworkProvider.request(.saveDataKV(key: key, val: val))
                 await MainActor.run {
                     isSaving = false
                     toastManager.showToast(message: "保存成功!")
                 }
             } catch {
+                // Refetch to restore consistent state
+                await boxModel.fetchDataAsync()
                 await MainActor.run {
                     isSaving = false
                     toastManager.showToast(message: "保存失败")

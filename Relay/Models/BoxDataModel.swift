@@ -548,6 +548,45 @@ struct BoxDataResp: Codable {
             syscfgs: syscfgs
         )
     }
+
+    func replacingSessions(_ sessions: [Session]) -> BoxDataResp {
+        BoxDataResp(
+            appSubCaches: appSubCaches,
+            datas: datas,
+            sessions: sessions,
+            usercfgs: usercfgs,
+            sysapps: sysapps,
+            globalbaks: globalbaks,
+            curSessions: curSessions,
+            syscfgs: syscfgs
+        )
+    }
+
+    func replacingCurSessions(_ curSessions: [String: String]?) -> BoxDataResp {
+        BoxDataResp(
+            appSubCaches: appSubCaches,
+            datas: datas,
+            sessions: sessions,
+            usercfgs: usercfgs,
+            sysapps: sysapps,
+            globalbaks: globalbaks,
+            curSessions: curSessions,
+            syscfgs: syscfgs
+        )
+    }
+
+    func replacingDatas(_ datas: [String: AnyCodable?]) -> BoxDataResp {
+        BoxDataResp(
+            appSubCaches: appSubCaches,
+            datas: datas,
+            sessions: sessions,
+            usercfgs: usercfgs,
+            sysapps: sysapps,
+            globalbaks: globalbaks,
+            curSessions: curSessions,
+            syscfgs: syscfgs
+        )
+    }
 }
 
 
