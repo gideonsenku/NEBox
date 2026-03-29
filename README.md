@@ -1,7 +1,7 @@
 # Relay
 
 <p align="center">
-  <img src="NEBox/Assets.xcassets/BoxJs.imageset/BoxJs.png" width="120" alt="Relay Icon" />
+  <img src="icon.png" width="120" alt="Relay Icon" />
 </p>
 
 <p align="center">
