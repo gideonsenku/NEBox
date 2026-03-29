@@ -56,6 +56,10 @@ struct ProfileView: View {
                             formatTime: formatBackupTime
                         )
 
+                        ProfileOtherSection()
+
+                        ProfileVersionFooter()
+
                         Color.clear.frame(height: adaptiveBottomInset())
                     }
                     .padding(.horizontal, 20)
@@ -341,10 +345,37 @@ private struct ProfileQuickActions: View {
                 NavigationLink(destination: LogViewerView()) {
                     ActionRow(icon: "doc.text.magnifyingglass", title: "日志", subtitle: "查看和导出应用日志")
                 }
+            }
+            .background(Color.bgCard)
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+
+        }
+    }
+}
+
+// MARK: - Other Section
+
+private struct ProfileOtherSection: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("其他")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(.textTertiary)
+                .padding(.horizontal, 4)
+
+            VStack(spacing: 0) {
+                NavigationLink(destination: AcknowledgementsView()) {
+                    ActionRow(icon: "hands.clap", title: "致谢", subtitle: "感谢所有贡献者")
+                }
                 Divider().padding(.leading, 52)
 
                 NavigationLink(destination: VersionHistoryView()) {
-                    ActionRow(icon: "clock.arrow.circlepath", title: "BoxJs更新日志", subtitle: "查看版本历史和更新内容")
+                    ActionRow(icon: "clock.arrow.circlepath", title: "BoxJs 更新日志", subtitle: "查看版本历史和更新内容")
+                }
+                Divider().padding(.leading, 52)
+
+                Link(destination: URL(string: "https://ifdian.net/a/gidoensenku")!) {
+                    ActionRow(icon: "heart.fill", title: "赞助开发者", subtitle: "请开发者喝杯咖啡")
                 }
             }
             .background(Color.bgCard)
@@ -622,6 +653,26 @@ private struct ImportBackupSheet: View {
                 toastManager.showToast(message: "文件读取失败")
             }
         }
+    }
+}
+
+// MARK: - Version Footer
+
+private struct ProfileVersionFooter: View {
+    private var version: String {
+        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "–"
+    }
+
+    private var build: String {
+        Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "–"
+    }
+
+    var body: some View {
+        Text("Relay v\(version) (\(build))")
+            .font(.system(size: 12))
+            .foregroundColor(.textTertiary)
+            .frame(maxWidth: .infinity)
+            .padding(.top, 8)
     }
 }
 

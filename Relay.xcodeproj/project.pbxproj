@@ -45,6 +45,7 @@
 		F10000020000000000000001 /* LogViewerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000020000000000000002 /* LogViewerView.swift */; };
 		F10000030000000000000001 /* BackupDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000030000000000000002 /* BackupDetailView.swift */; };
 		F10000040000000000000001 /* VersionHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000040000000000000002 /* VersionHistoryView.swift */; };
+		F10000050000000000000001 /* AcknowledgementsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000050000000000000002 /* AcknowledgementsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -83,6 +84,7 @@
 		F10000020000000000000002 /* LogViewerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogViewerView.swift; sourceTree = "<group>"; };
 		F10000030000000000000002 /* BackupDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupDetailView.swift; sourceTree = "<group>"; };
 		F10000040000000000000002 /* VersionHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VersionHistoryView.swift; sourceTree = "<group>"; };
+		F10000050000000000000002 /* AcknowledgementsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AcknowledgementsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -237,6 +239,7 @@
 				AA00000100000004000000A2 /* PreferencesView.swift */,
 				F10000030000000000000002 /* BackupDetailView.swift */,
 				F10000040000000000000002 /* VersionHistoryView.swift */,
+				F10000050000000000000002 /* AcknowledgementsView.swift */,
 			);
 			path = Profile;
 			sourceTree = "<group>";
@@ -375,6 +378,7 @@
 				AA00000100000005000000A1 /* ScriptEditorView.swift in Sources */,
 				F10000030000000000000001 /* BackupDetailView.swift in Sources */,
 				F10000040000000000000001 /* VersionHistoryView.swift in Sources */,
+				F10000050000000000000001 /* AcknowledgementsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
