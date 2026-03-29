@@ -328,6 +328,7 @@ struct SubCollectionViewWrapper: UIViewRepresentable {
         func collectionView(_ cv: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
             let cell = cv.dequeueReusableCell(withReuseIdentifier: "SubCardCell", for: indexPath) as! SubCardCell
             let item = items[indexPath.item]
+            cell.resetAppearance()
             cell.configure(with: item)
             cell.showDeleteBadge(isEditMode)
             cell.onDelete = { [weak self] in
@@ -386,13 +387,35 @@ struct SubCollectionViewWrapper: UIViewRepresentable {
             cardPreview(cv: cv, config: config)
         }
 
+        func collectionView(_ cv: UICollectionView, willEndContextMenuInteraction configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionAnimating?) {
+            guard let ip = configuration.identifier as? IndexPath,
+                  let cell = cv.cellForItem(at: ip) as? SubCardCell else { return }
+            animator?.addCompletion {
+                cell.resetAppearance()
+            }
+            cell.resetAppearance()
+        }
+
         private func cardPreview(cv: UICollectionView, config: UIContextMenuConfiguration) -> UITargetedPreview? {
             guard let ip = config.identifier as? IndexPath,
                   let cell = cv.cellForItem(at: ip) as? SubCardCell else { return nil }
+
+            // Use a snapshot for context menu preview to avoid UIKit mutating the live card view
+            // (which can cause temporary transparent/background-loss artifacts after cancellation).
+            guard let snapshot = cell.cardView.snapshotView(afterScreenUpdates: false) else { return nil }
+            snapshot.frame = cell.cardView.bounds
+            snapshot.layer.cornerRadius = cell.cardView.layer.cornerRadius
+            snapshot.layer.cornerCurve = cell.cardView.layer.cornerCurve
+            snapshot.layer.masksToBounds = true
+
             let params = UIPreviewParameters()
             params.backgroundColor = .clear
             params.visiblePath = UIBezierPath(roundedRect: cell.cardView.bounds, cornerRadius: cell.cardView.layer.cornerRadius)
-            return UITargetedPreview(view: cell.cardView, parameters: params)
+            let target = UIPreviewTarget(
+                container: cell.contentView,
+                center: CGPoint(x: cell.cardView.frame.midX, y: cell.cardView.frame.midY)
+            )
+            return UITargetedPreview(view: snapshot, parameters: params, target: target)
         }
 
         // MARK: Refresh
@@ -486,6 +509,12 @@ struct SubCollectionViewWrapper: UIViewRepresentable {
 
 final class SubCardCell: UICollectionViewCell {
     let cardView = UIView()
+    private static let cardBorderColor = UIColor(
+        red: 229 / 255,
+        green: 228 / 255,
+        blue: 225 / 255,
+        alpha: 1
+    ).cgColor
     private let nameLabel = UILabel()
     private let avatarView = UIImageView()
     private let dateLabel = UILabel()
@@ -503,12 +532,7 @@ final class SubCardCell: UICollectionViewCell {
 
     private func setupCard() {
         // Card
-        cardView.backgroundColor = .white
-        cardView.layer.cornerRadius = 20
-        cardView.layer.cornerCurve = .continuous
-        // Border
-        cardView.layer.borderWidth = 1
-        cardView.layer.borderColor = UIColor(red: 229/255, green: 228/255, blue: 225/255, alpha: 1).cgColor
+        resetAppearance()
         // Shadow
         cardView.layer.shadowColor = UIColor(red: 26/255, green: 25/255, blue: 24/255, alpha: 1).cgColor
         cardView.layer.shadowOffset = CGSize(width: 0, height: 2)
@@ -599,6 +623,20 @@ final class SubCardCell: UICollectionViewCell {
     }
 
     func showDeleteBadge(_ show: Bool) { deleteButton.isHidden = !show }
+
+    func resetAppearance() {
+        cardView.backgroundColor = .white
+        cardView.alpha = 1
+        cardView.layer.cornerRadius = 20
+        cardView.layer.cornerCurve = .continuous
+        cardView.layer.borderWidth = 1
+        cardView.layer.borderColor = Self.cardBorderColor
+    }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        resetAppearance()
+    }
 
     @objc private func deleteTapped() { onDelete?() }
 
