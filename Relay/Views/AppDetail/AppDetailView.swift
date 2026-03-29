@@ -181,13 +181,8 @@ struct AppHeaderView: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            if let iconUrl = app.icon, let url = URL(string: iconUrl) {
-                WebImage(url: url)
-                    .resizable()
-                    .frame(width: 56, height: 56)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .shadow(color: Color.black.opacity(0.1), radius: 3, x: 0, y: 1)
-            }
+            AppIconView(app: app, size: 56)
+                .shadow(color: Color.black.opacity(0.1), radius: 3, x: 0, y: 1)
             VStack(alignment: .leading, spacing: 4) {
                 Text(app.name)
                     .font(.system(size: 17, weight: .semibold))
@@ -1081,14 +1076,14 @@ struct AppDetailView: View {
         .frame(maxWidth: .infinity)
         .background(
             ZStack {
-                Color.white.opacity(0.8)
+                Color.bgCard.opacity(0.8)
                 Rectangle().fill(.ultraThinMaterial).opacity(0.35)
             }
             .ignoresSafeArea(edges: .bottom)
         )
         .overlay(
             Rectangle()
-                .fill(Color.white.opacity(0.25))
+                .fill(Color.bgCard.opacity(0.25))
                 .frame(height: 0.5),
             alignment: .top
         )

@@ -240,8 +240,19 @@ extension AppModel {
         newApp.icons = icons
         newApp.icon = icon
         newApp.isFav = isFav
-        
+
         return newApp
+    }
+
+    /// Returns the icon URL appropriate for the current appearance.
+    /// `icons[0]` = dark (Alpha), `icons[1]` = light (Color). Falls back to the other when missing.
+    func adaptiveIconURL(isDark: Bool) -> URL? {
+        let urlString: String? = if isDark {
+            icons.first ?? (icons.count > 1 ? icons[1] : nil) ?? icon
+        } else {
+            (icons.count > 1 ? icons[1] : icons.first) ?? icon
+        }
+        return urlString.flatMap { URL(string: $0) }
     }
 }
 

@@ -23,7 +23,7 @@ struct SubcribeView: View {
             ZStack(alignment: .top) {
                 // Gradient background — matches HomeView
                 LinearGradient(
-                    colors: [Color(hex: "#EEF0FA"), Color(hex: "#F0EDF8"), Color(hex: "#F5F0F8")],
+                    colors: Color.pageGradientColors,
                     startPoint: .top,
                     endPoint: .bottom
                 )
@@ -53,7 +53,7 @@ struct SubcribeView: View {
                 // Nav bar always on top — solid background covers scrolled cells
                 VStack {
                     navBar
-                        .background(Color(hex: "#EEF0FA").ignoresSafeArea())
+                        .background(Color.gradientTop.ignoresSafeArea())
                     Spacer()
                 }
             }
@@ -90,7 +90,7 @@ struct SubcribeView: View {
             HStack(spacing: 8) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(Color(hex: "#E8EAF4"))
+                        .fill(Color.bgMuted)
                         .frame(width: 36, height: 36)
                     Image(systemName: "square.stack.fill")
                         .font(.system(size: 16, weight: .medium))
@@ -98,7 +98,7 @@ struct SubcribeView: View {
                 }
                 Text("应用订阅")
                     .font(.system(size: 15, weight: .semibold))
-                    .foregroundColor(Color(hex: "#1A1918"))
+                    .foregroundColor(.textPrimary)
             }
 
             Spacer()
@@ -154,10 +154,10 @@ struct SubcribeView: View {
             VStack(spacing: 8) {
                 Text("暂无订阅")
                     .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(Color(hex: "#1A1918"))
+                    .foregroundColor(.textPrimary)
                 Text("添加订阅源后，这里会展示所有应用")
                     .font(.system(size: 14))
-                    .foregroundColor(Color(hex: "#6D6C6A"))
+                    .foregroundColor(.textSecondary)
                     .multilineTextAlignment(.center)
             }
             Button {
@@ -509,12 +509,7 @@ struct SubCollectionViewWrapper: UIViewRepresentable {
 
 final class SubCardCell: UICollectionViewCell {
     let cardView = UIView()
-    private static let cardBorderColor = UIColor(
-        red: 229 / 255,
-        green: 228 / 255,
-        blue: 225 / 255,
-        alpha: 1
-    ).cgColor
+    private static var cardBorderColor: CGColor { UIColor(.borderSubtle).cgColor }
     private let nameLabel = UILabel()
     private let avatarView = UIImageView()
     private let dateLabel = UILabel()
@@ -534,7 +529,7 @@ final class SubCardCell: UICollectionViewCell {
         // Card
         resetAppearance()
         // Shadow
-        cardView.layer.shadowColor = UIColor(red: 26/255, green: 25/255, blue: 24/255, alpha: 1).cgColor
+        cardView.layer.shadowColor = UIColor(.textPrimary).cgColor
         cardView.layer.shadowOffset = CGSize(width: 0, height: 2)
         cardView.layer.shadowOpacity = 0.031  // ~3% (hex 08 = 8/255)
         cardView.layer.shadowRadius = 5
@@ -545,25 +540,25 @@ final class SubCardCell: UICollectionViewCell {
         avatarView.contentMode = .scaleAspectFill
         avatarView.clipsToBounds = true
         avatarView.layer.cornerRadius = 20
-        avatarView.backgroundColor = UIColor(red: 236/255, green: 238/255, blue: 244/255, alpha: 1)
-        avatarView.tintColor = UIColor(red: 144/255, green: 152/255, blue: 173/255, alpha: 1)
+        avatarView.backgroundColor = UIColor(.bgMuted)
+        avatarView.tintColor = UIColor(.textTertiary)
         avatarView.translatesAutoresizingMaskIntoConstraints = false
 
         // Name
         nameLabel.font = .systemFont(ofSize: 15, weight: .semibold)
-        nameLabel.textColor = UIColor(red: 26/255, green: 25/255, blue: 24/255, alpha: 1)
+        nameLabel.textColor = UIColor(.textPrimary)
         nameLabel.numberOfLines = 2
         nameLabel.lineBreakMode = .byTruncatingTail
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
 
         // Date
         dateLabel.font = .systemFont(ofSize: 12, weight: .regular)
-        dateLabel.textColor = UIColor(red: 156/255, green: 155/255, blue: 153/255, alpha: 1)
+        dateLabel.textColor = UIColor(.textTertiary)
         dateLabel.translatesAutoresizingMaskIntoConstraints = false
 
         // Count
         countLabel.font = .systemFont(ofSize: 22, weight: .bold)
-        countLabel.textColor = UIColor(red: 26/255, green: 25/255, blue: 24/255, alpha: 1)
+        countLabel.textColor = UIColor(.textPrimary)
         countLabel.translatesAutoresizingMaskIntoConstraints = false
 
         [avatarView, nameLabel, dateLabel, countLabel].forEach { cardView.addSubview($0) }
@@ -625,7 +620,7 @@ final class SubCardCell: UICollectionViewCell {
     func showDeleteBadge(_ show: Bool) { deleteButton.isHidden = !show }
 
     func resetAppearance() {
-        cardView.backgroundColor = .white
+        cardView.backgroundColor = UIColor(.bgCard)
         cardView.alpha = 1
         cardView.layer.cornerRadius = 20
         cardView.layer.cornerCurve = .continuous
@@ -636,6 +631,14 @@ final class SubCardCell: UICollectionViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         resetAppearance()
+    }
+
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+            cardView.layer.borderColor = Self.cardBorderColor
+            cardView.layer.shadowColor = UIColor(.textPrimary).cgColor
+        }
     }
 
     @objc private func deleteTapped() { onDelete?() }

@@ -29,7 +29,7 @@ struct ProfileView: View {
         neboxNavigationContainer {
             ZStack(alignment: .top) {
                 LinearGradient(
-                    colors: [Color(hex: "#EEF0FA"), Color(hex: "#F0EDF8"), Color(hex: "#F5F0F8")],
+                    colors: Color.pageGradientColors,
                     startPoint: .top,
                     endPoint: .bottom
                 )
@@ -63,7 +63,7 @@ struct ProfileView: View {
 
                 VStack {
                     ProfileNavBar(onSettings: { showApiSettings = true })
-                        .background(Color(hex: "#EEF0FA").ignoresSafeArea())
+                        .background(Color.gradientTop.ignoresSafeArea())
                     Spacer()
                 }
             }
@@ -170,7 +170,7 @@ private struct ProfileNavBar: View {
             HStack(spacing: 8) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(Color(hex: "#E8EAF4"))
+                        .fill(Color.bgMuted)
                         .frame(width: 36, height: 36)
                     Image(systemName: "person.fill")
                         .font(.system(size: 16, weight: .medium))
@@ -178,7 +178,7 @@ private struct ProfileNavBar: View {
                 }
                 Text("我的")
                     .font(.system(size: 15, weight: .semibold))
-                    .foregroundColor(Color(hex: "#1A1918"))
+                    .foregroundColor(.textPrimary)
             }
 
             Spacer()
@@ -208,7 +208,7 @@ private struct ProfileHeaderCard: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(usercfgs?.name ?? "大侠, 请留名!")
                     .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(Color(hex: "#1A1918"))
+                    .foregroundColor(.textPrimary)
 
                 HStack(spacing: 4) {
                     Image(systemName: "link")
@@ -229,7 +229,7 @@ private struct ProfileHeaderCard: View {
             }
         }
         .padding(16)
-        .background(Color.white)
+        .background(Color.bgCard)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .shadow(color: .black.opacity(0.05), radius: 8, y: 2)
     }
@@ -250,7 +250,7 @@ private struct ProfileHeaderCard: View {
             ZStack {
                 Circle()
                     .fill(LinearGradient(
-                        colors: [.accent, Color(hex: "#0047D4")],
+                        colors: [.accentBlue, .accentBlueDark],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ))
@@ -273,8 +273,8 @@ private struct ProfileStatsRow: View {
     var body: some View {
         HStack(spacing: 12) {
             StatCard(icon: "app.badge", label: "应用", count: boxData.apps.count, color: .accent)
-            StatCard(icon: "square.stack", label: "订阅", count: boxData.displayAppSubs.count, color: Color(hex: "#7C3AED"))
-            StatCard(icon: "person.2", label: "会话", count: boxData.sessions.count, color: Color(hex: "#059669"))
+            StatCard(icon: "square.stack", label: "订阅", count: boxData.displayAppSubs.count, color: Color.accentCoral)
+            StatCard(icon: "person.2", label: "会话", count: boxData.sessions.count, color: Color.accentBlue)
         }
     }
 }
@@ -296,7 +296,7 @@ private struct StatCard: View {
                 Spacer()
                 Text("\(count)")
                     .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(Color(hex: "#1A1918"))
+                    .foregroundColor(.textPrimary)
             }
             HStack {
                 Text(label)
@@ -306,7 +306,7 @@ private struct StatCard: View {
             }
         }
         .padding(12)
-        .background(Color.white)
+        .background(Color.bgCard)
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         .shadow(color: .black.opacity(0.03), radius: 4, y: 1)
     }
@@ -347,7 +347,7 @@ private struct ProfileQuickActions: View {
                     ActionRow(icon: "clock.arrow.circlepath", title: "BoxJs更新日志", subtitle: "查看版本历史和更新内容")
                 }
             }
-            .background(Color.white)
+            .background(Color.bgCard)
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
     }
@@ -364,7 +364,7 @@ private struct ActionRow: View {
         HStack(spacing: 12) {
             ZStack {
                 RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .fill(Color(hex: "#F5F5F7"))
+                    .fill(Color.bgMuted)
                     .frame(width: 36, height: 36)
                 Image(systemName: icon)
                     .font(.system(size: 14))
@@ -374,7 +374,7 @@ private struct ActionRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(.system(size: 15))
-                    .foregroundColor(Color(hex: "#1A1918"))
+                    .foregroundColor(.textPrimary)
                 Text(subtitle)
                     .font(.system(size: 12))
                     .foregroundColor(.textTertiary)
@@ -384,7 +384,7 @@ private struct ActionRow: View {
 
             Image(systemName: "chevron.right")
                 .font(.system(size: 12, weight: .medium))
-                .foregroundColor(Color(hex: "#C7C7CC"))
+                .foregroundColor(Color.textInactive)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
@@ -444,7 +444,7 @@ private struct ProfileBackupSection: View {
                         }
                     }
                 }
-                .background(Color.white)
+                .background(Color.bgCard)
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             } else {
                 HStack {
@@ -460,7 +460,7 @@ private struct ProfileBackupSection: View {
                     .padding(.vertical, 32)
                     Spacer()
                 }
-                .background(Color.white)
+                .background(Color.bgCard)
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
         }
@@ -477,17 +477,17 @@ private struct BackupRow: View {
         HStack(spacing: 12) {
             ZStack {
                 RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .fill(Color(hex: "#E8F5E9"))
+                    .fill(Color.accentBlueLight)
                     .frame(width: 36, height: 36)
                 Image(systemName: "externaldrive.fill")
                     .font(.system(size: 14))
-                    .foregroundColor(Color(hex: "#059669"))
+                    .foregroundColor(Color.accentBlue)
             }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(backup.name)
                     .font(.system(size: 15))
-                    .foregroundColor(Color(hex: "#1A1918"))
+                    .foregroundColor(.textPrimary)
                     .lineLimit(1)
 
                 if let createTime = backup.createTime {
@@ -504,10 +504,10 @@ private struct BackupRow: View {
                     ForEach(tags.filter { !$0.isEmpty }.prefix(2), id: \.self) { tag in
                         Text(tag)
                             .font(.system(size: 10))
-                            .foregroundColor(Color(hex: "#6B7280"))
+                            .foregroundColor(Color.textSecondary)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
-                            .background(Color(hex: "#F3F4F6"))
+                            .background(Color.bgMuted)
                             .clipShape(Capsule())
                     }
                 }
@@ -515,7 +515,7 @@ private struct BackupRow: View {
 
             Image(systemName: "chevron.right")
                 .font(.system(size: 12, weight: .medium))
-                .foregroundColor(Color(hex: "#C7C7CC"))
+                .foregroundColor(Color.textInactive)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)

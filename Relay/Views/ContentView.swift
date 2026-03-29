@@ -162,7 +162,7 @@ struct ContentView: View {
                     }
             }
         }
-        .background(Color(hex: "#F5F0F8").ignoresSafeArea(edges: .bottom))
+        .background(Color.gradientBottom.ignoresSafeArea(edges: .bottom))
         .onChange(of: selectedTab) { _ in
             Task {
                 await boxModel.flushPendingDataUpdates()

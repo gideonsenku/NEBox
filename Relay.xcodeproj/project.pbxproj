@@ -20,6 +20,7 @@
 		B0A0000100000004000000A1 /* EnvScriptLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A0000100000004000000A2 /* EnvScriptLoader.swift */; };
 		E21043252C89951C00347C43 /* RadioButtonGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21043242C89951C00347C43 /* RadioButtonGroup.swift */; };
 		E210432C2C90307000347C43 /* CheckBoxGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = E210432B2C90307000347C43 /* CheckBoxGroup.swift */; };
+		A100000100000001000000A1 /* AppIconView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000100000001000000A2 /* AppIconView.swift */; };
 		E210FCEF2CBF6DCA004A8CFB /* ApiManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E210FCEE2CBF6DC7004A8CFB /* ApiManager.swift */; };
 		E23F56042C7DBDCD0039F1CC /* AppDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E23F56032C7DBDCD0039F1CC /* AppDetailView.swift */; };
 		E2C273562C354F4A004952AA /* RelayApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C273552C354F4A004952AA /* RelayApp.swift */; };
@@ -59,6 +60,7 @@
 		C61523AAFFC54CBBBD390BBB /* SubDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubDetailView.swift; sourceTree = "<group>"; };
 		E21043242C89951C00347C43 /* RadioButtonGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadioButtonGroup.swift; sourceTree = "<group>"; };
 		E210432B2C90307000347C43 /* CheckBoxGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckBoxGroup.swift; sourceTree = "<group>"; };
+		A100000100000001000000A2 /* AppIconView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconView.swift; sourceTree = "<group>"; };
 		E210FCEE2CBF6DC7004A8CFB /* ApiManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiManager.swift; sourceTree = "<group>"; };
 		E23F56032C7DBDCD0039F1CC /* AppDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDetailView.swift; sourceTree = "<group>"; };
 		E2C273522C354F4A004952AA /* Relay.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Relay.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -254,6 +256,7 @@
 			children = (
 				E21043242C89951C00347C43 /* RadioButtonGroup.swift */,
 				E210432B2C90307000347C43 /* CheckBoxGroup.swift */,
+				A100000100000001000000A2 /* AppIconView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -350,6 +353,7 @@
 				E2E9E2562C4101AC00836E4B /* BoxJsViewModel.swift in Sources */,
 				E2E8BA822C6B67BB00C2AF9E /* Utils.swift in Sources */,
 				E210432C2C90307000347C43 /* CheckBoxGroup.swift in Sources */,
+				A100000100000001000000A1 /* AppIconView.swift in Sources */,
 				E2C273682C36BB88004952AA /* SubcribeView.swift in Sources */,
 				364D296303964521B29BE952 /* SubDetailView.swift in Sources */,
 				E2C273642C355309004952AA /* HomeView.swift in Sources */,
@@ -516,7 +520,6 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -556,7 +559,6 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

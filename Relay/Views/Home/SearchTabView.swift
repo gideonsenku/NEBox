@@ -28,16 +28,7 @@ struct SearchTabView: View {
             List(filteredApps) { app in
                 NavigationLink(destination: AppDetailView(app: app)) {
                     HStack(spacing: 12) {
-                        if let iconUrl = URL(string: app.icon ?? "") {
-                            WebImage(url: iconUrl)
-                                .resizable()
-                                .frame(width: 40, height: 40)
-                                .clipShape(RoundedRectangle(cornerRadius: 8))
-                        } else {
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(Color(.systemGray5))
-                                .frame(width: 40, height: 40)
-                        }
+                        AppIconView(app: app, size: 40)
 
                         VStack(alignment: .leading, spacing: 2) {
                             Text("\(app.name) (\(app.id))")

@@ -59,7 +59,7 @@ struct LogViewerView: View {
                 }
             }
         }
-        .background(Color(hex: "#F5F5F7"))
+        .background(Color.bgPage)
         .navigationTitle("日志")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -133,7 +133,7 @@ private struct LogLineView: View {
     var body: some View {
         Text(line)
             .font(.system(size: 11, design: .monospaced))
-            .foregroundColor(level?.textColor ?? Color(hex: "#1A1918"))
+            .foregroundColor(level?.textColor ?? .textPrimary)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
@@ -155,8 +155,8 @@ private struct FilterChip: View {
                 .font(.system(size: 12, weight: .medium))
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
-                .foregroundColor(isSelected ? .white : Color(hex: "#6B7280"))
-                .background(isSelected ? color : Color(hex: "#E5E7EB"))
+                .foregroundColor(isSelected ? .white : .textSecondary)
+                .background(isSelected ? color : Color.bgMuted)
                 .clipShape(Capsule())
         }
     }
@@ -179,19 +179,19 @@ private struct ShareSheet: UIViewControllerRepresentable {
 private extension LogLevel {
     var chipColor: Color {
         switch self {
-        case .debug:   return Color(hex: "#6B7280")
+        case .debug:   return .textSecondary
         case .info:    return .accent
-        case .warning: return Color(hex: "#D97706")
-        case .error:   return Color(hex: "#DC2626")
+        case .warning: return .accentWarning
+        case .error:   return .accentRed
         }
     }
 
     var textColor: Color {
         switch self {
-        case .debug:   return Color(hex: "#6B7280")
-        case .info:    return Color(hex: "#1A1918")
-        case .warning: return Color(hex: "#92400E")
-        case .error:   return Color(hex: "#DC2626")
+        case .debug:   return .textSecondary
+        case .info:    return .textPrimary
+        case .warning: return .accentWarning
+        case .error:   return .accentRed
         }
     }
 
@@ -199,8 +199,8 @@ private extension LogLevel {
         switch self {
         case .debug:   return Color.clear
         case .info:    return Color.clear
-        case .warning: return Color(hex: "#FFFBEB")
-        case .error:   return Color(hex: "#FEF2F2")
+        case .warning: return .accentWarning.opacity(0.1)
+        case .error:   return .accentRed.opacity(0.1)
         }
     }
 }

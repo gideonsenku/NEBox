@@ -54,7 +54,7 @@ struct CheckBox: View {
             
             Text(label)
                 .font(Font.system(size: textSize))
-                .foregroundColor(.black)
+                .foregroundColor(.textPrimary)
             Spacer()
         }
         .foregroundColor(isSelected ? .blue : color)

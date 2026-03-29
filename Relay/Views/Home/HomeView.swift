@@ -41,7 +41,7 @@ struct HomeView: View {
             ZStack(alignment: .top) {
                 // Gradient background
                 LinearGradient(
-                    colors: [Color(hex: "#EEF0FA"), Color(hex: "#F0EDF8"), Color(hex: "#F5F0F8")],
+                    colors: Color.pageGradientColors,
                     startPoint: .top,
                     endPoint: .bottom
                 )
@@ -132,14 +132,14 @@ struct HomeView: View {
                     .font(.system(size: 16, weight: .bold))
                     .foregroundColor(.accent)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color(hex: "#EEF0FA"))
+                    .background(Color.gradientTop)
             }
         } else {
             Image(systemName: "network")
                 .font(.system(size: 18))
                 .foregroundColor(.textTertiary)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color(hex: "#EEF0FA"))
+                .background(Color.gradientTop)
         }
     }
 
@@ -310,11 +310,7 @@ struct CollectionViewWrapper: UIViewRepresentable {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "Cell", for: indexPath) as! MyCell
             let app = items[indexPath.item]
             cell.titleLabel.text = app.name
-            if let str = app.icon, let url = URL(string: str) {
-                cell.imageURL = url
-            } else {
-                cell.imageView.image = UIImage(systemName: "placeholdertext.fill")
-            }
+            cell.app = app
             cell.showDeleteBadge(allowsEdit && isEditMode)
             cell.showFavBadge(!favAppIds.isEmpty && favAppIds.contains(app.id))
             if allowsEdit && isEditMode { startJiggleAnimation(for: cell) }
@@ -444,10 +440,27 @@ class MyCell: UICollectionViewCell {
     private let deleteBadge = UIImageView()
     private let favBadge = UIImageView()
 
-    var imageURL: URL? {
-        didSet {
-            guard let url = imageURL else { imageView.image = nil; return }
+    /// The app whose icon this cell displays — kept for adaptive icon switching.
+    var app: AppModel? {
+        didSet { updateIcon() }
+    }
+
+    private func updateIcon() {
+        guard let app else { imageView.image = nil; return }
+        let isDark = traitCollection.userInterfaceStyle == .dark
+        // Dark mode alpha icons need a visible background
+        imageView.backgroundColor = isDark ? UIColor(.bgCard) : .clear
+        if let url = app.adaptiveIconURL(isDark: isDark) {
             imageView.sd_setImage(with: url, placeholderImage: UIImage(systemName: "placeholdertext.fill"))
+        } else {
+            imageView.image = UIImage(systemName: "placeholdertext.fill")
+        }
+    }
+
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+            updateIcon()
         }
     }
 
@@ -456,7 +469,7 @@ class MyCell: UICollectionViewCell {
 
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
-        imageView.layer.cornerRadius = 13.5
+        imageView.layer.cornerRadius = 60 * 0.2237 // iOS home-screen icon ratio
         imageView.layer.cornerCurve = .continuous
         imageView.tintColor = .systemGray3
         contentView.addSubview(imageView)
@@ -475,7 +488,7 @@ class MyCell: UICollectionViewCell {
 
         titleLabel.textAlignment = .center
         titleLabel.numberOfLines = 2
-        titleLabel.textColor = UIColor(red: 90/255, green: 97/255, blue: 119/255, alpha: 1)
+        titleLabel.textColor = UIColor(.textSecondary)
         titleLabel.font = UIFont.systemFont(ofSize: 11.5, weight: .medium)
         contentView.addSubview(titleLabel)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false

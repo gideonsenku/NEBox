@@ -36,7 +36,7 @@ struct RadioButton: View {
                 .frame(width: self.size, height: self.size)
             Text(label)  // 显示 label 而不是 key
                 .font(Font.system(size: textSize))
-                .foregroundColor(.black)
+                .foregroundColor(.textPrimary)
             Spacer()
         }
         .onTapGesture {

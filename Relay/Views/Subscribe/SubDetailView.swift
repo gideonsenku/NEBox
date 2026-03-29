@@ -26,7 +26,7 @@ struct SubDetailView: View {
         ZStack(alignment: .top) {
             // Same gradient as HomeView
             LinearGradient(
-                colors: [Color(hex: "#EEF0FA"), Color(hex: "#F0EDF8"), Color(hex: "#F5F0F8")],
+                colors: Color.pageGradientColors,
                 startPoint: .top,
                 endPoint: .bottom
             )
@@ -81,12 +81,12 @@ struct SubDetailView: View {
             // Nav bar on top
             VStack {
                 navBar
-                    .background(Color(hex: "#EEF0FA").ignoresSafeArea())
+                    .background(Color.gradientTop.ignoresSafeArea())
                 Spacer()
             }
         }
         .neboxHiddenNavigationBar()
-        .background(Color(hex: "#F5F0F8").ignoresSafeArea(edges: .bottom))
+        .background(Color.gradientBottom.ignoresSafeArea(edges: .bottom))
         .neboxNavigationDestination(isPresented: $isNavigationActive) {
             AppDetailView(app: selectedApp)
         }
@@ -123,7 +123,7 @@ struct SubDetailView: View {
 
                     Text(sub?.name ?? "")
                         .font(.system(size: 15, weight: .semibold))
-                        .foregroundColor(Color(hex: "#1A1918"))
+                        .foregroundColor(.textPrimary)
                         .lineLimit(1)
                 }
             }

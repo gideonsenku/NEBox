@@ -48,7 +48,7 @@ struct BackupDetailView: View {
             .padding(.top, 8)
             .padding(.bottom, 28)
         }
-        .background(Color(.systemGroupedBackground))
+        .background(Color.bgPage)
         .navigationTitle(backup.name)
         .navigationBarTitleDisplayMode(.inline)
         .background(
@@ -160,11 +160,11 @@ private struct BackupInfoSection: View {
                 TagsRow(tags: tags)
             }
         }
-        .background(Color(.systemBackground))
+        .background(Color.bgCard)
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color(.separator).opacity(0.3), lineWidth: 1)
+                .stroke(Color.borderSubtle, lineWidth: 1)
         )
         .shadow(color: .black.opacity(0.03), radius: 12, y: 2)
     }
@@ -193,7 +193,7 @@ private struct BackupHeroArea: View {
         VStack(spacing: 12) {
             ZStack {
                 Circle()
-                    .fill(Color.accentLight)
+                    .fill(Color.accentBlueLight)
                     .frame(width: 72, height: 72)
                 Image(systemName: "archivebox.fill")
                     .font(.system(size: 36))
@@ -202,7 +202,7 @@ private struct BackupHeroArea: View {
 
             TextField("备份名称", text: $editedName)
                 .font(.system(size: 22, weight: .bold))
-                .foregroundColor(Color(hex: "#1A1918"))
+                .foregroundColor(.textPrimary)
                 .multilineTextAlignment(.center)
                 .submitLabel(.done)
                 .onSubmit(onNameSubmit)
@@ -240,11 +240,11 @@ private struct InfoRow: View {
         HStack {
             Text(label)
                 .font(.system(size: 14, weight: .medium))
-                .foregroundColor(.secondary)
+                .foregroundColor(.textSecondary)
             Spacer()
             Text(value)
                 .font(.system(size: 13))
-                .foregroundColor(Color(.tertiaryLabel))
+                .foregroundColor(Color.textTertiary)
                 .lineLimit(1)
         }
         .padding(.horizontal, 18)
@@ -261,7 +261,7 @@ private struct TagsRow: View {
         HStack {
             Text("标签")
                 .font(.system(size: 14, weight: .medium))
-                .foregroundColor(.secondary)
+                .foregroundColor(.textSecondary)
             Spacer()
             HStack(spacing: 6) {
                 ForEach(tags.filter { !$0.isEmpty }, id: \.self) { tag in
@@ -269,8 +269,8 @@ private struct TagsRow: View {
                         .font(.system(size: 11, weight: .semibold))
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
-                        .background(Color.accentColor.opacity(0.1))
-                        .foregroundColor(.accentColor)
+                        .background(Color.accentBlue.opacity(0.1))
+                        .foregroundColor(.accentBlue)
                         .cornerRadius(6)
                 }
             }
@@ -320,11 +320,11 @@ private struct BackupActionSection: View {
                 action: onExport
             )
         }
-        .background(Color(.systemBackground))
+        .background(Color.bgCard)
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color(.separator).opacity(0.3), lineWidth: 1)
+                .stroke(Color.borderSubtle, lineWidth: 1)
         )
         .shadow(color: .black.opacity(0.03), radius: 12, y: 2)
     }
@@ -345,28 +345,28 @@ private struct DetailActionRow: View {
             HStack(spacing: 12) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 10)
-                        .fill(Color.accentColor.opacity(0.1))
+                        .fill(Color.accentBlue.opacity(0.1))
                         .frame(width: 36, height: 36)
                     if isLoading {
                         ProgressView()
                     } else {
                         Image(systemName: icon)
                             .font(.system(size: 16))
-                            .foregroundColor(.accentColor)
+                            .foregroundColor(.accentBlue)
                     }
                 }
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
                         .font(.system(size: 15, weight: .medium))
-                        .foregroundColor(.primary)
+                        .foregroundColor(.textPrimary)
                     Text(subtitle)
                         .font(.system(size: 12))
-                        .foregroundColor(Color(.tertiaryLabel))
+                        .foregroundColor(Color.textTertiary)
                 }
                 Spacer()
                 Image(systemName: "chevron.right")
                     .font(.system(size: 14))
-                    .foregroundColor(Color(.tertiaryLabel))
+                    .foregroundColor(Color.textTertiary)
             }
             .padding(.horizontal, 18)
             .padding(.vertical, 14)
@@ -401,7 +401,7 @@ private struct BackupDangerSection: View {
             }
         }
         .padding(16)
-        .background(Color(.systemBackground))
+        .background(Color.bgCard)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .shadow(color: .black.opacity(0.03), radius: 12, y: 2)
     }
