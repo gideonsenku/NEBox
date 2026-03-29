@@ -244,7 +244,13 @@ struct SubCollectionViewWrapper: UIViewRepresentable {
             coord.lastFingerprint = newFingerprint
         }
         DispatchQueue.main.async {
-            if needsReload { uiView.reloadData() }
+            if needsReload {
+                if uiView.refreshControl?.isRefreshing == true {
+                    coord.needsReloadAfterRefresh = true
+                } else {
+                    uiView.reloadData()
+                }
+            }
             if editChanged { coord.applyEditMode(to: uiView, enabled: isEditMode) }
         }
     }
@@ -266,6 +272,7 @@ struct SubCollectionViewWrapper: UIViewRepresentable {
         var lastRenderedIds: [String] = []
         var lastFingerprint: [String] = []
         var prevEditMode: Bool = false
+        var needsReloadAfterRefresh = false
         private var refreshTimer: Timer?
 
         init(items: Binding<[AppSubCache]>, boxModel: BoxJsViewModel, isEditMode: Binding<Bool>, isDragging: Binding<Bool>, onTap: ((AppSubCache) -> Void)?) {
@@ -393,7 +400,13 @@ struct SubCollectionViewWrapper: UIViewRepresentable {
         @objc func handleRefresh(_ rc: UIRefreshControl) {
             Task {
                 await boxModel.reloadAllAppSub()
-                await MainActor.run { rc.endRefreshing() }
+                await MainActor.run {
+                    rc.endRefreshing()
+                    if needsReloadAfterRefresh, let cv = collectionView {
+                        needsReloadAfterRefresh = false
+                        cv.reloadData()
+                    }
+                }
             }
         }
 

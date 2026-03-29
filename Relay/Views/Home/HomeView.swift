@@ -229,7 +229,12 @@ struct CollectionViewWrapper: UIViewRepresentable {
         coord.prevFavAppIds = favAppIds
 
         if shouldReload {
-            uiView.reloadData()
+            if uiView.refreshControl?.isRefreshing == true {
+                // Defer reload until after refresh animation completes to avoid stutter
+                coord.needsReloadAfterRefresh = true
+            } else {
+                uiView.reloadData()
+            }
         }
         if editModeChanged {
             coord.applyJiggle(to: uiView, enabled: isEditMode)
@@ -253,6 +258,7 @@ struct CollectionViewWrapper: UIViewRepresentable {
         var prevEditMode: Bool = false
         var prevItemIDs: [String]
         var prevFavAppIds: Set<String>
+        var needsReloadAfterRefresh = false
         weak var collectionView: UICollectionView?
         private weak var navPopGesture: UIGestureRecognizer?
 
@@ -331,8 +337,16 @@ struct CollectionViewWrapper: UIViewRepresentable {
         }
 
         @objc func handleRefresh(_ refreshControl: UIRefreshControl) {
-            boxModel.fetchData()
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1) { refreshControl.endRefreshing() }
+            Task {
+                await boxModel.fetchDataAsync()
+                await MainActor.run {
+                    refreshControl.endRefreshing()
+                    if needsReloadAfterRefresh, let cv = collectionView {
+                        needsReloadAfterRefresh = false
+                        cv.reloadData()
+                    }
+                }
+            }
         }
 
         @objc func handleLongPress(_ gesture: UILongPressGestureRecognizer) {

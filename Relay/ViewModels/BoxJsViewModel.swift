@@ -59,21 +59,23 @@ class BoxJsViewModel: ObservableObject {
     // MARK: - Data Fetching
 
     func fetchData() {
-        Task {
-            appLog(.info, category: .viewModel, "[fetchData] start, baseURL: \(ApiManager.shared.baseURL)")
-            do {
-                let boxdata: BoxDataResp = try await NetworkProvider.request(.getBoxData)
-                await updateBoxData(boxdata)
-                await MainActor.run { self.isDataLoaded = true }
-                appLog(.info, category: .viewModel, "[fetchData] success")
-            } catch {
-                await MainActor.run {
-                    self.isDataLoaded = true
-                    toastManager?.showToast(message: "加载数据失败")
-                }
-                let msg = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
-                appLog(.error, category: .viewModel, "[fetchData] failed, baseURL: \(ApiManager.shared.baseURL), error: \(msg)")
+        Task { await fetchDataAsync() }
+    }
+
+    func fetchDataAsync() async {
+        appLog(.info, category: .viewModel, "[fetchData] start, baseURL: \(ApiManager.shared.baseURL)")
+        do {
+            let boxdata: BoxDataResp = try await NetworkProvider.request(.getBoxData)
+            await updateBoxData(boxdata)
+            await MainActor.run { self.isDataLoaded = true }
+            appLog(.info, category: .viewModel, "[fetchData] success")
+        } catch {
+            await MainActor.run {
+                self.isDataLoaded = true
+                toastManager?.showToast(message: "加载数据失败")
             }
+            let msg = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+            appLog(.error, category: .viewModel, "[fetchData] failed, baseURL: \(ApiManager.shared.baseURL), error: \(msg)")
         }
     }
 

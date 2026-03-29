@@ -4,21 +4,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-NEBox is a native iOS client for BoxJS — a management tool for JavaScript automation scripts across proxy tools (Loon, Surge, Shadowrocket, Quantumult X). Built with SwiftUI + MVVM + Combine.
+Relay (formerly NEBox) is a native iOS client for BoxJS — a management tool for JavaScript automation scripts across proxy tools (Loon, Surge, Shadowrocket, Quantumult X). Built with SwiftUI + MVVM + Combine.
 
 ## Build & Run
 
 ```bash
 # Open in Xcode (SPM dependencies resolve automatically)
-open NEBox.xcodeproj
+open Relay.xcodeproj
 
 # Build from command line
-xcodebuild -project NEBox.xcodeproj -scheme NEBox -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 16' build
+xcodebuild -project Relay.xcodeproj -scheme Relay -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 16' build
 
 # No test target exists yet
 ```
 
-- **Xcode 15.4+**, **iOS 16.0+**, **Swift 5.0**
+- **Xcode 15.4+**, **iOS 15.0+**, **Swift 5.0**
 - Dependencies managed via Xcode SPM integration (no Package.swift or Podfile)
 
 ## Architecture
@@ -32,7 +32,7 @@ BoxJSAPI (Moya TargetType) → NetworkProvider (async request + envelope validat
 ### Key layers:
 
 - **Models/BoxDataModel.swift** — All data models (BoxDataResp, AppModel, AppSubCache, Session, Setting, etc.). This is the foundation — read it first.
-- **Services/BoxJSAPI.swift** — Moya `TargetType` enum defining all 20 API endpoints with paths, methods, and parameter encoding.
+- **Services/BoxJSAPI.swift** — Moya `TargetType` enum defining all API endpoints with paths, methods, and parameter encoding.
 - **Services/NetworkProvider.swift** — Generic `request<T>()` with `mapBoxJS<T>()` envelope validation (checks HTTP status + `code` field in JSON response).
 - **Services/ApiRequest.swift** — High-level API helpers that compose ViewModel calls.
 - **ViewModels/BoxJsViewModel.swift** — Single shared ViewModel holding all app state via `@Published` properties. Injected as `@EnvironmentObject`.
@@ -42,9 +42,10 @@ BoxJSAPI (Moya TargetType) → NetworkProvider (async request + envelope validat
 ### View hierarchy:
 
 `ContentView` (welcome setup + TabView) routes to:
+
 - `HomeView` — Favorite apps grid using UICollectionView wrapper, edit mode with jiggle animation
 - `SubcribeView` — Subscription card management with drag-to-reorder
-- `ProfileView` — User profile, global backup/restore
+- `ProfileView` — User profile, global backup/restore, JSON import/export
 - `AppDetailView` — App settings forms (radio/checkbox/text), session management, data viewer, script execution
 
 ### BoxJS API contract:
@@ -58,11 +59,33 @@ All responses use envelope format: `{ "code": 0, "message": "...", ...payload }`
 - **Fire-and-forget vs explicit errors**: `updateData()` is fire-and-forget; `updateDataAsync()` returns `Result<Void, UpdateError>`
 - **Proxy tool detection**: Reads `syscfgs.env` from BoxDataResp to identify the active proxy tool (Loon/Surge/etc.)
 - **NSAllowsArbitraryLoads** enabled in Info.plist (required — BoxJS runs on local HTTP)
+- **JSON document support**: App is registered as a JSON file handler for import/export of app data and backups
+
+## Source Layout
+
+All source files live under `Relay/`:
+
+```
+Relay/
+├── RelayApp.swift          # App entry point
+├── Views/                  # SwiftUI views organized by feature
+│   ├── Home/
+│   ├── Subscribe/
+│   ├── Profile/
+│   ├── AppDetail/
+│   └── Components/
+├── ViewModels/
+├── Models/
+├── Services/
+├── Managers/
+├── Helpers/
+└── Extension/
+```
 
 ## Dependencies (SPM)
 
-| Package | Purpose |
-|---------|---------|
-| Moya / Alamofire | Network abstraction + HTTP |
-| AnyCodable | Dynamic JSON type support |
-| SDWebImageSwiftUI | Image loading & caching |
+| Package           | Purpose                    |
+| ----------------- | -------------------------- |
+| Moya / Alamofire  | Network abstraction + HTTP |
+| AnyCodable        | Dynamic JSON type support  |
+| SDWebImageSwiftUI | Image loading & caching    |

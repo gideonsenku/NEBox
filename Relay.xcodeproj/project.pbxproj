@@ -123,7 +123,7 @@
 				E2C2735B2C354F4B004952AA /* Preview Content */,
 			);
 			name = Relay;
-			path = NEBox;
+			path = Relay;
 			sourceTree = "<group>";
 		};
 		E2C2735B2C354F4B004952AA /* Preview Content */ = {
@@ -291,7 +291,7 @@
 					};
 				};
 			};
-			buildConfigurationList = E2C2734D2C354F4A004952AA /* Build configuration list for PBXProject "NEBox" */;
+			buildConfigurationList = E2C2734D2C354F4A004952AA /* Build configuration list for PBXProject "Relay" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -492,12 +492,12 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"NEBox/Preview Content\"";
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_ASSET_PATHS = "\"Relay/Preview Content\"";
 				DEVELOPMENT_TEAM = M3BZ2W43WM;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = NEBox/Info.plist;
+				INFOPLIST_FILE = Relay/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Relay;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -532,12 +532,12 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"NEBox/Preview Content\"";
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_ASSET_PATHS = "\"Relay/Preview Content\"";
 				DEVELOPMENT_TEAM = M3BZ2W43WM;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = NEBox/Info.plist;
+				INFOPLIST_FILE = Relay/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Relay;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -568,7 +568,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		E2C2734D2C354F4A004952AA /* Build configuration list for PBXProject "NEBox" */ = {
+		E2C2734D2C354F4A004952AA /* Build configuration list for PBXProject "Relay" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E2C2735E2C354F4B004952AA /* Debug */,

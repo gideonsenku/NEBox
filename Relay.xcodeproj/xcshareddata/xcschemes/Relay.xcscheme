@@ -18,7 +18,7 @@
                BlueprintIdentifier = "E2C273512C354F4A004952AA"
                BuildableName = "Relay.app"
                BlueprintName = "Relay"
-               ReferencedContainer = "container:NEBox.xcodeproj">
+               ReferencedContainer = "container:Relay.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -47,7 +47,7 @@
             BlueprintIdentifier = "E2C273512C354F4A004952AA"
             BuildableName = "Relay.app"
             BlueprintName = "Relay"
-            ReferencedContainer = "container:NEBox.xcodeproj">
+            ReferencedContainer = "container:Relay.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <AdditionalOptions>
@@ -75,7 +75,7 @@
             BlueprintIdentifier = "E2C273512C354F4A004952AA"
             BuildableName = "Relay.app"
             BlueprintName = "Relay"
-            ReferencedContainer = "container:NEBox.xcodeproj">
+            ReferencedContainer = "container:Relay.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
