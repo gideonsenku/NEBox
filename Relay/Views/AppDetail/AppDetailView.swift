@@ -544,6 +544,8 @@ struct AppDetailView: View {
     @State private var cachedAppDataInfo = AppDataInfo(datas: [], sessions: [], curSession: nil)
     @State private var isSavingSettings = false
     @State private var isRunningScript = false
+    @State private var isImportingSession = false
+    @State private var isKeyboardVisible = false
 
     var body: some View {
         if let app = app {
@@ -632,6 +634,12 @@ struct AppDetailView: View {
             .onReceive(boxModel.$boxData) { _ in
                 refreshCachedAppDataInfo()
             }
+            .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
+                isKeyboardVisible = true
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+                isKeyboardVisible = false
+            }
         }
     }
 
@@ -650,6 +658,9 @@ struct AppDetailView: View {
                             .lineLimit(2)
                     }
                     Spacer()
+                    Image(systemName: "doc.on.clipboard")
+                        .font(.system(size: 14))
+                        .foregroundColor(Color(.tertiaryLabel))
                     Button {
                         boxModel.clearAppDatas(app: app, key: data.key)
                         toastManager.showToast(message: "已清除")
@@ -659,6 +670,11 @@ struct AppDetailView: View {
                             .foregroundColor(Color(.tertiaryLabel))
                     }
                     .buttonStyle(.plain)
+                }
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    copyToClipboard(text: dataValString(data.val))
+                    toastManager.showToast(message: "已复制")
                 }
             }
 
@@ -699,18 +715,20 @@ struct AppDetailView: View {
                         .foregroundColor(isCurrent ? .accentColor : .primary)
                 }
                 Spacer()
-                Menu {
-                    Button(role: .destructive) {
-                        boxModel.delAppSession(sessionId: session.id)
-                        toastManager.showToast(message: "已删除")
-                    } label: {
-                        Label("删除", systemImage: "trash")
-                    }
-                } label: {
-                    Image(systemName: "ellipsis.circle")
-                        .font(.system(size: 16))
-                        .foregroundColor(.secondary)
-                }
+                UIMenuButton(
+                    systemImage: "ellipsis",
+                    tintColor: UIColor(.secondary),
+                    menu: UIMenu(children: [
+                        UIAction(title: "复制会话", image: UIImage(systemName: "doc.on.doc")) { [self] _ in
+                            copySession(session)
+                        },
+                        UIAction(title: "删除", image: UIImage(systemName: "trash"), attributes: .destructive) { [self] _ in
+                            boxModel.delAppSession(sessionId: session.id)
+                            toastManager.showToast(message: "已删除")
+                        }
+                    ])
+                )
+                .frame(width: 24, height: 24)
             }
 
             if !session.datas.isEmpty {
@@ -780,7 +798,6 @@ struct AppDetailView: View {
                             return
                         }
                         importSessionText = str
-                        performImportSession()
                     } label: {
                         Label("从剪贴板粘贴", systemImage: "doc.on.clipboard")
                     }
@@ -794,10 +811,13 @@ struct AppDetailView: View {
 
                 if !importSessionText.isEmpty {
                     Section(header: Text("数据预览")) {
-                        Text(importSessionText.prefix(500) + (importSessionText.count > 500 ? "..." : ""))
-                            .font(.system(size: 11, design: .monospaced))
-                            .foregroundColor(.secondary)
-                            .lineLimit(10)
+                        ScrollView {
+                            Text(importSessionText)
+                                .font(.system(size: 11, design: .monospaced))
+                                .foregroundColor(.secondary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .frame(maxHeight: 300)
                     }
                 }
             }
@@ -808,6 +828,16 @@ struct AppDetailView: View {
                     Button("取消") {
                         showImportSession = false
                         importSessionText = ""
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    if isImportingSession {
+                        ProgressView()
+                    } else {
+                        Button("确认导入") {
+                            performImportSession()
+                        }
+                        .disabled(importSessionText.isEmpty)
                     }
                 }
             }
@@ -832,10 +862,15 @@ struct AppDetailView: View {
     }
 
     private func performImportSession() {
-        guard !importSessionText.isEmpty else { return }
+        guard !importSessionText.isEmpty, !isImportingSession else { return }
         Task {
-            boxModel.impAppDatas(jsonString: importSessionText)
-            toastManager.showToast(message: "导入成功!")
+            isImportingSession = true
+            if boxModel.importSession(jsonString: importSessionText) {
+                toastManager.showToast(message: "导入会话成功!")
+            } else {
+                toastManager.showToast(message: "会话数据格式错误")
+            }
+            isImportingSession = false
             showImportSession = false
             importSessionText = ""
         }
@@ -867,6 +902,11 @@ struct AppDetailView: View {
                         UIAction(title: "复制数据", image: UIImage(systemName: "doc.on.clipboard")) { [self] _ in
                             copyAppDatas()
                         },
+                        UIAction(title: "复制会话", image: UIImage(systemName: "doc.on.doc")) { [self] _ in
+                            if let session = cachedAppDataInfo.curSession {
+                                copySession(session)
+                            }
+                        },
                         UIAction(title: "清除数据", image: UIImage(systemName: "trash"), attributes: .destructive) { [self] _ in
                             Task {
                                 boxModel.clearAppDatas(app: app)
@@ -891,18 +931,21 @@ struct AppDetailView: View {
                     }
                 } label: {
                     HStack(spacing: 8) {
-                        if isSavingSettings {
-                            ProgressView()
-                                .progressViewStyle(.circular)
-                                .tint(hasRun ? .textPrimary : .white)
-                        } else {
-                            Image(systemName: "square.and.arrow.down")
+                        Group {
+                            if isSavingSettings {
+                                ProgressView()
+                                    .progressViewStyle(.circular)
+                                    .tint(hasRun ? .textPrimary : .white)
+                            } else {
+                                Image(systemName: "square.and.arrow.down")
+                            }
                         }
+                        .frame(width: 20, height: 20)
                         Text("保存")
                     }
-                        .font(.system(size: 15, weight: .semibold))
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 48)
+                    .font(.system(size: 15, weight: .semibold))
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 48)
                 }
                 .buttonStyle(.plain)
                 .foregroundColor(hasRun ? .textPrimary : .white)
@@ -924,13 +967,16 @@ struct AppDetailView: View {
                         }
                     } label: {
                         HStack(spacing: 8) {
-                            if isRunningScript {
-                                ProgressView()
-                                    .progressViewStyle(.circular)
-                                    .tint(.white)
-                            } else {
-                                Image(systemName: "play.circle.fill")
+                            Group {
+                                if isRunningScript {
+                                    ProgressView()
+                                        .progressViewStyle(.circular)
+                                        .tint(.white)
+                                } else {
+                                    Image(systemName: "play.circle.fill")
+                                }
                             }
+                            .frame(width: 20, height: 20)
                             Text("运行")
                         }
                         .font(.system(size: 15, weight: .semibold))
@@ -948,7 +994,21 @@ struct AppDetailView: View {
                     .disabled(isRunningScript)
                     .accessibilityLabel("运行")
                 }
+
+                if isKeyboardVisible {
+                    Button {
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    } label: {
+                        Text("完成")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.accentColor)
+                    }
+                    .buttonStyle(.plain)
+                    .frame(width: 40, height: 48)
+                    .transition(.opacity)
+                }
             }
+            .animation(.easeInOut(duration: 0.2), value: isKeyboardVisible)
             .padding(.leading, 20)
             .padding(.trailing, 20)
             .padding(.top, 10)
@@ -1042,6 +1102,16 @@ struct AppDetailView: View {
             favIds.append(app.id)
         }
         boxModel.updateData(path: "usercfgs.favapps", data: favIds)
+    }
+
+    private func copySession(_ session: Session) {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        if let data = try? encoder.encode(session),
+           let str = String(data: data, encoding: .utf8) {
+            copyToClipboard(text: str)
+            toastManager.showToast(message: "已复制会话")
+        }
     }
 
     private func copyAppDatas() {

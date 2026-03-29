@@ -362,4 +362,12 @@ class BoxJsViewModel: ObservableObject {
         }
         saveData(params: datas)
     }
+
+    @MainActor
+    func importSession(jsonString: String) -> Bool {
+        guard let jsonData = jsonString.data(using: .utf8),
+              let imported = try? JSONDecoder().decode(Session.self, from: jsonData) else { return false }
+        saveData(params: imported.datas)
+        return true
+    }
 }
