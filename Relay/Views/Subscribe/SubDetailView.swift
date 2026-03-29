@@ -1,26 +1,24 @@
 //
 //  SubDetailView.swift
 //  NEBox
-//
 
 import SwiftUI
 import UIKit
 import SDWebImageSwiftUI
 
 struct SubDetailView: View {
-    let sub: AppSubCache?
+    let subURL: String?
 
     @EnvironmentObject var boxModel: BoxJsViewModel
     @Environment(\.dismiss) private var dismiss
 
-    @State private var items: [AppModel]
+    @State private var items: [AppModel] = []
     @State private var selectedApp: AppModel?
     @State private var isNavigationActive: Bool = false
 
-    init(sub: AppSubCache?) {
-        self.sub = sub
-        _items = State(initialValue: sub?.apps ?? [])
-    }
+    /// Derived from boxData on appear / change — only the header fields, no apps array.
+    @State private var subName: String = ""
+    @State private var subIcon: String = ""
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -90,12 +88,21 @@ struct SubDetailView: View {
         .neboxNavigationDestination(isPresented: $isNavigationActive) {
             AppDetailView(app: selectedApp)
         }
+        .onAppear { loadSubDetail() }
         .onDisappear {
             Task {
                 await boxModel.flushPendingDataUpdates()
             }
         }
         .enableSwipeBack()
+    }
+
+    private func loadSubDetail() {
+        guard let url = subURL,
+              let detail = boxModel.boxData.displayAppSubDetail(for: url) else { return }
+        subName = detail.name
+        subIcon = detail.icon
+        items = detail.apps
     }
 
     // MARK: - Nav Bar
@@ -111,29 +118,27 @@ struct SubDetailView: View {
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(.accent)
 
-                    if let sub = sub {
-                        if let iconURL = URL(string: sub.icon), !sub.icon.isEmpty {
-                            WebImage(url: iconURL) { image in
-                                image.resizable().scaledToFill()
-                            } placeholder: {
-                                Text(String(sub.name.prefix(1)))
-                                    .font(.system(size: 28 * 0.42, weight: .semibold, design: .rounded))
-                                    .foregroundColor(.textSecondary)
-                                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                    .background(Color.bgMuted)
-                            }
-                            .frame(width: 28, height: 28)
-                            .clipShape(Circle())
-                        } else {
-                            Text(String(sub.name.prefix(1)))
+                    if !subIcon.isEmpty, let iconURL = URL(string: subIcon) {
+                        WebImage(url: iconURL) { image in
+                            image.resizable().scaledToFill()
+                        } placeholder: {
+                            Text(String(subName.prefix(1)))
                                 .font(.system(size: 28 * 0.42, weight: .semibold, design: .rounded))
                                 .foregroundColor(.textSecondary)
-                                .frame(width: 28, height: 28)
-                                .background(Color.bgMuted, in: Circle())
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                .background(Color.bgMuted)
                         }
+                        .frame(width: 28, height: 28)
+                        .clipShape(Circle())
+                    } else if !subName.isEmpty {
+                        Text(String(subName.prefix(1)))
+                            .font(.system(size: 28 * 0.42, weight: .semibold, design: .rounded))
+                            .foregroundColor(.textSecondary)
+                            .frame(width: 28, height: 28)
+                            .background(Color.bgMuted, in: Circle())
                     }
 
-                    Text(sub?.name ?? "")
+                    Text(subName)
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundColor(.textPrimary)
                         .lineLimit(1)

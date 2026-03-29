@@ -45,7 +45,7 @@ struct ProfileView: View {
                             onEdit: presentEditProfile
                         )
 
-                        ProfileStatsRow(boxData: boxModel.boxData)
+                        ProfileStatsRow(boxModel: boxModel)
 
                         ProfileQuickActions()
 
@@ -268,13 +268,13 @@ private struct ProfileHeaderCard: View {
 // MARK: - Profile Stats Row
 
 private struct ProfileStatsRow: View {
-    let boxData: BoxDataResp
+    let boxModel: BoxJsViewModel
 
     var body: some View {
         HStack(spacing: 12) {
-            StatCard(icon: "app.badge", label: "应用", count: boxData.apps.count, color: .accent)
-            StatCard(icon: "square.stack", label: "订阅", count: boxData.displayAppSubs.count, color: Color.accentCoral)
-            StatCard(icon: "person.2", label: "会话", count: boxData.sessions.count, color: Color.accentBlue)
+            StatCard(icon: "app.badge", label: "应用", count: boxModel.cachedApps.count, color: .accent)
+            StatCard(icon: "square.stack", label: "订阅", count: boxModel.cachedAppSubSummaries.count, color: Color.accentCoral)
+            StatCard(icon: "person.2", label: "会话", count: boxModel.boxData.sessions.count, color: Color.accentBlue)
         }
     }
 }

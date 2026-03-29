@@ -92,33 +92,33 @@ struct AppSubCache: Codable, Identifiable {
     var formatTime: String {
         return formattedTimeDifference(from: self.updateTime)
     }
-    
-    func formattedTimeDifference(from isoDateString: String) -> String {
-        let isoFormatter = ISO8601DateFormatter()
-        isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        
-        guard let date = isoFormatter.date(from: isoDateString) else {
-            return "Invalid date"
-        }
+}
 
-        let calendar = Calendar.current
-        let now = Date()
+func formattedTimeDifference(from isoDateString: String) -> String {
+    let isoFormatter = ISO8601DateFormatter()
+    isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
 
-        if calendar.isDateInToday(date) {
-            let components = calendar.dateComponents([.minute, .hour], from: date, to: now)
+    guard let date = isoFormatter.date(from: isoDateString) else {
+        return "Invalid date"
+    }
 
-            if let hours = components.hour, hours > 0 {
-                return "\(hours)小时前"
-            } else if let minutes = components.minute, minutes > 0 {
-                return "\(minutes)分钟前"
-            } else {
-                return "刚刚"
-            }
+    let calendar = Calendar.current
+    let now = Date()
+
+    if calendar.isDateInToday(date) {
+        let components = calendar.dateComponents([.minute, .hour], from: date, to: now)
+
+        if let hours = components.hour, hours > 0 {
+            return "\(hours)小时前"
+        } else if let minutes = components.minute, minutes > 0 {
+            return "\(minutes)分钟前"
         } else {
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "MM-dd"
-            return dateFormatter.string(from: date)
+            return "刚刚"
         }
+    } else {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "MM-dd"
+        return dateFormatter.string(from: date)
     }
 }
 
@@ -126,6 +126,18 @@ extension AppSubCache {
     var isValid: Bool {
         return !apps.isEmpty && apps.allSatisfy { !$0.id.isEmpty }
     }
+}
+
+/// Lightweight projection of a subscription for the list page.
+/// Contains only display fields + URL for navigation — no [AppModel] array.
+struct AppSubSummary: Identifiable {
+    let id: String
+    let name: String
+    let icon: String
+    let updateTime: String
+    let appCount: Int
+    let repo: String
+    let url: String?
 }
 
 struct RunScript: Codable {
@@ -424,34 +436,33 @@ struct BoxDataResp: Codable {
     }
     
     var displayAppSubCaches: [String: AppSubCache] {
-        var ids = [String]()
+        // Collect all app IDs and find duplicates using a Set (O(n) instead of O(n²))
+        var seen = Set<String>()
+        var duplicateIds = Set<String>()
         for appSub in appsubs {
-            // 查找 appSubCaches 中对应的缓存
             if let sub = appSubCaches[appSub.url], !(appSub.isErr ?? false) {
-                // 判断 sub 是否存在，sub.apps 是否是数组，!appsub.isErr
-                if !sub.apps.isEmpty {
-                    ids.append(contentsOf: sub.apps.map { $0.id })
+                for app in sub.apps {
+                    if !seen.insert(app.id).inserted {
+                        duplicateIds.insert(app.id)
+                    }
                 }
             }
         }
-        
-        let replyIds = ids.enumerated().compactMap { index, value in
-            ids[(index + 1)...].contains(value) ? value : nil
-        }
-        
+
+        // Only clone caches that contain duplicate IDs
+        guard !duplicateIds.isEmpty else { return appSubCaches }
+
         var updatedAppSubCaches = appSubCaches
-        
         for appSub in appsubs {
             if var sub = updatedAppSubCaches[appSub.url], !(appSub.isErr ?? false) {
-                if !sub.apps.isEmpty {
-                    let updatedApps = sub.apps.map { app in
+                let hasDup = sub.apps.contains { duplicateIds.contains($0.id) }
+                if hasDup {
+                    sub.apps = sub.apps.map { app in
+                        guard duplicateIds.contains(app.id) else { return app }
                         var cloneApp = app
-                        if replyIds.contains(app.id) {
-                            cloneApp.id = "\(app.author)_\(app.id)"
-                        }
+                        cloneApp.id = "\(app.author)_\(app.id)"
                         return cloneApp
                     }
-                    sub.apps = updatedApps
                     updatedAppSubCaches[appSub.url] = sub
                 }
             }
@@ -459,32 +470,43 @@ struct BoxDataResp: Codable {
         return updatedAppSubCaches
     }
     
-    var displayAppSubs: [AppSubCache] {
+    /// Lightweight summaries for the subscription list — no [AppModel] cloning.
+    var displayAppSubSummaries: [AppSubSummary] {
         return appsubs.map { sub in
             let cacheSub = appSubCaches[sub.url]
-            let name = cacheSub?.name ?? "匿名订阅"
-            let author = cacheSub?.author ?? "@anonymous"
-            let repo = cacheSub?.repo ?? sub.url
-            let isErr = cacheSub?.isValid == true ? sub.isErr : true
-            
-            let cacheApps = cacheSub?.isValid == true ? (cacheSub?.apps ?? []) : []
-            
-            return AppSubCache(
+            let isValid = cacheSub?.isValid == true
+            let appCount = isValid ? (cacheSub?.apps.count ?? 0) : 0
+            return AppSubSummary(
                 id: (cacheSub?.id ?? sub.id) ?? "",
-                name: name,
+                name: cacheSub?.name ?? "匿名订阅",
                 icon: cacheSub?.icon ?? "",
-                author: author,
-                repo: repo,
                 updateTime: cacheSub?.updateTime ?? "",
-                apps: cacheApps.map { app in
-                    loadAppBaseInfo(app)
-                },
-                isErr: isErr,
-                enable: cacheSub?.enable ?? sub.enable,
-                url: sub.url,
-                raw: sub
+                appCount: appCount,
+                repo: cacheSub?.repo ?? sub.url,
+                url: sub.url
             )
         }
+    }
+
+    /// Full subscription data — only called when navigating into a detail page.
+    func displayAppSubDetail(for url: String) -> AppSubCache? {
+        guard let appSub = appsubs.first(where: { $0.url == url }),
+              let cacheSub = appSubCaches[url],
+              cacheSub.isValid,
+              !(appSub.isErr ?? false) else { return nil }
+        return AppSubCache(
+            id: cacheSub.id,
+            name: cacheSub.name,
+            icon: cacheSub.icon,
+            author: cacheSub.author,
+            repo: cacheSub.repo,
+            updateTime: cacheSub.updateTime,
+            apps: cacheSub.apps.map { loadAppBaseInfo($0) },
+            isErr: appSub.isErr,
+            enable: cacheSub.enable ?? appSub.enable,
+            url: url,
+            raw: appSub
+        )
     }
     
     var displaySysApps: [AppModel] {
@@ -494,12 +516,13 @@ struct BoxDataResp: Codable {
     }
     
     var apps: [AppModel] {
-        return displayAppSubs.flatMap { sub in
-            let apps = displayAppSubCaches[sub.url!]?.apps ?? []
-            return apps.map { app in
-                loadAppBaseInfo(app)
-            }
-        } + displaySysApps
+        // Use displayAppSubCaches directly — apps inside already have corrected IDs.
+        // Only call loadAppBaseInfo once per app (not twice via displayAppSubs).
+        let subApps = appsubs.flatMap { appSub -> [AppModel] in
+            guard let sub = displayAppSubCaches[appSub.url], !(appSub.isErr ?? false) else { return [] }
+            return sub.apps.map { loadAppBaseInfo($0) }
+        }
+        return subApps + displaySysApps
     }
     var favApps: [AppModel] {
         var favapps: [AppModel] = []

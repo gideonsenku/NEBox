@@ -10,12 +10,12 @@ import SDWebImage
 struct SubcribeView: View {
     @EnvironmentObject var boxModel: BoxJsViewModel
     @EnvironmentObject var toastManager: ToastManager
-    @State private var items: [AppSubCache] = []
+    @State private var items: [AppSubSummary] = []
     @State private var isEditMode: Bool = false
     @State private var isDragging: Bool = false
     @State private var showAddAlert: Bool = false
     @State private var addUrlInput: String = ""
-    @State private var selectedSub: AppSubCache? = nil
+    @State private var selectedSubURL: String? = nil
     @State private var isNavActive: Bool = false
 
     var body: some View {
@@ -41,8 +41,8 @@ struct SubcribeView: View {
                             boxModel: boxModel,
                             isEditMode: $isEditMode,
                             isDragging: $isDragging,
-                            onTap: { sub in
-                                selectedSub = sub
+                            onTap: { summary in
+                                selectedSubURL = summary.url
                                 isNavActive = true
                             }
                         )
@@ -59,7 +59,7 @@ struct SubcribeView: View {
             }
             .neboxHiddenNavigationBar()
             .neboxNavigationDestination(isPresented: $isNavActive) {
-                SubDetailView(sub: selectedSub)
+                SubDetailView(subURL: selectedSubURL)
             }
         }
         .neboxLiquidGlassTabBarChrome()
@@ -75,9 +75,9 @@ struct SubcribeView: View {
             }
             Button("取消", role: .cancel) {}
         }
-        .onReceive(boxModel.$boxData) { data in
+        .onReceive(boxModel.$cachedAppSubSummaries) { summaries in
             if !isDragging {
-                items = data.displayAppSubs
+                items = summaries
             }
         }
     }
@@ -185,11 +185,11 @@ struct SubcribeView: View {
 // MARK: - Collection View Wrapper
 
 struct SubCollectionViewWrapper: UIViewRepresentable {
-    @Binding var items: [AppSubCache]
+    @Binding var items: [AppSubSummary]
     let boxModel: BoxJsViewModel
     @Binding var isEditMode: Bool
     @Binding var isDragging: Bool
-    var onTap: ((AppSubCache) -> Void)? = nil
+    var onTap: ((AppSubSummary) -> Void)? = nil
 
     func makeUIView(context: Context) -> UICollectionView {
         let layout = UICollectionViewFlowLayout()
@@ -229,7 +229,7 @@ struct SubCollectionViewWrapper: UIViewRepresentable {
     func updateUIView(_ uiView: UICollectionView, context: Context) {
         let coord = context.coordinator
         let prevIds = coord.lastRenderedIds
-        let newIds = items.map { $0.id }
+        let newIds = items.map(\.id)
         let newFingerprint = items.map { $0.id + $0.updateTime }
         let editChanged = coord.prevEditMode != isEditMode
 
@@ -262,11 +262,11 @@ struct SubCollectionViewWrapper: UIViewRepresentable {
     // MARK: Coordinator
 
     final class Coordinator: NSObject, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
-        @Binding var items: [AppSubCache]
+        @Binding var items: [AppSubSummary]
         let boxModel: BoxJsViewModel
         @Binding var isEditMode: Bool
         @Binding var isDragging: Bool
-        var onTap: ((AppSubCache) -> Void)?
+        var onTap: ((AppSubSummary) -> Void)?
         weak var collectionView: UICollectionView?
         weak var reorderGesture: UILongPressGestureRecognizer?
         var lastRenderedIds: [String] = []
@@ -275,7 +275,7 @@ struct SubCollectionViewWrapper: UIViewRepresentable {
         var needsReloadAfterRefresh = false
         private var refreshTimer: Timer?
 
-        init(items: Binding<[AppSubCache]>, boxModel: BoxJsViewModel, isEditMode: Binding<Bool>, isDragging: Binding<Bool>, onTap: ((AppSubCache) -> Void)?) {
+        init(items: Binding<[AppSubSummary]>, boxModel: BoxJsViewModel, isEditMode: Binding<Bool>, isDragging: Binding<Bool>, onTap: ((AppSubSummary) -> Void)?) {
             _items = items
             self.boxModel = boxModel
             _isEditMode = isEditMode
@@ -362,7 +362,7 @@ struct SubCollectionViewWrapper: UIViewRepresentable {
                 }
 
                 let openInBrowser = UIAction(title: "在浏览器中打开", image: UIImage(systemName: "safari")) { _ in
-                    guard let urlString = item.url, let url = URL(string: urlString) else { return }
+                    guard let url = URL(string: item.repo) else { return }
                     UIApplication.shared.open(url)
                 }
 
@@ -625,13 +625,16 @@ final class SubCardCell: UICollectionViewCell {
         return label
     }()
 
-    func configure(with item: AppSubCache) {
+    func configure(with item: AppSubSummary) {
         nameLabel.text = item.name
-        dateLabel.text = item.updateTime.isEmpty ? "--" : item.formatTime
-        countLabel.text = "\(item.apps.count)"
+        dateLabel.text = item.updateTime.isEmpty ? "--" : formattedTimeDifference(from: item.updateTime)
+        countLabel.text = "\(item.appCount)"
 
         if !item.icon.isEmpty, let url = URL(string: item.icon) {
-            avatarView.sd_setImage(with: url, placeholderImage: nil) { [weak self] image, _, _, _ in
+            // Downsample to display size (40pt × @3x = 120px) to avoid decoding
+            // full-resolution bitmaps (e.g. 1024×1024 → 4MB each) into memory.
+            let thumbSize = CGSize(width: 120, height: 120)
+            avatarView.sd_setImage(with: url, placeholderImage: nil, options: [], context: [.imageThumbnailPixelSize: thumbSize], progress: nil) { [weak self] image, _, _, _ in
                 guard let self else { return }
                 if image == nil {
                     self.showFallbackLabel(for: item.name)

@@ -15,10 +15,10 @@ struct SearchTabView: View {
 
     private var filteredApps: [AppModel] {
         if searchText.isEmpty {
-            return boxModel.boxData.apps
+            return boxModel.cachedApps
         }
         let query = searchText.lowercased()
-        return boxModel.boxData.apps.filter {
+        return boxModel.cachedApps.filter {
             $0.id.lowercased().contains(query) || $0.name.lowercased().contains(query)
         }
     }

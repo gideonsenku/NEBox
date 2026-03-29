@@ -68,8 +68,8 @@ struct HomeView: View {
                 }
                 .onAppear { items = boxModel.favApps }
                 .onDisappear { isEditMode = false }
-                .onReceive(boxModel.$boxData) { data in
-                    items = data.favApps
+                .onReceive(boxModel.$favApps) { favApps in
+                    items = favApps
                 }
 
             }
@@ -470,7 +470,10 @@ class MyCell: UICollectionViewCell {
         let isDark = traitCollection.userInterfaceStyle == .dark
         imageView.backgroundColor = isDark ? UIColor(.bgCard) : .clear
         if let url = app.adaptiveIconURL(isDark: isDark) {
-            imageView.sd_setImage(with: url, placeholderImage: nil) { [weak self] image, _, _, _ in
+            // Downsample to display size (60pt × @3x = 180px) to avoid decoding
+            // full-resolution bitmaps into memory.
+            let thumbSize = CGSize(width: 180, height: 180)
+            imageView.sd_setImage(with: url, placeholderImage: nil, options: [], context: [.imageThumbnailPixelSize: thumbSize], progress: nil) { [weak self] image, _, _, _ in
                 guard let self else { return }
                 if image == nil {
                     self.showFallbackLabel(for: app.name)
@@ -524,7 +527,8 @@ class MyCell: UICollectionViewCell {
         contentView.layer.shadowRadius = 4
 
         titleLabel.textAlignment = .center
-        titleLabel.numberOfLines = 2
+        titleLabel.numberOfLines = 1
+        titleLabel.lineBreakMode = .byTruncatingTail
         titleLabel.textColor = UIColor(.textSecondary)
         titleLabel.font = UIFont.systemFont(ofSize: 11.5, weight: .medium)
         contentView.addSubview(titleLabel)

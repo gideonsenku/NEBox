@@ -9,10 +9,22 @@ import SwiftUI
 import AnyCodable
 
 class BoxJsViewModel: ObservableObject {
-    @Published var boxData: BoxDataResp
+    @Published var boxData: BoxDataResp {
+        didSet { rebuildDerivedData() }
+    }
     @Published var isDataLoaded = false
 
-    var favApps: [AppModel] { boxData.favApps }
+    // Cached derived data — rebuilt once per boxData change instead of
+    // recomputing on every access from multiple views.
+    @Published private(set) var cachedAppSubSummaries: [AppSubSummary] = []
+    @Published private(set) var cachedApps: [AppModel] = []
+    @Published private(set) var favApps: [AppModel] = []
+
+    private func rebuildDerivedData() {
+        cachedAppSubSummaries = boxData.displayAppSubSummaries
+        cachedApps = boxData.apps
+        favApps = boxData.favApps
+    }
 
     var toastManager: ToastManager?
     private let iconThemeIdx = 0

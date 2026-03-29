@@ -5,6 +5,7 @@
 //  Created by Senku on 7/3/24.
 //
 
+import SDWebImage
 import SwiftUI
 import UIKit
 
@@ -38,6 +39,11 @@ struct RelayApp: App {
         UINavigationBar.appearance().standardAppearance = navBarAppearance
         UINavigationBar.appearance().scrollEdgeAppearance = navBarAppearance
         UINavigationBar.appearance().compactAppearance = navBarAppearance
+
+        // Limit SDWebImage memory cache to ~50 MB to avoid memory spikes when
+        // many subscription/app icons are loaded at once.
+        let imageCache = SDImageCache.shared
+        imageCache.config.maxMemoryCost = 50 * 1024 * 1024
 
         LogManager.shared.log(.info, category: .app, "App launched")
     }
