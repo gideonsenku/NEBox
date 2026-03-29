@@ -10,23 +10,24 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/platform-iOS_16+-blue" />
+  <img src="https://img.shields.io/badge/platform-iOS_15+-blue" />
   <img src="https://img.shields.io/badge/swift-5.0-orange" />
-  <img src="https://img.shields.io/badge/version-0.0.2-green" />
+  <img src="https://img.shields.io/badge/version-0.0.3-green" />
   <img src="https://img.shields.io/badge/license-MIT-lightgrey" />
 </p>
 
 ## 功能特性
 
-- **收藏应用管理** — iOS 主屏幕风格的图标网格，支持长按拖拽排序和编辑模式
-- **应用订阅** — 添加、刷新、删除订阅源，卡片式 UI 展示订阅状态和更新时间
+- **收藏应用管理** — iOS 主屏幕风格的图标网格，支持长按拖拽排序、编辑模式和收藏标记
+- **应用订阅** — 添加、刷新、删除订阅源，卡片式 UI 展示订阅状态和更新时间，轻量数据模型优化内存占用
 - **多代理工具切换** — 支持 Loon / Surge / Shadowrocket / Quantumult X，每个工具独立配置 API 地址
-- **应用详情与配置** — 查看应用描述、编辑配置项（单选、复选、文本输入等）
+- **应用详情与配置** — 原生 Form 布局，查看应用描述、编辑配置项（单选、复选、文本输入等）
 - **会话管理** — 创建、切换、关联多组会话，保存和恢复应用数据状态
-- **全局备份** — 一键备份/恢复全部数据，支持导入导出
+- **全局备份** — 一键备份/恢复全部数据，支持 JSON 文件导入导出
 - **脚本执行** — 内置 JavaScript 控制台，支持远程脚本和自定义脚本运行
 - **数据查看器** — 查询、浏览和编辑 BoxJS 存储的键值数据
-- **个性化设置** — 主题切换、壁纸模式、背景图片选择等
+- **深色模式** — 完整的深色模式支持，自适应图标和配色
+- **性能优化** — 图片降采样解码、派生数据缓存、内存占用精细控制
 
 ## 支持的代理工具
 
@@ -62,14 +63,14 @@
 
 ```
 Relay/
-├── Models/            # 数据模型 (BoxDataResp, AppModel, AppSubCache, Session 等)
+├── Models/            # 数据模型 (BoxDataResp, AppModel, AppSubCache, AppSubSummary, Session 等)
 ├── Views/             # SwiftUI 视图
-│   ├── HomeView       # 收藏应用主页
-│   ├── SubcribeView   # 应用订阅管理
-│   ├── ProfileView    # 个人中心与备份
-│   ├── AppDetailView  # 应用详情与配置
-│   └── ...
-├── ViewModels/        # MVVM ViewModel (BoxJsViewModel)
+│   ├── Home/          # 收藏应用主页、搜索
+│   ├── Subscribe/     # 应用订阅管理
+│   ├── Profile/       # 个人中心与备份
+│   ├── AppDetail/     # 应用详情与配置
+│   └── Components/    # 共享组件 (AppIconView 等)
+├── ViewModels/        # MVVM ViewModel (BoxJsViewModel，含派生数据缓存)
 ├── Services/          # 网络服务层
 │   ├── BoxJSAPI       # Moya TargetType 定义
 │   ├── ApiRequest     # API 请求门面
@@ -84,20 +85,20 @@ Relay/
 ### 环境要求
 
 - Xcode 15.4+
-- iOS 16.0+
+- iOS 15.0+
 - Swift 5.0
 
 ### 步骤
 
 1. 克隆仓库
    ```bash
-   git clone https://github.com/gideonsenku/NEBox.git
-   cd NEBox
+   git clone https://github.com/gideonsenku/Relay.git
+   cd Relay
    ```
 
 2. 用 Xcode 打开项目
    ```bash
-   open NEBox.xcodeproj
+   open Relay.xcodeproj
    ```
 
 3. 等待 SPM 自动拉取依赖，选择目标设备后运行
