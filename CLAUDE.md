@@ -13,7 +13,7 @@ Relay (formerly NEBox) is a native iOS client for BoxJS — a management tool fo
 open Relay.xcodeproj
 
 # Build from command line
-xcodebuild -project Relay.xcodeproj -scheme Relay -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 16' build
+xcodebuild -project Relay.xcodeproj -scheme Relay -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
 
 # No test target exists yet
 ```

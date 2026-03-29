@@ -41,6 +41,7 @@
 		E2E9E2792C4FE81800836E4B /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = E2E9E2782C4FE81800836E4B /* SDWebImageSwiftUI */; };
 		F10000010000000000000001 /* LogManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000010000000000000002 /* LogManager.swift */; };
 		F10000020000000000000001 /* LogViewerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000020000000000000002 /* LogViewerView.swift */; };
+		F10000030000000000000001 /* BackupDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000030000000000000002 /* BackupDetailView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -75,6 +76,7 @@
 		E2E9E26A2C4A7E5B00836E4B /* ViewModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModifier.swift; sourceTree = "<group>"; };
 		F10000010000000000000002 /* LogManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogManager.swift; sourceTree = "<group>"; };
 		F10000020000000000000002 /* LogViewerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogViewerView.swift; sourceTree = "<group>"; };
+		F10000030000000000000002 /* BackupDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupDetailView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -227,6 +229,7 @@
 				AA00000100000001000000A2 /* ProfileView.swift */,
 				F10000020000000000000002 /* LogViewerView.swift */,
 				AA00000100000004000000A2 /* PreferencesView.swift */,
+				F10000030000000000000002 /* BackupDetailView.swift */,
 			);
 			path = Profile;
 			sourceTree = "<group>";
@@ -360,6 +363,7 @@
 				AA00000100000003000000A1 /* SearchView.swift in Sources */,
 				AA00000100000004000000A1 /* PreferencesView.swift in Sources */,
 				AA00000100000005000000A1 /* ScriptEditorView.swift in Sources */,
+				F10000030000000000000001 /* BackupDetailView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
