@@ -8,13 +8,18 @@
 import SwiftUI
 
 struct RadioButtonGroup: View {
-    let items: [RadioItem]  // 使用 RadioItem 结构体数组
-    @Binding var selectedKey: String  // 使用 key 来确定选中项
+    let items: [RadioItem]
+    @Binding var selectedKey: String
 
     var body: some View {
-        VStack {
-            ForEach(items, id: \.key) { item in  // 使用 key 作为唯一标识
+        VStack(spacing: 0) {
+            ForEach(Array(items.enumerated()), id: \.element.key) { index, item in
+                if index > 0 {
+                    Divider()
+                        .padding(.leading, 36)
+                }
                 RadioButton(id: item.key, label: item.label, selectedID: $selectedKey)
+                    .padding(.vertical, 10)
             }
         }
     }
@@ -23,27 +28,32 @@ struct RadioButtonGroup: View {
 struct RadioButton: View {
     let id: String
     let label: String
-    @Binding var selectedID: String  // 绑定到 RadioButtonGroup 的 selectedKey
-    let size: CGFloat = 20
-    let color: Color = Color.primary
-    let textSize: CGFloat = 14
+    @Binding var selectedID: String
+
+    private var isSelected: Bool { selectedID == id }
 
     var body: some View {
-        HStack(alignment: .center, spacing: 10) {
-            Image(systemName: self.selectedID == self.id ? "largecircle.fill.circle" : "circle")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: self.size, height: self.size)
-            Text(label)  // 显示 label 而不是 key
-                .font(Font.system(size: textSize))
-                .foregroundColor(.textPrimary)
+        HStack(spacing: 12) {
+            ZStack {
+                Circle()
+                    .strokeBorder(isSelected ? Color.accentColor : Color(.tertiaryLabel), lineWidth: isSelected ? 2 : 1.5)
+                    .frame(width: 22, height: 22)
+                if isSelected {
+                    Circle()
+                        .fill(Color.accentColor)
+                        .frame(width: 12, height: 12)
+                }
+            }
+            .animation(.easeInOut(duration: 0.15), value: isSelected)
+
+            Text(label)
+                .font(.body)
+                .foregroundColor(.primary)
             Spacer()
         }
+        .contentShape(Rectangle())
         .onTapGesture {
-            self.selectedID = self.id  // 点击时更新 selectedID
+            selectedID = id
         }
-        .foregroundColor(self.selectedID == self.id ? .blue : .gray)  // 选中时改变颜色
     }
 }
-
-

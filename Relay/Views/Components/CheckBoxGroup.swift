@@ -8,30 +8,33 @@
 import SwiftUI
 
 struct CheckBoxGroup: View {
-    let items: [RadioItem]  // 使用 CheckBoxItem 结构体数组
-    @Binding var selectedKeys: [String]  // 绑定选中的 keys
+    let items: [RadioItem]
+    @Binding var selectedKeys: [String]
 
     var body: some View {
-        VStack(spacing: 10) {
-            ForEach(items, id: \.key) { item in
-                CheckBox(id: item.key, label: item.label, isSelected: self.isSelected(item.key)) {
-                    self.toggleSelection(for: item.key)
+        VStack(spacing: 0) {
+            ForEach(Array(items.enumerated()), id: \.element.key) { index, item in
+                if index > 0 {
+                    Divider()
+                        .padding(.leading, 36)
                 }
+                CheckBox(
+                    id: item.key,
+                    label: item.label,
+                    isSelected: selectedKeys.contains(item.key)
+                ) {
+                    toggleSelection(for: item.key)
+                }
+                .padding(.vertical, 10)
             }
         }
     }
 
-    // 判断当前 key 是否在选中项中
-    private func isSelected(_ key: String) -> Bool {
-        selectedKeys.contains(key)
-    }
-
-    // 切换选中状态
     private func toggleSelection(for key: String) {
         if let index = selectedKeys.firstIndex(of: key) {
-            selectedKeys.remove(at: index)  // 如果已经选中，则取消选中
+            selectedKeys.remove(at: index)
         } else {
-            selectedKeys.append(key)  // 如果未选中，则添加到选中项
+            selectedKeys.append(key)
         }
     }
 }
@@ -41,58 +44,44 @@ struct CheckBox: View {
     let label: String
     let isSelected: Bool
     let callback: () -> Void
-    let size: CGFloat = 20
-    let color: Color = Color.primary
-    let textSize: CGFloat = 16
 
     var body: some View {
-        HStack(alignment: .center, spacing: 10) {
+        HStack(spacing: 12) {
             Image(systemName: isSelected ? "checkmark.square.fill" : "square")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: self.size, height: self.size)
-            
+                .font(.system(size: 22))
+                .foregroundColor(isSelected ? .accentColor : Color(.tertiaryLabel))
+                .animation(.easeInOut(duration: 0.15), value: isSelected)
+
             Text(label)
-                .font(Font.system(size: textSize))
-                .foregroundColor(.textPrimary)
+                .font(.body)
+                .foregroundColor(.primary)
             Spacer()
         }
-        .foregroundColor(isSelected ? .blue : color)
+        .contentShape(Rectangle())
         .onTapGesture {
-            self.callback() // 切换选中状态
+            callback()
         }
-    }
-}
-
-
-struct CheckBoxGroupPrview: View {
-    @State private var selectedOptions: [String] = []  // 选中的 keys
-
-    var body: some View {
-        VStack {
-            Text("Selected options: \(selectedOptions.joined(separator: ", "))")
-
-            // 定义 CheckBoxItem 数组
-            let items = [
-                RadioItem(key: "key1", label: "Option 1"),
-                RadioItem(key: "key2", label: "Option 2"),
-                RadioItem(key: "key3", label: "Option 3")
-            ]
-
-            // 将 items 和 selectedOptions 传递给 CheckBoxGroup
-            CheckBoxGroup(items: items, selectedKeys: $selectedOptions)
-
-            Button(action: {
-                appLog(.debug, category: .ui, "Selected options: \(selectedOptions)")
-            }) {
-                Text("Submit")
-            }
-        }
-        .padding()
     }
 }
 
 #Preview {
-    CheckBoxGroupPrview()
-}
+    struct CheckBoxGroupPreview: View {
+        @State private var selectedOptions: [String] = []
 
+        var body: some View {
+            Form {
+                Section("Checkboxes") {
+                    CheckBoxGroup(
+                        items: [
+                            RadioItem(key: "key1", label: "Option 1"),
+                            RadioItem(key: "key2", label: "Option 2"),
+                            RadioItem(key: "key3", label: "Option 3")
+                        ],
+                        selectedKeys: $selectedOptions
+                    )
+                }
+            }
+        }
+    }
+    return CheckBoxGroupPreview()
+}

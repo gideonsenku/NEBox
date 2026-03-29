@@ -104,6 +104,30 @@ struct HTMLWebView: UIViewRepresentable {
     }
 }
 
+// MARK: - iOS 15 Compatibility
+
+private struct HideScrollContentBackground: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 16.0, *) {
+            content.scrollContentBackground(.hidden)
+        } else {
+            content.onAppear {
+                UITextView.appearance().backgroundColor = .clear
+            }
+        }
+    }
+}
+
+private struct GroupedFormStyle: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 16.0, *) {
+            content.formStyle(.grouped)
+        } else {
+            content
+        }
+    }
+}
+
 // MARK: - UIMenu Button Wrapper
 
 private final class NoHighlightMenuUIButton: UIButton {
@@ -209,11 +233,7 @@ struct AppHeaderView: View {
                     .foregroundColor(.textTertiary)
             }
         }
-        .frame(width: UIScreen.main.bounds.width - 60, alignment: .leading)
-        .padding(12)
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.08), radius: 5, x: 0, y: 2)
+        .contentShape(Rectangle())
         .onTapGesture {
             if let url = repoURL {
                 openURL(url)
@@ -224,8 +244,7 @@ struct AppHeaderView: View {
 
 struct AppDescCardView: View {
     let app: AppModel?
-    let width = UIScreen.main.bounds.width
-    
+
     var body: some View {
         if app?.hasDescription == true {
             VStack(alignment: .leading, spacing: 2) {
@@ -233,30 +252,26 @@ struct AppDescCardView: View {
                     Text(desc)
                         .font(.system(size: 14))
                         .foregroundColor(.gray)
-                        .frame(width: width - 60, alignment: .leading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 if let descs = app?.descs {
                     ForEach(descs, id: \.self) { desc in
                         Text(desc)
                             .font(.system(size: 14))
                             .foregroundColor(.gray)
-                            .frame(width: width - 60, alignment: .leading)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
                 if let html = app?.desc_html {
                     HTMLTextView(html: html)
-                        .frame(width: width - 60, alignment: .leading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 if let descs_html = app?.descs_html {
                     let html = descs_html.joined(separator: "<br>")
                     HTMLTextView(html: html)
-                        .frame(width: width - 60, alignment: .leading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
-            .padding(12)
-            .background(Color(.systemBackground))
-            .cornerRadius(12)
-            .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
         }
     }
 }
@@ -270,96 +285,74 @@ struct AppScriptsView: View {
 
     var body: some View {
         if scripts.isEmpty != true {
-            VStack(alignment: .leading) {
-                Text("应用脚本(\(scripts.count))")
-                    .font(.system(size: 14))
-                    .foregroundColor(.gray)
-                Spacer()
-                VStack(spacing: 16) {
-                    ForEach(Array(scripts.enumerated()), id: \.element.script) { index, script in
-                        HStack {
-                            Text("\(index + 1). \(script.name)")
-                                .font(.system(size: 13))
-                                .fontWeight(.medium)
-                            Spacer()
-                            if isLoading && loadingScript == script.script {
-                                ProgressView()
-                                    .frame(width: 20, height: 20)
-                            } else {
-                                Button {
-                                    Task {
-                                        isLoading = true
-                                        loadingScript = script.script
-                                        do {
-                                            let resp: ScriptResp = try await NetworkProvider.request(.runScript(url: script.script))
-                                            onScriptResult?(resp)
-                                            boxModel.fetchData()
-                                        } catch {
-                                            onScriptResult?(ScriptResp(exception: "请求失败: \(error.localizedDescription)", output: nil))
-                                        }
-                                        isLoading = false
-                                        loadingScript = nil
-                                    }
-                                } label: {
-                                    Image(systemName: "play.circle.fill")
+            ForEach(Array(scripts.enumerated()), id: \.element.script) { index, script in
+                HStack {
+                    Label {
+                        Text(script.name)
+                            .font(.system(size: 15))
+                    } icon: {
+                        Text("\(index + 1)")
+                            .font(.system(size: 12, weight: .medium, design: .rounded))
+                            .foregroundColor(.white)
+                            .frame(width: 22, height: 22)
+                            .background(Color.accentColor.opacity(0.8), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                    }
+                    Spacer()
+                    if isLoading && loadingScript == script.script {
+                        ProgressView()
+                            .frame(width: 20, height: 20)
+                    } else {
+                        Button {
+                            Task {
+                                isLoading = true
+                                loadingScript = script.script
+                                do {
+                                    let resp: ScriptResp = try await NetworkProvider.request(.runScript(url: script.script))
+                                    onScriptResult?(resp)
+                                    boxModel.fetchData()
+                                } catch {
+                                    onScriptResult?(ScriptResp(exception: "请求失败: \(error.localizedDescription)", output: nil))
                                 }
+                                isLoading = false
+                                loadingScript = nil
                             }
+                        } label: {
+                            Image(systemName: "play.circle.fill")
+                                .font(.system(size: 22))
+                                .foregroundColor(.accentColor)
                         }
+                        .buttonStyle(.plain)
                     }
                 }
             }
-            .frame(width: UIScreen.main.bounds.width - 60, alignment: .leading)
-            .padding(12)
-            .background(Color(.systemBackground))
-            .cornerRadius(12)
-            .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
         }
     }
 }
 
 
-struct AppSettingsView: View {
+// MARK: - Form Setting Row
+
+struct FormSettingRow: View {
+    let setting: Setting
+    let index: Int
     @Binding var settings: [Setting]
-    @EnvironmentObject var boxModel: BoxJsViewModel
-    @EnvironmentObject var toastManager: ToastManager
-    
-    @State var selectedOption = "Paris"
-    
-    // 动态绑定到 settings 数组中的特定 val 值
+
     private func binding(for index: Int) -> Binding<String> {
-        return Binding<String>(
-            get: {
-                if let stringValue = settings[index].val?.value as? String {
-                    return stringValue
-                } else {
-                    return "" // 默认返回空字符串
-                }
-            },
-            set: { newValue in
-                settings[index].val = AnyCodable(newValue)
-            }
+        Binding<String>(
+            get: { (settings[index].val?.value as? String) ?? "" },
+            set: { settings[index].val = AnyCodable($0) }
         )
     }
-    
-    // 动态绑定到 Boolean 值
+
     private func boolBinding(for index: Int) -> Binding<Bool> {
-        return Binding<Bool>(
-            get: {
-                if let boolValue = settings[index].val?.value as? Bool {
-                    return boolValue
-                } else {
-                    return false // 默认返回 false
-                }
-            },
-            set: { newValue in
-                settings[index].val = AnyCodable(newValue)
-            }
+        Binding<Bool>(
+            get: { (settings[index].val?.value as? Bool) ?? false },
+            set: { settings[index].val = AnyCodable($0) }
         )
     }
-    
-    // 动态绑定到 Double 值
+
     private func doubleBinding(for index: Int) -> Binding<Double> {
-        return Binding<Double>(
+        Binding<Double>(
             get: {
                 if let val = settings[index].val?.value {
                     if let d = val as? Double { return d }
@@ -368,280 +361,171 @@ struct AppSettingsView: View {
                 }
                 return 0
             },
-            set: { newValue in
-                settings[index].val = AnyCodable(newValue)
-            }
+            set: { settings[index].val = AnyCodable($0) }
         )
     }
 
-    // 动态绑定到 Color 值
     private func colorBinding(for index: Int) -> Binding<Color> {
-        return Binding<Color>(
+        Binding<Color>(
             get: {
                 if let hex = settings[index].val?.value as? String, !hex.isEmpty {
                     return Color(hex: hex)
                 }
                 return .blue
             },
-            set: { newValue in
-                settings[index].val = AnyCodable(newValue.toHex())
-            }
+            set: { settings[index].val = AnyCodable($0.toHex()) }
         )
     }
 
-    // 动态绑定到 [String] 值
     private func arrayBinding(for index: Int) -> Binding<[String]> {
-        return Binding<[String]>(
-            get: {
-                if let arrayValue = settings[index].val?.value as? [String] {
-                    return arrayValue
-                } else {
-                    return [] // 默认返回空数组
-                }
-            },
-            set: { newValue in
-                settings[index].val = AnyCodable(newValue)
-            }
+        Binding<[String]>(
+            get: { (settings[index].val?.value as? [String]) ?? [] },
+            set: { settings[index].val = AnyCodable($0) }
         )
     }
 
-    // 选择器绑定：保证返回值始终存在于 tag 列表中，避免 Picker invalid selection 警告
     private func pickerBinding(for index: Int, items: [RadioItem]) -> Binding<String> {
-        return Binding<String>(
+        Binding<String>(
             get: {
                 let current = (settings[index].val?.value as? String) ?? ""
-                if items.contains(where: { $0.key == current }) {
-                    return current
-                }
+                if items.contains(where: { $0.key == current }) { return current }
                 return items.first?.key ?? ""
             },
-            set: { newValue in
-                settings[index].val = AnyCodable(newValue)
-            }
+            set: { settings[index].val = AnyCodable($0) }
         )
     }
 
-    // TODO: 需要拆分到子页面中
     var body: some View {
-        @State var selectedFruit = "Apple"
+        VStack(alignment: .leading, spacing: 6) {
+            settingControl
+            if let desc = setting.desc, !desc.isEmpty {
+                Text(desc)
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+            }
+        }
+    }
 
-        if settings.isEmpty != true {
-            VStack(alignment: .leading) {
-                Text("应用设置(\(settings.count))")
-                    .font(.system(size: 14))
-                    .foregroundColor(.gray)
+    @ViewBuilder
+    private var settingControl: some View {
+        switch setting.type {
+        case "boolean":
+            Toggle(setting.name ?? "", isOn: boolBinding(for: index))
+                .font(.body)
 
-                Spacer()
-
-                VStack(alignment: .leading, spacing: 12) {
-                    ForEach(Array(settings.enumerated()), id: \.element.id) { index, setting in
-                        switch setting.type {
-                        case "boolean":
-                            VStack(alignment: .leading, spacing: 2) {
-                                HStack {
-                                    Text(setting.name ?? "")
-                                        .font(.system(size: 14))
-                                        .lineLimit(1)
-                                    Spacer()
-                                    Toggle("", isOn: boolBinding(for: index))
-                                        .labelsHidden()
-                                }
-                                if let desc = setting.desc, desc != "" {
-                                    Text(desc)
-                                        .font(.system(size: 12))
-                                        .foregroundColor(Color(UIColor.systemGray2))
-                                }
-                            }
-                        case "textarea":
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(setting.name ?? "")
-                                    .font(.system(size: 14))
-                                    .lineLimit(1)
-
-                                ZStack(alignment: .topLeading) {
-                                    TextEditor(text: binding(for: index))
-                                        .padding(4)
-                                        .background(Color(.systemBackground))
-                                        .cornerRadius(8)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 8)
-                                                .stroke(Color(UIColor.systemGray5), lineWidth: 1)
-                                        )
-                                        .frame(height: 138)
-                                    if setting.val == "" {
-                                        Text(setting.name ?? "请输入内容...")
-                                            .foregroundColor(.gray)
-                                            .padding(.top, 12)
-                                            .padding(.leading, 8)
-                                    }
-                                }
-                                if let desc = setting.desc, desc != "" {
-                                    Text(desc)
-                                        .font(.system(size: 12))
-                                        .foregroundColor(Color(UIColor.systemGray2))
-                                }
-                            }
-                        case "radios":
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(setting.name ?? "")
-                                    .font(.system(size: 14))
-                                    .lineLimit(1)
-                                
-                                RadioButtonGroup(items: (setting.items ?? [] as [RadioItem]), selectedKey: binding(for: index))
-                                    .padding(.top, 4)
-
-                                if let desc = setting.desc, desc != "" {
-                                    Text(desc)
-                                        .font(.system(size: 12))
-                                        .foregroundColor(Color(UIColor.systemGray2))
-                                }
-                            }
-                        case "checkboxes":
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(setting.name ?? "")
-                                    .font(.system(size: 14))
-                                    .lineLimit(1)
-                                
-                                CheckBoxGroup(items: (setting.items ?? []), selectedKeys: arrayBinding(for: index))
-                                    .padding(.top, 4)
-
-                                if let desc = setting.desc, desc != "" {
-                                    Text(desc)
-                                        .font(.system(size: 12))
-                                        .foregroundColor(Color(UIColor.systemGray2))
-                                }
-                            }
-                        case "selects", "modalSelects":
-                            VStack(alignment: .leading, spacing: 2) {
-                                HStack {
-                                    Text(setting.name ?? "")
-                                        .font(.system(size: 14))
-                                        .lineLimit(1)
-                                    
-                                    Spacer()
-                                    let pickerItems = setting.items ?? []
-                                    if pickerItems.isEmpty {
-                                        Text("-")
-                                            .font(.system(size: 13))
-                                            .foregroundColor(.secondary)
-                                    } else {
-                                        Picker("Select", selection: pickerBinding(for: index, items: pickerItems)) {
-                                            ForEach(pickerItems) { item in
-                                                Text(item.label).tag(item.key)
-                                            }
-                                        }
-                                        .pickerStyle(MenuPickerStyle())
-                                    }
-                                }
-                                if let desc = setting.desc, desc != "" {
-                                    Text(desc)
-                                        .font(.system(size: 12))
-                                        .foregroundColor(Color(UIColor.systemGray2))
-                                }
-                            }
-                        case "slider":
-                            VStack(alignment: .leading, spacing: 2) {
-                                HStack {
-                                    Text(setting.name ?? "")
-                                        .font(.system(size: 14))
-                                        .lineLimit(1)
-                                    Spacer()
-                                    Text(String(format: "%.0f", doubleBinding(for: index).wrappedValue))
-                                        .font(.system(size: 13))
-                                        .foregroundColor(.secondary)
-                                }
-                                Slider(value: doubleBinding(for: index), in: 0...100, step: 1)
-                                if let desc = setting.desc, desc != "" {
-                                    Text(desc)
-                                        .font(.system(size: 12))
-                                        .foregroundColor(Color(UIColor.systemGray2))
-                                }
-                            }
-                        case "colorpicker":
-                            VStack(alignment: .leading, spacing: 2) {
-                                HStack {
-                                    Text(setting.name ?? "")
-                                        .font(.system(size: 14))
-                                        .lineLimit(1)
-                                    Spacer()
-                                    ColorPicker("", selection: colorBinding(for: index))
-                                        .labelsHidden()
-                                }
-                                if let desc = setting.desc, desc != "" {
-                                    Text(desc)
-                                        .font(.system(size: 12))
-                                        .foregroundColor(Color(UIColor.systemGray2))
-                                }
-                            }
-                        case "number":
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(setting.name ?? "")
-                                    .font(.system(size: 14))
-                                    .lineLimit(1)
-                                TextField(setting.placeholder ?? "请输入数字", text: binding(for: index))
-                                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                                    .keyboardType(.decimalPad)
-                                if let desc = setting.desc, desc != "" {
-                                    Text(desc)
-                                        .font(.system(size: 12))
-                                        .foregroundColor(Color(UIColor.systemGray2))
-                                }
-                            }
-                        default:
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(setting.name ?? "")
-                                    .font(.system(size: 14))
-                                    .lineLimit(1)
-
-                                TextField(setting.placeholder ?? "请输入内容", text: binding(for: index))
-                                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                                if let desc = setting.desc, desc != "" {
-                                    Text(desc)
-                                        .font(.system(size: 12))
-                                        .foregroundColor(Color(UIColor.systemGray2))
-                                }
-                            }
-                        }
-                    }
-                    
-                    Divider()
-                    HStack {
-                        Spacer()
-                        
-                        Button {
-                            Task {
-                                let params = settings.map { setting in
-                                    let transformedVal: AnyCodable = {
-                                        if setting.type == "checkboxes", let arrayVal = setting.val?.value as? [String] {
-                                            return AnyCodable(arrayVal.joined(separator: ","))  // 将数组转换为字符串并封装为 AnyCodable
-                                        } else if let val = setting.val {
-                                            return val
-                                        } else {
-                                            return AnyCodable(nil)  // 如果 val 是 nil，返回 AnyCodable(nil)
-                                        }
-                                    }()
-                                    return SessionData(key: setting.id, val: transformedVal)
-                                }
-                                boxModel.saveData(params: params)
-                                toastManager.showToast(message: "保存成功!")
-                            }
-                        } label: {
-                            Text("保存")
-                                .font(.system(size: 12))
-                        }
-
+        case "textarea":
+            VStack(alignment: .leading, spacing: 6) {
+                Text(setting.name ?? "")
+                    .font(.body)
+                ZStack(alignment: .topLeading) {
+                    TextEditor(text: binding(for: index))
+                        .font(.body)
+                        .frame(minHeight: 100, maxHeight: 200)
+                        .modifier(HideScrollContentBackground())
+                        .padding(8)
+                        .background(Color(.tertiarySystemFill))
+                        .cornerRadius(10)
+                    if (settings[index].val?.value as? String)?.isEmpty != false {
+                        Text(setting.placeholder ?? "请输入内容...")
+                            .foregroundColor(Color(.placeholderText))
+                            .padding(.top, 16)
+                            .padding(.leading, 13)
+                            .allowsHitTesting(false)
                     }
                 }
-
             }
-            .frame(width: UIScreen.main.bounds.width - 60, alignment: .leading)
-            .padding(12)
-            .background(Color(.systemBackground))
-            .cornerRadius(12)
-            .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
-            .onAppear(perform: {
-//                print(settings)
-            })
+
+        case "radios":
+            VStack(alignment: .leading, spacing: 8) {
+                Text(setting.name ?? "")
+                    .font(.body)
+                RadioButtonGroup(items: setting.items ?? [], selectedKey: binding(for: index))
+            }
+
+        case "checkboxes":
+            VStack(alignment: .leading, spacing: 8) {
+                Text(setting.name ?? "")
+                    .font(.body)
+                CheckBoxGroup(items: setting.items ?? [], selectedKeys: arrayBinding(for: index))
+            }
+
+        case "selects", "modalSelects":
+            let pickerItems = setting.items ?? []
+            HStack {
+                Text(setting.name ?? "")
+                    .font(.body)
+                Spacer()
+                if pickerItems.isEmpty {
+                    Text("-")
+                        .foregroundColor(.secondary)
+                } else {
+                    Picker("", selection: pickerBinding(for: index, items: pickerItems)) {
+                        ForEach(pickerItems) { item in
+                            Text(item.label).tag(item.key)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                }
+            }
+
+        case "slider":
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text(setting.name ?? "")
+                        .font(.body)
+                    Spacer()
+                    Text(String(format: "%.0f", doubleBinding(for: index).wrappedValue))
+                        .font(.system(.body, design: .rounded))
+                        .foregroundColor(.accentColor)
+                        .monospacedDigit()
+                }
+                Slider(value: doubleBinding(for: index), in: 0...100, step: 1)
+                    .tint(.accentColor)
+            }
+
+        case "colorpicker":
+            HStack {
+                Text(setting.name ?? "")
+                    .font(.body)
+                Spacer()
+                ColorPicker("", selection: colorBinding(for: index))
+                    .labelsHidden()
+            }
+
+        case "number":
+            VStack(alignment: .leading, spacing: 6) {
+                Text(setting.name ?? "")
+                    .font(.body)
+                TextField(setting.placeholder ?? "请输入数字", text: binding(for: index))
+                    .keyboardType(.decimalPad)
+                    .font(.body)
+                    .padding(10)
+                    .background(Color(.tertiarySystemFill))
+                    .cornerRadius(10)
+            }
+
+        default:
+            VStack(alignment: .leading, spacing: 6) {
+                Text(setting.name ?? "")
+                    .font(.body)
+                TextField(setting.placeholder ?? "请输入内容", text: binding(for: index))
+                    .font(.body)
+                    .padding(10)
+                    .background(Color(.tertiarySystemFill))
+                    .cornerRadius(10)
+            }
+        }
+    }
+}
+
+struct AppSettingsView: View {
+    @Binding var settings: [Setting]
+
+    var body: some View {
+        if !settings.isEmpty {
+            ForEach(Array(settings.enumerated()), id: \.element.id) { index, setting in
+                FormSettingRow(setting: setting, index: index, settings: $settings)
+            }
         }
     }
 }
@@ -663,40 +547,62 @@ struct AppDetailView: View {
 
     var body: some View {
         if let app = app {
-            ZStack {
-                Color(.systemGroupedBackground).ignoresSafeArea()
-                ScrollView {
-                    VStack(spacing: 16) {
-                        // App header
-                        AppHeaderView(app: app)
+            Form {
+                // MARK: App Info
+                Section {
+                    AppHeaderView(app: app)
+                }
+                .listRowInsets(EdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16))
 
+                if app.hasDescription {
+                    Section {
                         AppDescCardView(app: app)
-                        AppScriptsView(scripts: app.scripts ?? []) { resp in
+                    }
+                }
+
+                // MARK: Scripts
+                if let scripts = app.scripts, !scripts.isEmpty {
+                    Section {
+                        AppScriptsView(scripts: scripts) { resp in
                             scriptResult = resp
                             showScriptResult = true
                         }
-                        AppSettingsView(settings: bindingForSettings())
-
-                        // Session data section
-                        if app.keys != nil && !cachedAppDataInfo.datas.isEmpty {
-                            appSessionDataCard(app: app)
-                        }
-
-                        // Session list
-                        ForEach(Array(cachedAppDataInfo.sessions.enumerated()), id: \.element.id) { index, session in
-                            sessionCard(session: session, index: index, app: app)
-                        }
+                    } header: {
+                        Text("应用脚本")
                     }
-                    .padding(.bottom, 84)
-                    .navigationTitle(app.name)
+                }
+
+                // MARK: Settings
+                let settings = app.settings ?? []
+                if !settings.isEmpty {
+                    Section {
+                        AppSettingsView(settings: bindingForSettings())
+                    } header: {
+                        Text("应用设置")
+                    }
+                }
+
+                // MARK: Session Data
+                if app.keys != nil && !cachedAppDataInfo.datas.isEmpty {
+                    appSessionDataSection(app: app)
+                }
+
+                // MARK: Sessions
+                if !cachedAppDataInfo.sessions.isEmpty {
+                    Section {
+                        ForEach(Array(cachedAppDataInfo.sessions.enumerated()), id: \.element.id) { index, session in
+                            sessionRow(session: session, index: index, app: app)
+                        }
+                    } header: {
+                        Text("历史会话")
+                    }
                 }
             }
-            .overlay(alignment: .bottom) {
+            .modifier(GroupedFormStyle())
+            .navigationTitle(app.name)
+            .safeAreaInset(edge: .bottom) {
                 appBottomActionBar(app: app)
-                    .ignoresSafeArea(.keyboard, edges: .bottom)
-                    .ignoresSafeArea(edges: .bottom)
             }
-            .frame(width: UIScreen.main.bounds.width)
             .neboxHideTabBar()
             .sheet(isPresented: $showImportSession) {
                 importSessionSheet(app: app)
@@ -718,173 +624,137 @@ struct AppDetailView: View {
         }
     }
 
-    // MARK: - Current Session Data Card
+    // MARK: - Current Session Data Section
 
-    private func appSessionDataCard(app: AppModel) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text("当前会话")
-                    .font(.system(size: 14))
-                    .foregroundColor(.gray)
-                if let curSession = cachedAppDataInfo.curSession {
-                    Text(curSession.name)
-                        .font(.system(size: 13))
-                        .foregroundColor(.accentColor)
-                }
-                Spacer()
-
-                UIMenuButton(
-                    systemImage: "ellipsis",
-                    menu: UIMenu(children: [
-                              UIMenu(options: .displayInline, children: [
-                                    UIAction(title: "清除数据", image: UIImage(systemName: "trash"), attributes: .destructive) { [self] _ in
-                                        Task {
-                                            boxModel.clearAppDatas(app: app)
-                                            toastManager.showToast(message: "已清除")
-                                        }
-                                    }
-                        ]),
-                        UIAction(title: "复制", image: UIImage(systemName: "doc.on.doc")) { [self] _ in
-                            let encoder = JSONEncoder()
-                            encoder.outputFormatting = .prettyPrinted
-                            if let data = try? encoder.encode(app),
-                               let str = String(data: data, encoding: .utf8) {
-                                copyToClipboard(text: str)
-                                toastManager.showToast(message: "已复制")
-                            }
-                        },
-                        UIAction(title: "导入", image: UIImage(systemName: "square.and.arrow.down")) { [self] _ in
-                            showImportSession = true
-                        },
-                        UIAction(title: "复制数据", image: UIImage(systemName: "doc.on.clipboard")) { [self] _ in
-                            copyAppDatas()
-                        }
-                    ])
-                )
-                .fixedSize(horizontal: true, vertical: true)
-            }
-
+    private func appSessionDataSection(app: AppModel) -> some View {
+        Section {
             ForEach(cachedAppDataInfo.datas, id: \.key) { data in
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(data.key)
-                            .font(.system(size: 13, weight: .medium))
-                        Text(dataValString(data.val) .isEmpty ? "无数据" : dataValString(data.val))
-                            .font(.system(size: 12))
+                            .font(.system(size: 14, weight: .medium))
+                        Text(dataValString(data.val).isEmpty ? "无数据" : dataValString(data.val))
+                            .font(.system(size: 13))
                             .foregroundColor(.secondary)
                             .lineLimit(2)
                     }
                     Spacer()
                     Button {
-                        Task {
-                            boxModel.clearAppDatas(app: app, key: data.key)
-                            toastManager.showToast(message: "已清除")
-                        }
+                        boxModel.clearAppDatas(app: app, key: data.key)
+                        toastManager.showToast(message: "已清除")
                     } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 11))
-                            .foregroundColor(.secondary)
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 16))
+                            .foregroundColor(Color(.tertiaryLabel))
                     }
+                    .buttonStyle(.plain)
                 }
-                .padding(.vertical, 2)
             }
 
-            Divider()
-
+            Button {
+                boxModel.saveAppSession(app: app, datas: cachedAppDataInfo.datas)
+                toastManager.showToast(message: "已克隆会话")
+            } label: {
+                Label("克隆当前会话", systemImage: "doc.on.doc")
+                    .font(.system(size: 14))
+            }
+        } header: {
             HStack {
-                Spacer()
-                Button {
-                    Task {
-                        boxModel.saveAppSession(app: app, datas: cachedAppDataInfo.datas)
-                        toastManager.showToast(message: "已克隆会话")
-                    }
-                } label: {
-                    Text("克隆")
-                        .font(.system(size: 13))
+                Text("当前会话")
+                if let curSession = cachedAppDataInfo.curSession {
+                    Text(curSession.name)
                         .foregroundColor(.accentColor)
                 }
             }
         }
-        .frame(width: UIScreen.main.bounds.width - 60, alignment: .leading)
-        .padding(12)
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
     }
 
-    // MARK: - Session Card
+    // MARK: - Session Row
 
-    private func sessionCard(session: Session, index: Int, app: AppModel) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+    private func sessionRow(session: Session, index: Int, app: AppModel) -> some View {
+        let isCurrent = cachedAppDataInfo.curSession?.id == session.id
+
+        return VStack(alignment: .leading, spacing: 8) {
             HStack {
-                let isCurrent = cachedAppDataInfo.curSession?.id == session.id
-                Text("#\(index + 1) \(session.name)")
-                    .font(.system(size: 14, weight: isCurrent ? .bold : .regular))
-                    .foregroundColor(isCurrent ? .accentColor : .primary)
+                HStack(spacing: 6) {
+                    Text("#\(index + 1)")
+                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(isCurrent ? Color.accentColor : Color(.tertiaryLabel), in: Capsule())
+                    Text(session.name)
+                        .font(.system(size: 15, weight: isCurrent ? .semibold : .regular))
+                        .foregroundColor(isCurrent ? .accentColor : .primary)
+                }
                 Spacer()
-
                 Menu {
                     Button(role: .destructive) {
-                        Task {
-                            boxModel.delAppSession(sessionId: session.id)
-                            toastManager.showToast(message: "已删除")
-                        }
+                        boxModel.delAppSession(sessionId: session.id)
+                        toastManager.showToast(message: "已删除")
                     } label: {
                         Label("删除", systemImage: "trash")
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle")
+                        .font(.system(size: 16))
                         .foregroundColor(.secondary)
                 }
             }
 
-            ForEach(session.datas, id: \.key) { data in
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(data.key)
-                        .font(.system(size: 13, weight: .medium))
-                    Text(dataValString(data.val).isEmpty ? "无数据" : dataValString(data.val))
-                        .font(.system(size: 12))
-                        .foregroundColor(.secondary)
-                        .lineLimit(2)
+            if !session.datas.isEmpty {
+                VStack(alignment: .leading, spacing: 4) {
+                    ForEach(session.datas, id: \.key) { data in
+                        HStack(alignment: .top, spacing: 6) {
+                            Text(data.key)
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundColor(.secondary)
+                            Spacer()
+                            Text(dataValString(data.val).isEmpty ? "无数据" : dataValString(data.val))
+                                .font(.system(size: 13))
+                                .foregroundColor(.secondary)
+                                .lineLimit(1)
+                                .frame(maxWidth: 180, alignment: .trailing)
+                        }
+                    }
                 }
-                .padding(.vertical, 1)
+                .padding(10)
+                .background(Color(.tertiarySystemFill))
+                .cornerRadius(8)
             }
-
-            Divider()
 
             HStack {
                 Text(session.createTime.prefix(19).replacingOccurrences(of: "T", with: " "))
-                    .font(.system(size: 11))
+                    .font(.system(size: 12))
                     .foregroundColor(.secondary)
                 Spacer()
                 Button {
-                    Task {
-                        boxModel.useAppSession(sessionId: session.id, appId: app.id)
-                        toastManager.showToast(message: "已使用")
-                    }
+                    boxModel.useAppSession(sessionId: session.id, appId: app.id)
+                    toastManager.showToast(message: "已使用")
                 } label: {
                     Text("使用")
-                        .font(.system(size: 13))
-                        .foregroundColor(.accentColor)
+                        .font(.system(size: 13, weight: .medium))
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 5)
+                        .background(Color.accentColor.opacity(0.12), in: Capsule())
                 }
+                .buttonStyle(.plain)
+                .foregroundColor(.accentColor)
                 Button {
-                    Task {
-                        boxModel.linkAppSession(sessionId: session.id, appId: app.id)
-                        toastManager.showToast(message: "已关联")
-                    }
+                    boxModel.linkAppSession(sessionId: session.id, appId: app.id)
+                    toastManager.showToast(message: "已关联")
                 } label: {
                     Text("关联")
-                        .font(.system(size: 13))
-                        .foregroundColor(.accentColor)
+                        .font(.system(size: 13, weight: .medium))
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 5)
+                        .background(Color(.tertiarySystemFill), in: Capsule())
                 }
+                .buttonStyle(.plain)
+                .foregroundColor(.primary)
             }
         }
-        .frame(width: UIScreen.main.bounds.width - 80, alignment: .leading)
-        .padding(12)
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.08), radius: 4, x: 0, y: 2)
-        .padding(.leading, 20)
+        .padding(.vertical, 4)
     }
 
     // MARK: - Import Session Sheet
