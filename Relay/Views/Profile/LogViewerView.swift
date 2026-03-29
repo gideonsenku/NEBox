@@ -42,10 +42,10 @@ struct LogViewerView: View {
                 VStack(spacing: 8) {
                     Image(systemName: "doc.text")
                         .font(.system(size: 40))
-                        .foregroundColor(Color(hex: "#9098AD").opacity(0.5))
+                        .foregroundColor(.textTertiary.opacity(0.5))
                     Text("暂无日志")
                         .font(.system(size: 14))
-                        .foregroundColor(Color(hex: "#9098AD"))
+                        .foregroundColor(.textTertiary)
                 }
                 Spacer()
             } else {
@@ -146,7 +146,7 @@ private struct LogLineView: View {
 private struct FilterChip: View {
     let title: String
     let isSelected: Bool
-    var color: Color = Color(hex: "#002FA7")
+    var color: Color = .accent
     var action: () -> Void
 
     var body: some View {
@@ -180,7 +180,7 @@ private extension LogLevel {
     var chipColor: Color {
         switch self {
         case .debug:   return Color(hex: "#6B7280")
-        case .info:    return Color(hex: "#002FA7")
+        case .info:    return .accent
         case .warning: return Color(hex: "#D97706")
         case .error:   return Color(hex: "#DC2626")
         }

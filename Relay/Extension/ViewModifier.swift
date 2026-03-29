@@ -61,6 +61,32 @@ extension Color {
         let b = Int((components[safe: 2] ?? 0) * 255)
         return String(format: "#%02X%02X%02X", r, g, b)
     }
+
+    // MARK: - Design Tokens
+
+    // Accent
+    static let accent = Color(hex: "#002FA7")
+    static let accentDark = Color(hex: "#001F73")
+    static let accentLight = Color(hex: "#E0E8F7")
+    static let accentCoral = Color(hex: "#F5A623")
+    static let accentRed = Color(hex: "#D0534F")
+    static let accentWarning = Color(hex: "#D4A64A")
+
+    // Text
+    static let textPrimary = Color(hex: "#0F1729")
+    static let textSecondary = Color(hex: "#5A6177")
+    static let textTertiary = Color(hex: "#9098AD")
+    static let textInactive = Color(hex: "#A0A8BD")
+
+    // Background
+    static let bgPage = Color(hex: "#F5F6FA")
+    static let bgCard = Color(hex: "#FFFFFF")
+    static let bgElevated = Color(hex: "#FAFAF8")
+    static let bgMuted = Color(hex: "#ECEEF4")
+
+    // Border
+    static let borderSubtle = Color(hex: "#E2E5EE")
+    static let borderStrong = Color(hex: "#C8CDD9")
 }
 
 private extension Array {
@@ -158,6 +184,17 @@ extension View {
                 }
                 .hidden()
             )
+        }
+    }
+
+    @ViewBuilder
+    func neboxMediumSheet() -> some View {
+        if #available(iOS 16.0, *) {
+            self
+                .presentationDetents([.medium])
+                .presentationDragIndicator(.visible)
+        } else {
+            self
         }
     }
 

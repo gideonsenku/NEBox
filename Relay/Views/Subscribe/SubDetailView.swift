@@ -40,9 +40,9 @@ struct SubDetailView: View {
                         Spacer()
                         Image(systemName: "square.grid.2x2")
                             .font(.system(size: 48))
-                            .foregroundColor(Color(hex: "#5A6177").opacity(0.4))
+                            .foregroundColor(.textSecondary.opacity(0.4))
                         Text("该订阅暂无应用")
-                            .foregroundColor(Color(hex: "#5A6177").opacity(0.7))
+                            .foregroundColor(.textSecondary.opacity(0.7))
                         Spacer()
                     }
                 } else {
@@ -109,13 +109,13 @@ struct SubDetailView: View {
                 HStack(spacing: 6) {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(Color(hex: "#002FA7"))
+                        .foregroundColor(.accent)
 
                     if let iconURL = sub.flatMap({ URL(string: $0.icon) }), !sub!.icon.isEmpty {
                         WebImage(url: iconURL) { image in
                             image.resizable().scaledToFill()
                         } placeholder: {
-                            Color(hex: "#ECEEF4")
+                            Color.bgMuted
                         }
                         .frame(width: 28, height: 28)
                         .clipShape(Circle())
@@ -133,7 +133,7 @@ struct SubDetailView: View {
             // App count badge
             Text("\(items.count) 个应用")
                 .font(.system(size: 13, weight: .medium))
-                .foregroundColor(Color(hex: "#9098AD"))
+                .foregroundColor(.textTertiary)
         }
         .frame(height: 56)
         .padding(.horizontal, 20)

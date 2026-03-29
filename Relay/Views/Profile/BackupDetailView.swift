@@ -193,11 +193,11 @@ private struct BackupHeroArea: View {
         VStack(spacing: 12) {
             ZStack {
                 Circle()
-                    .fill(Color(hex: "#E0E8F7"))
+                    .fill(Color.accentLight)
                     .frame(width: 72, height: 72)
                 Image(systemName: "archivebox.fill")
                     .font(.system(size: 36))
-                    .foregroundColor(Color(hex: "#002FA7"))
+                    .foregroundColor(.accent)
             }
 
             TextField("备份名称", text: $editedName)
@@ -210,7 +210,7 @@ private struct BackupHeroArea: View {
             if let createTime = backup.createTime {
                 Text(Self.formatDate(createTime))
                     .font(.system(size: 13))
-                    .foregroundColor(Color(hex: "#9098AD"))
+                    .foregroundColor(.textTertiary)
             }
         }
         .frame(maxWidth: .infinity)
@@ -385,7 +385,7 @@ private struct BackupDangerSection: View {
         VStack(spacing: 8) {
             Text("此操作不可恢复，请谨慎操作")
                 .font(.system(size: 12))
-                .foregroundColor(Color(hex: "#9098AD"))
+                .foregroundColor(.textTertiary)
                 .frame(maxWidth: .infinity)
                 .multilineTextAlignment(.center)
 
@@ -396,7 +396,7 @@ private struct BackupDangerSection: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
                     .padding(.horizontal, 24)
-                    .background(Color(hex: "#D0534F"))
+                    .background(Color.accentRed)
                     .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
         }

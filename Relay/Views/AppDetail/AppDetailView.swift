@@ -961,7 +961,7 @@ struct AppDetailView: View {
             HStack(spacing: 10) {
                 UIMenuButton(
                     systemImage: "ellipsis",
-                    tintColor: UIColor(Color(hex: "#0F1729")),
+                    tintColor: UIColor(.textPrimary),
                     menu: UIMenu(children: [
                         UIAction(title: "导入会话", image: UIImage(systemName: "square.and.arrow.down")) { [self] _ in
                             showImportSession = true
@@ -979,7 +979,7 @@ struct AppDetailView: View {
                 )
                 .frame(width: 48, height: 48)
                 .background(
-                    Color(hex: "#ECEEF4"),
+                    Color.bgMuted,
                     in: RoundedRectangle(cornerRadius: 14, style: .continuous)
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
@@ -996,7 +996,7 @@ struct AppDetailView: View {
                         if isSavingSettings {
                             ProgressView()
                                 .progressViewStyle(.circular)
-                                .tint(hasRun ? Color(hex: "#0F1729") : .white)
+                                .tint(hasRun ? .textPrimary : .white)
                         } else {
                             Image(systemName: "square.and.arrow.down")
                         }
@@ -1007,9 +1007,9 @@ struct AppDetailView: View {
                         .frame(height: 48)
                 }
                 .buttonStyle(.plain)
-                .foregroundColor(hasRun ? Color(hex: "#0F1729") : .white)
+                .foregroundColor(hasRun ? .textPrimary : .white)
                 .background(
-                    hasRun ? Color(hex: "#ECEEF4") : Color(hex: "#002FA7"),
+                    hasRun ? Color.bgMuted : Color.accent,
                     in: RoundedRectangle(cornerRadius: 14, style: .continuous)
                 )
                 .opacity(isSavingSettings ? 0.85 : 1)
@@ -1042,10 +1042,10 @@ struct AppDetailView: View {
                     .buttonStyle(.plain)
                     .foregroundColor(.white)
                     .background(
-                        Color(hex: "#002FA7"),
+                        Color.accent,
                         in: RoundedRectangle(cornerRadius: 14, style: .continuous)
                     )
-                    .shadow(color: Color(hex: "#002FA7").opacity(0.13), radius: 10, x: 0, y: 4)
+                    .shadow(color: Color.accent.opacity(0.13), radius: 10, x: 0, y: 4)
                     .opacity(isRunningScript ? 0.85 : 1)
                     .disabled(isRunningScript)
                     .accessibilityLabel("运行")

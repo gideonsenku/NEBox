@@ -99,7 +99,7 @@ struct HomeView: View {
                     } label: {
                         Text(isEditMode ? "完成" : "编辑")
                             .font(.system(size: 15, weight: .medium))
-                            .foregroundColor(Color(hex: "#002FA7"))
+                            .foregroundColor(.accent)
                     }
                 }
                 Button {
@@ -107,7 +107,7 @@ struct HomeView: View {
                 } label: {
                     Image(systemName: "magnifyingglass")
                         .font(.system(size: 17, weight: .medium))
-                        .foregroundColor(Color(hex: "#002FA7"))
+                        .foregroundColor(.accent)
                 }
             }
         }
@@ -129,14 +129,14 @@ struct HomeView: View {
             } placeholder: {
                 Text(envId.prefix(1))
                     .font(.system(size: 16, weight: .bold))
-                    .foregroundColor(Color(hex: "#002FA7"))
+                    .foregroundColor(.accent)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .background(Color(hex: "#EEF0FA"))
             }
         } else {
             Image(systemName: "network")
                 .font(.system(size: 18))
-                .foregroundColor(Color(hex: "#9098AD"))
+                .foregroundColor(.textTertiary)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color(hex: "#EEF0FA"))
         }
@@ -149,9 +149,9 @@ struct HomeView: View {
             Spacer()
             Image(systemName: "square.grid.2x2")
                 .font(.system(size: 48))
-                .foregroundColor(Color(hex: "#5A6177").opacity(0.4))
+                .foregroundColor(.textSecondary.opacity(0.4))
             Text("还没有收藏应用")
-                .foregroundColor(Color(hex: "#5A6177").opacity(0.7))
+                .foregroundColor(.textSecondary.opacity(0.7))
             Button {
                 showSearch = true
             } label: {
@@ -159,7 +159,7 @@ struct HomeView: View {
                     .font(.system(size: 14))
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
-                    .background(Color(hex: "#002FA7"))
+                    .background(Color.accent)
                     .foregroundColor(.white)
                     .cornerRadius(8)
             }

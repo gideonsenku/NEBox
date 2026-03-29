@@ -94,7 +94,7 @@ struct SubcribeView: View {
                         .frame(width: 36, height: 36)
                     Image(systemName: "square.stack.fill")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(Color(hex: "#002FA7"))
+                        .foregroundColor(.accent)
                 }
                 Text("应用订阅")
                     .font(.system(size: 15, weight: .semibold))
@@ -111,7 +111,7 @@ struct SubcribeView: View {
                     } label: {
                         Text(isEditMode ? "完成" : "编辑")
                             .font(.system(size: 15, weight: .medium))
-                            .foregroundColor(Color(hex: "#002FA7"))
+                            .foregroundColor(.accent)
                     }
                 }
                 Button {
@@ -122,7 +122,7 @@ struct SubcribeView: View {
                 } label: {
                     Image(systemName: "arrow.triangle.2.circlepath")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(Color(hex: "#002FA7"))
+                        .foregroundColor(.accent)
                 }
                 Button {
                     addUrlInput = ""
@@ -130,7 +130,7 @@ struct SubcribeView: View {
                 } label: {
                     Image(systemName: "plus")
                         .font(.system(size: 17, weight: .medium))
-                        .foregroundColor(Color(hex: "#002FA7"))
+                        .foregroundColor(.accent)
                 }
             }
         }
@@ -145,11 +145,11 @@ struct SubcribeView: View {
             Spacer()
             ZStack {
                 Circle()
-                    .fill(Color(hex: "#ECEEF4"))
+                    .fill(Color.bgMuted)
                     .frame(width: 80, height: 80)
                 Image(systemName: "tray")
                     .font(.system(size: 36))
-                    .foregroundColor(Color(hex: "#9098AD"))
+                    .foregroundColor(.textTertiary)
             }
             VStack(spacing: 8) {
                 Text("暂无订阅")
@@ -173,7 +173,7 @@ struct SubcribeView: View {
                 .foregroundColor(.white)
                 .padding(.horizontal, 24)
                 .frame(height: 48)
-                .background(Color(hex: "#002FA7"))
+                .background(Color.accent)
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
             Spacer()

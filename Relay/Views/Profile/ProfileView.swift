@@ -83,6 +83,7 @@ struct ProfileView: View {
                     onImport: performImportBak,
                     onCancel: cancelImport
                 )
+                .neboxMediumSheet()
             }
             .sheet(isPresented: $showApiSettings) {
                 ApiSettingsView()
@@ -173,7 +174,7 @@ private struct ProfileNavBar: View {
                         .frame(width: 36, height: 36)
                     Image(systemName: "person.fill")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(Color(hex: "#002FA7"))
+                        .foregroundColor(.accent)
                 }
                 Text("我的")
                     .font(.system(size: 15, weight: .semibold))
@@ -185,7 +186,7 @@ private struct ProfileNavBar: View {
             Button(action: onSettings) {
                 Image(systemName: "gearshape")
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(Color(hex: "#002FA7"))
+                    .foregroundColor(.accent)
             }
         }
         .frame(height: 56)
@@ -216,7 +217,7 @@ private struct ProfileHeaderCard: View {
                         .lineLimit(1)
                 }
                 .font(.system(size: 12))
-                .foregroundColor(Color(hex: "#9098AD"))
+                .foregroundColor(.textTertiary)
             }
 
             Spacer()
@@ -224,7 +225,7 @@ private struct ProfileHeaderCard: View {
             Button(action: onEdit) {
                 Image(systemName: "pencil.circle.fill")
                     .font(.system(size: 28))
-                    .foregroundColor(Color(hex: "#002FA7").opacity(0.8))
+                    .foregroundColor(.accent.opacity(0.8))
             }
         }
         .padding(16)
@@ -249,7 +250,7 @@ private struct ProfileHeaderCard: View {
             ZStack {
                 Circle()
                     .fill(LinearGradient(
-                        colors: [Color(hex: "#002FA7"), Color(hex: "#0047D4")],
+                        colors: [.accent, Color(hex: "#0047D4")],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ))
@@ -271,7 +272,7 @@ private struct ProfileStatsRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            StatCard(icon: "app.badge", label: "应用", count: boxData.apps.count, color: Color(hex: "#002FA7"))
+            StatCard(icon: "app.badge", label: "应用", count: boxData.apps.count, color: .accent)
             StatCard(icon: "square.stack", label: "订阅", count: boxData.displayAppSubs.count, color: Color(hex: "#7C3AED"))
             StatCard(icon: "person.2", label: "会话", count: boxData.sessions.count, color: Color(hex: "#059669"))
         }
@@ -300,7 +301,7 @@ private struct StatCard: View {
             HStack {
                 Text(label)
                     .font(.system(size: 12))
-                    .foregroundColor(Color(hex: "#9098AD"))
+                    .foregroundColor(.textTertiary)
                 Spacer()
             }
         }
@@ -318,7 +319,7 @@ private struct ProfileQuickActions: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("工具")
                 .font(.system(size: 13, weight: .medium))
-                .foregroundColor(Color(hex: "#9098AD"))
+                .foregroundColor(.textTertiary)
                 .padding(.horizontal, 4)
 
             VStack(spacing: 0) {
@@ -362,7 +363,7 @@ private struct ActionRow: View {
                     .frame(width: 36, height: 36)
                 Image(systemName: icon)
                     .font(.system(size: 14))
-                    .foregroundColor(Color(hex: "#002FA7"))
+                    .foregroundColor(.accent)
             }
 
             VStack(alignment: .leading, spacing: 2) {
@@ -371,7 +372,7 @@ private struct ActionRow: View {
                     .foregroundColor(Color(hex: "#1A1918"))
                 Text(subtitle)
                     .font(.system(size: 12))
-                    .foregroundColor(Color(hex: "#9098AD"))
+                    .foregroundColor(.textTertiary)
             }
 
             Spacer()
@@ -398,7 +399,7 @@ private struct ProfileBackupSection: View {
             HStack {
                 Text("备份")
                     .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(Color(hex: "#9098AD"))
+                    .foregroundColor(.textTertiary)
 
                 Spacer()
 
@@ -410,7 +411,7 @@ private struct ProfileBackupSection: View {
                             Text("导入")
                                 .font(.system(size: 12, weight: .medium))
                         }
-                        .foregroundColor(Color(hex: "#002FA7"))
+                        .foregroundColor(.accent)
                     }
 
                     Button(action: onCreate) {
@@ -420,7 +421,7 @@ private struct ProfileBackupSection: View {
                             Text("创建")
                                 .font(.system(size: 12, weight: .medium))
                         }
-                        .foregroundColor(Color(hex: "#002FA7"))
+                        .foregroundColor(.accent)
                     }
                 }
             }
@@ -446,10 +447,10 @@ private struct ProfileBackupSection: View {
                     VStack(spacing: 8) {
                         Image(systemName: "externaldrive.badge.timemachine")
                             .font(.system(size: 32))
-                            .foregroundColor(Color(hex: "#9098AD").opacity(0.5))
+                            .foregroundColor(.textTertiary.opacity(0.5))
                         Text("暂无备份")
                             .font(.system(size: 13))
-                            .foregroundColor(Color(hex: "#9098AD"))
+                            .foregroundColor(.textTertiary)
                     }
                     .padding(.vertical, 32)
                     Spacer()
@@ -487,7 +488,7 @@ private struct BackupRow: View {
                 if let createTime = backup.createTime {
                     Text(formatTime(createTime))
                         .font(.system(size: 12))
-                        .foregroundColor(Color(hex: "#9098AD"))
+                        .foregroundColor(.textTertiary)
                 }
             }
 
