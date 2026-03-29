@@ -59,7 +59,7 @@ struct SubDetailView: View {
                             let favIds = boxModel.boxData.usercfgs?.favapps ?? []
                             let isFav = favIds.contains(app.id)
                             let title = isFav ? "取消收藏" : "加入收藏"
-                            let image = UIImage(systemName: isFav ? "star.slash" : "star.fill")
+                            let image = UIImage(systemName: isFav ? "heart.slash" : "heart.fill")
                             return UIMenu(children: [
                                 UIAction(title: title, image: image) { _ in
                                     Task { @MainActor in

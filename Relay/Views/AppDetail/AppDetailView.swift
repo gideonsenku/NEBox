@@ -600,6 +600,17 @@ struct AppDetailView: View {
             }
             .modifier(GroupedFormStyle())
             .navigationTitle(app.name)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        toggleFav(app)
+                    } label: {
+                        Image(systemName: isFavorite(app) ? "heart.fill" : "heart")
+                            .foregroundColor(isFavorite(app) ? .red : .secondary)
+                            .font(.system(size: 17))
+                    }
+                }
+            }
             .safeAreaInset(edge: .bottom) {
                 appBottomActionBar(app: app)
             }
@@ -1016,6 +1027,21 @@ struct AppDetailView: View {
             return str
         }
         return String(describing: val.value)
+    }
+
+    private func isFavorite(_ app: AppModel) -> Bool {
+        let favIds = boxModel.boxData.usercfgs?.favapps ?? []
+        return favIds.contains(app.id)
+    }
+
+    private func toggleFav(_ app: AppModel) {
+        var favIds = boxModel.boxData.usercfgs?.favapps ?? []
+        if let idx = favIds.firstIndex(of: app.id) {
+            favIds.remove(at: idx)
+        } else {
+            favIds.append(app.id)
+        }
+        boxModel.updateData(path: "usercfgs.favapps", data: favIds)
     }
 
     private func copyAppDatas() {
