@@ -251,14 +251,14 @@ struct AppDescCardView: View {
                 if let desc = app?.desc {
                     Text(desc)
                         .font(.system(size: 14))
-                        .foregroundColor(.gray)
+                        .foregroundColor(.secondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 if let descs = app?.descs {
                     ForEach(descs, id: \.self) { desc in
                         Text(desc)
                             .font(.system(size: 14))
-                            .foregroundColor(.gray)
+                            .foregroundColor(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
@@ -284,7 +284,7 @@ struct AppScriptsView: View {
     @EnvironmentObject var boxModel: BoxJsViewModel
 
     var body: some View {
-        if scripts.isEmpty != true {
+        if !scripts.isEmpty {
             ForEach(Array(scripts.enumerated()), id: \.element.script) { index, script in
                 HStack {
                     Label {
@@ -544,7 +544,6 @@ struct AppDetailView: View {
     @State private var cachedAppDataInfo = AppDataInfo(datas: [], sessions: [], curSession: nil)
     @State private var isSavingSettings = false
     @State private var isRunningScript = false
-    @State private var isImportingSession = false
     @State private var isKeyboardVisible = false
 
     var body: some View {
@@ -648,11 +647,12 @@ struct AppDetailView: View {
     private func appSessionDataSection(app: AppModel) -> some View {
         Section {
             ForEach(cachedAppDataInfo.datas, id: \.key) { data in
+                let valStr = dataValString(data.val)
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(data.key)
                             .font(.system(size: 14, weight: .medium))
-                        Text(dataValString(data.val).isEmpty ? "无数据" : dataValString(data.val))
+                        Text(valStr.isEmpty ? "无数据" : valStr)
                             .font(.system(size: 13))
                             .foregroundColor(.secondary)
                             .lineLimit(2)
@@ -673,7 +673,7 @@ struct AppDetailView: View {
                 }
                 .contentShape(Rectangle())
                 .onTapGesture {
-                    copyToClipboard(text: dataValString(data.val))
+                    copyToClipboard(text: valStr)
                     toastManager.showToast(message: "已复制")
                 }
             }
@@ -734,12 +734,13 @@ struct AppDetailView: View {
             if !session.datas.isEmpty {
                 VStack(alignment: .leading, spacing: 4) {
                     ForEach(session.datas, id: \.key) { data in
+                        let valStr = dataValString(data.val)
                         HStack(alignment: .top, spacing: 6) {
                             Text(data.key)
                                 .font(.system(size: 13, weight: .medium))
                                 .foregroundColor(.secondary)
                             Spacer()
-                            Text(dataValString(data.val).isEmpty ? "无数据" : dataValString(data.val))
+                            Text(valStr.isEmpty ? "无数据" : valStr)
                                 .font(.system(size: 13))
                                 .foregroundColor(.secondary)
                                 .lineLimit(1)
@@ -831,14 +832,10 @@ struct AppDetailView: View {
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    if isImportingSession {
-                        ProgressView()
-                    } else {
-                        Button("确认导入") {
-                            performImportSession()
-                        }
-                        .disabled(importSessionText.isEmpty)
+                    Button("确认导入") {
+                        performImportSession()
                     }
+                    .disabled(importSessionText.isEmpty)
                 }
             }
             .fileImporter(
@@ -862,18 +859,14 @@ struct AppDetailView: View {
     }
 
     private func performImportSession() {
-        guard !importSessionText.isEmpty, !isImportingSession else { return }
-        Task {
-            isImportingSession = true
-            if boxModel.importSession(jsonString: importSessionText) {
-                toastManager.showToast(message: "导入会话成功!")
-            } else {
-                toastManager.showToast(message: "会话数据格式错误")
-            }
-            isImportingSession = false
-            showImportSession = false
-            importSessionText = ""
+        guard !importSessionText.isEmpty else { return }
+        if boxModel.importSession(jsonString: importSessionText) {
+            toastManager.showToast(message: "导入会话成功!")
+        } else {
+            toastManager.showToast(message: "会话数据格式错误")
         }
+        showImportSession = false
+        importSessionText = ""
     }
 
     // MARK: - Script Result Sheet
@@ -1074,16 +1067,17 @@ struct AppDetailView: View {
         return Binding<[Setting]>(
             get: { app?.settings ?? [] },
             set: { newValue in
-                if app != nil { app!.settings = newValue }
+                app?.settings = newValue
             }
         )
     }
 
+    private static let jsonEncoder = JSONEncoder()
+
     private func dataValString(_ val: AnyCodable?) -> String {
         guard let val = val else { return "" }
         if let str = val.value as? String { return str }
-        let encoder = JSONEncoder()
-        if let data = try? encoder.encode(val), let str = String(data: data, encoding: .utf8) {
+        if let data = try? Self.jsonEncoder.encode(val), let str = String(data: data, encoding: .utf8) {
             return str
         }
         return String(describing: val.value)

@@ -7,7 +7,6 @@
 
 import SwiftUI
 import SDWebImageSwiftUI
-import AnyCodable
 import UniformTypeIdentifiers
 
 // MARK: - Profile Main View
@@ -45,7 +44,11 @@ struct ProfileView: View {
                             onEdit: presentEditProfile
                         )
 
-                        ProfileStatsRow(boxModel: boxModel)
+                        ProfileStatsRow(
+                            appCount: boxModel.cachedApps.count,
+                            subCount: boxModel.cachedAppSubSummaries.count,
+                            sessionCount: boxModel.boxData.sessions.count
+                        )
 
                         ProfileQuickActions()
 
@@ -107,16 +110,19 @@ private extension ProfileView {
     }
 
     func saveProfile() {
-        boxModel.updateData(path: "usercfgs.name", data: editName)
-        boxModel.updateData(path: "usercfgs.icon", data: editIcon)
         showEditProfile = false
-        toastManager.showToast(message: "保存成功!")
+        Task {
+            let r1 = await boxModel.updateDataAsync(path: "usercfgs.name", data: editName)
+            let r2 = await boxModel.updateDataAsync(path: "usercfgs.icon", data: editIcon)
+            if case .failure = r1 { toastManager.showToast(message: "保存失败"); return }
+            if case .failure = r2 { toastManager.showToast(message: "保存失败"); return }
+            toastManager.showToast(message: "保存成功!")
+        }
     }
 
     func createBackup() {
         Task {
             await boxModel.saveGlobalBak()
-            toastManager.showToast(message: "备份成功!")
         }
     }
 
@@ -124,7 +130,6 @@ private extension ProfileView {
         guard !importBakText.isEmpty else { return }
         Task {
             await boxModel.impGlobalBak(bakData: importBakText)
-            toastManager.showToast(message: "导入成功!")
             showImportBak = false
             importBakText = ""
         }
@@ -272,13 +277,15 @@ private struct ProfileHeaderCard: View {
 // MARK: - Profile Stats Row
 
 private struct ProfileStatsRow: View {
-    let boxModel: BoxJsViewModel
+    let appCount: Int
+    let subCount: Int
+    let sessionCount: Int
 
     var body: some View {
         HStack(spacing: 12) {
-            StatCard(icon: "app.badge", label: "应用", count: boxModel.cachedApps.count, color: .accent)
-            StatCard(icon: "square.stack", label: "订阅", count: boxModel.cachedAppSubSummaries.count, color: Color.accentCoral)
-            StatCard(icon: "person.2", label: "会话", count: boxModel.boxData.sessions.count, color: Color.accentBlue)
+            StatCard(icon: "app.badge", label: "应用", count: appCount, color: .accent)
+            StatCard(icon: "square.stack", label: "订阅", count: subCount, color: Color.accentCoral)
+            StatCard(icon: "person.2", label: "会话", count: sessionCount, color: Color.accentBlue)
         }
     }
 }
@@ -530,9 +537,9 @@ private struct BackupRow: View {
 
             Spacer()
 
-            if let tags = backup.tags, !tags.filter({ !$0.isEmpty }).isEmpty {
+            if let tags = backup.tags?.filter({ !$0.isEmpty }), !tags.isEmpty {
                 HStack(spacing: 4) {
-                    ForEach(tags.filter { !$0.isEmpty }.prefix(2), id: \.self) { tag in
+                    ForEach(tags.prefix(2), id: \.self) { tag in
                         Text(tag)
                             .font(.system(size: 10))
                             .foregroundColor(Color.textSecondary)
@@ -643,7 +650,10 @@ private struct ImportBackupSheet: View {
 
     private func handleFileImport(_ result: Result<[URL], Error>) {
         if case .success(let urls) = result, let url = urls.first {
-            guard url.startAccessingSecurityScopedResource() else { return }
+            guard url.startAccessingSecurityScopedResource() else {
+                toastManager.showToast(message: "无法访问文件")
+                return
+            }
             defer { url.stopAccessingSecurityScopedResource() }
             if let data = try? Data(contentsOf: url),
                let str = String(data: data, encoding: .utf8), !str.isEmpty {

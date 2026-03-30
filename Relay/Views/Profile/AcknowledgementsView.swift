@@ -63,7 +63,10 @@ struct AcknowledgementsView: View {
         }
         .navigationTitle("致谢")
         .navigationBarTitleDisplayMode(.inline)
-        .onAppear { loadContributors() }
+        .onAppear {
+            guard collaborators.isEmpty && contributors.isEmpty else { return }
+            loadContributors()
+        }
     }
 
     private func loadContributors() {
@@ -72,14 +75,17 @@ struct AcknowledgementsView: View {
         Task {
             do {
                 let url = URL(string: "https://api.github.com/repos/chavyleung/scripts/contributors")!
-                let (data, _) = try await URLSession.shared.data(from: url)
+                let (data, response) = try await URLSession.shared.data(from: url)
+                if let http = response as? HTTPURLResponse, http.statusCode != 200 {
+                    throw URLError(.badServerResponse)
+                }
                 let all = try JSONDecoder().decode([GitHubContributor].self, from: data)
                     .filter { !Self.excludedIDs.contains($0.id) }
-                let collabs = all.filter { Self.collaboratorIDs.contains($0.id) }
-                let contribs = all.filter { !Self.collaboratorIDs.contains($0.id) }
+                let fetchedCollaborators = all.filter { Self.collaboratorIDs.contains($0.id) }
+                let fetchedContributors = all.filter { !Self.collaboratorIDs.contains($0.id) }
                 await MainActor.run {
-                    collaborators = collabs
-                    contributors = contribs
+                    collaborators = fetchedCollaborators
+                    contributors = fetchedContributors
                     isLoading = false
                 }
             } catch {
@@ -108,22 +114,36 @@ private struct ContributorSection: View {
 
             LazyVGrid(columns: columns, spacing: 16) {
                 ForEach(contributors) { contributor in
-                    Link(destination: URL(string: contributor.htmlUrl)!) {
-                        VStack(spacing: 6) {
-                            WebImage(url: URL(string: contributor.avatarUrl))
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: 52, height: 52)
-                                .clipShape(Circle())
-
-                            Text(contributor.login)
-                                .font(.system(size: 11))
-                                .foregroundColor(.textSecondary)
-                                .lineLimit(1)
+                    if let url = URL(string: contributor.htmlUrl) {
+                        Link(destination: url) {
+                            ContributorAvatar(contributor: contributor)
                         }
+                    } else {
+                        ContributorAvatar(contributor: contributor)
                     }
                 }
             }
+        }
+    }
+}
+
+// MARK: - Contributor Avatar
+
+private struct ContributorAvatar: View {
+    let contributor: GitHubContributor
+
+    var body: some View {
+        VStack(spacing: 6) {
+            WebImage(url: URL(string: contributor.avatarUrl))
+                .resizable()
+                .scaledToFill()
+                .frame(width: 52, height: 52)
+                .clipShape(Circle())
+
+            Text(contributor.login)
+                .font(.system(size: 11))
+                .foregroundColor(.textSecondary)
+                .lineLimit(1)
         }
     }
 }
