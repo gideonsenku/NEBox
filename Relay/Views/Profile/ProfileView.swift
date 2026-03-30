@@ -351,22 +351,22 @@ private struct ProfileQuickActions: View {
 
             VStack(spacing: 0) {
                 NavigationLink(destination: PreferencesView()) {
-                    ActionRow(icon: "slider.horizontal.3", title: "偏好设置", subtitle: "自定义 BoxJs 行为")
+                    ActionRow(icon: "slider.horizontal.3", title: "偏好设置", subtitle: "自定义 BoxJs 行为", iconColor: .gray)
                 }
                 Divider().padding(.leading, 52)
 
                 NavigationLink(destination: ScriptEditorView()) {
-                    ActionRow(icon: "chevron.left.forwardslash.chevron.right", title: "脚本编辑", subtitle: "编辑和运行脚本")
+                    ActionRow(icon: "chevron.left.forwardslash.chevron.right", title: "脚本编辑", subtitle: "编辑和运行脚本", iconColor: .green)
                 }
                 Divider().padding(.leading, 52)
 
                 NavigationLink(destination: DataViewerView()) {
-                    ActionRow(icon: "cylinder", title: "数据查看", subtitle: "查看存储数据")
+                    ActionRow(icon: "cylinder", title: "数据查看", subtitle: "查看存储数据", iconColor: .purple)
                 }
                 Divider().padding(.leading, 52)
 
                 NavigationLink(destination: LogViewerView()) {
-                    ActionRow(icon: "doc.text.magnifyingglass", title: "日志", subtitle: "查看和导出应用日志")
+                    ActionRow(icon: "doc.text.magnifyingglass", title: "日志", subtitle: "查看和导出应用日志", iconColor: .orange)
                 }
             }
             .background(Color.bgCard)
@@ -387,18 +387,28 @@ private struct ProfileOtherSection: View {
                 .padding(.horizontal, 4)
 
             VStack(spacing: 0) {
-                NavigationLink(destination: AcknowledgementsView()) {
-                    ActionRow(icon: "hands.clap", title: "致谢", subtitle: "感谢所有贡献者")
+                Link(destination: URL(string: "https://ifdian.net/a/gidoensenku")!) {
+                    ActionRow(icon: "heart.fill", title: "赞助开发者", subtitle: "请开发者喝杯咖啡", iconColor: .red)
+                }
+                Divider().padding(.leading, 52)
+
+                Link(destination: URL(string: "https://github.com/gideonsenku/Relay")!) {
+                    ActionRow(icon: "star.fill", title: "仓库 Star", subtitle: "在 GitHub 上支持我们", iconColor: .orange)
                 }
                 Divider().padding(.leading, 52)
 
                 NavigationLink(destination: VersionHistoryView()) {
-                    ActionRow(icon: "clock.arrow.circlepath", title: "BoxJs 更新日志", subtitle: "查看版本历史和更新内容")
+                    ActionRow(icon: "clock.arrow.circlepath", title: "BoxJs 更新日志", subtitle: "查看版本历史和更新内容", iconColor: .mint)
                 }
                 Divider().padding(.leading, 52)
 
-                Link(destination: URL(string: "https://ifdian.net/a/gidoensenku")!) {
-                    ActionRow(icon: "heart.fill", title: "赞助开发者", subtitle: "请开发者喝杯咖啡", iconColor: .red)
+                Link(destination: URL(string: "tg://resolve?domain=Relay_Group")!) {
+                    ActionRow(icon: "paperplane.fill", title: "加入 Telegram 群组", subtitle: "交流反馈与功能建议", iconColor: .blue)
+                }
+                Divider().padding(.leading, 52)
+
+                NavigationLink(destination: AcknowledgementsView()) {
+                    ActionRow(icon: "hands.clap", title: "致谢", subtitle: "感谢所有贡献者", iconColor: .pink)
                 }
             }
             .background(Color.bgCard)
