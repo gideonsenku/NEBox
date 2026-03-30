@@ -71,6 +71,9 @@ struct PreferencesView: View {
                 }
             }
         }
+        .simultaneousGesture(TapGesture().onEnded {
+            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        })
         .navigationTitle("偏好设置")
         .navigationBarTitleDisplayMode(.inline)
         .onDisappear {

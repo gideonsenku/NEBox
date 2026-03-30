@@ -576,6 +576,9 @@ private struct EditProfileSheet: View {
                     TextField("头像链接 (可选)", text: $icon)
                 }
             }
+            .simultaneousGesture(TapGesture().onEnded {
+                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+            })
             .navigationTitle("编辑资料")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -725,6 +728,9 @@ struct ApiSettingsView: View {
                     Text("重置后将返回初始配置页")
                 }
             }
+            .simultaneousGesture(TapGesture().onEnded {
+                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+            })
             .navigationTitle("API 设置")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

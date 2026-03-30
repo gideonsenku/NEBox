@@ -44,6 +44,9 @@ struct DataViewerView: View {
                 .padding(.vertical, 8)
             }
         }
+        .simultaneousGesture(TapGesture().onEnded {
+            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        })
         .navigationTitle("数据查看器")
         .navigationBarTitleDisplayMode(.inline)
     }

@@ -544,7 +544,6 @@ struct AppDetailView: View {
     @State private var cachedAppDataInfo = AppDataInfo(datas: [], sessions: [], curSession: nil)
     @State private var isSavingSettings = false
     @State private var isRunningScript = false
-    @State private var isKeyboardVisible = false
 
     var body: some View {
         if let app = app {
@@ -599,6 +598,9 @@ struct AppDetailView: View {
                     }
                 }
             }
+            .simultaneousGesture(TapGesture().onEnded {
+                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+            })
             .modifier(GroupedFormStyle())
             .navigationTitle(app.name)
             .toolbar {
@@ -632,12 +634,6 @@ struct AppDetailView: View {
             }
             .onReceive(boxModel.$boxData) { _ in
                 refreshCachedAppDataInfo()
-            }
-            .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
-                isKeyboardVisible = true
-            }
-            .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
-                isKeyboardVisible = false
             }
         }
     }
@@ -988,20 +984,7 @@ struct AppDetailView: View {
                     .accessibilityLabel("运行")
                 }
 
-                if isKeyboardVisible {
-                    Button {
-                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                    } label: {
-                        Text("完成")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.accentColor)
-                    }
-                    .buttonStyle(.plain)
-                    .frame(width: 40, height: 48)
-                    .transition(.opacity)
-                }
             }
-            .animation(.easeInOut(duration: 0.2), value: isKeyboardVisible)
             .padding(.leading, 20)
             .padding(.trailing, 20)
             .padding(.top, 10)

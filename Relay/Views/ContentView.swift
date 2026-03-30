@@ -109,6 +109,9 @@ struct WelcomeSetupView: View {
 
             Spacer()
         }
+        .simultaneousGesture(TapGesture().onEnded {
+            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        })
         .background(Color(.systemGroupedBackground).ignoresSafeArea())
     }
 }
