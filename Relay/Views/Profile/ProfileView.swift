@@ -8,6 +8,7 @@
 import SwiftUI
 import SDWebImageSwiftUI
 import UniformTypeIdentifiers
+import AnyCodable
 
 // MARK: - Profile Main View
 
@@ -25,6 +26,9 @@ struct ProfileView: View {
     @State private var editIcon = ""
     @State private var showCreateBak = false
     @State private var newBakName = ""
+    @State private var showDeleteBakConfirm = false
+    @State private var deletingBakId = ""
+    @State private var deletingBakName = ""
 
     var body: some View {
         neboxNavigationContainer {
@@ -58,6 +62,9 @@ struct ProfileView: View {
                             backups: boxModel.boxData.globalbaks,
                             onImport: { showImportBak = true },
                             onCreate: presentCreateBackup,
+                            onRevert: revertBackup,
+                            onExport: exportBackup,
+                            onDelete: confirmDeleteBackup,
                             formatTime: formatBackupTime
                         )
 
@@ -103,6 +110,15 @@ struct ProfileView: View {
                 Button("创建") { createBackup() }
             } message: {
                 Text("请输入备份名称")
+            }
+            .alert("确认删除", isPresented: $showDeleteBakConfirm) {
+                Button("删除", role: .destructive) {
+                    let id = deletingBakId
+                    Task { await boxModel.delGlobalBak(id: id) }
+                }
+                Button("取消", role: .cancel) { }
+            } message: {
+                Text("删除后无法恢复，确定要删除「\(deletingBakName)」吗？")
             }
         }
         .neboxLiquidGlassTabBarChrome()
@@ -154,6 +170,63 @@ private extension ProfileView {
     func cancelImport() {
         showImportBak = false
         importBakText = ""
+    }
+
+    // H6 fix: perform() already shows failure toast internally;
+    // only show success toast when the API call actually succeeds.
+    func revertBackup(_ id: String) {
+        Task {
+            do {
+                let boxdata: BoxDataResp = try await NetworkProvider.request(.revertGlobalBak(id: id))
+                await MainActor.run { boxModel.boxData = boxdata }
+                toastManager.showToast(message: "已恢复备份")
+            } catch {
+                toastManager.showToast(message: "恢复备份失败")
+            }
+        }
+    }
+
+    func exportBackup(_ backup: GlobalBackup) {
+        toastManager.showLoading(message: "正在加载…")
+        Task {
+            do {
+                let data: AnyCodable = try await NetworkProvider.request(.loadGlobalBak(id: backup.id))
+                let encoder = JSONEncoder()
+                encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+                let jsonData = try encoder.encode(data)
+                // H5 fix: sanitize filename and use try (not try?)
+                let safeName = backup.name.replacingOccurrences(of: "/", with: "_")
+                    .replacingOccurrences(of: ":", with: "_")
+                let fileName = "\(safeName)_\(backup.id).json"
+                let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
+                try jsonData.write(to: tempURL)
+                await MainActor.run {
+                    toastManager.hideLoading()
+                    guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                          let rootVC = scene.windows.first?.rootViewController else { return }
+                    let presenter = rootVC.presentedViewController ?? rootVC
+                    let ac = UIActivityViewController(activityItems: [tempURL], applicationActivities: nil)
+                    // H4 fix: clean up temp file after share sheet dismisses
+                    ac.completionWithItemsHandler = { _, _, _, _ in
+                        try? FileManager.default.removeItem(at: tempURL)
+                    }
+                    presenter.present(ac, animated: true)
+                }
+            } catch {
+                await MainActor.run {
+                    toastManager.hideLoading()
+                    toastManager.showToast(message: "导出失败")
+                }
+            }
+        }
+    }
+
+    func confirmDeleteBackup(_ id: String) {
+        deletingBakId = id
+        if let bak = boxModel.boxData.globalbaks?.first(where: { $0.id == id }) {
+            deletingBakName = bak.name
+        }
+        showDeleteBakConfirm = true
     }
 }
 
@@ -462,7 +535,14 @@ private struct ProfileBackupSection: View {
     let backups: [GlobalBackup]?
     let onImport: () -> Void
     let onCreate: () -> Void
+    let onRevert: (String) -> Void
+    let onExport: (GlobalBackup) -> Void
+    let onDelete: (String) -> Void
     let formatTime: (String) -> String
+
+    @State private var openRowId: String?
+    @State private var selectedBackup: GlobalBackup?
+    @State private var navigateToDetail = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -500,15 +580,45 @@ private struct ProfileBackupSection: View {
             if let baks = backups, !baks.isEmpty {
                 VStack(spacing: 0) {
                     ForEach(Array(baks.enumerated()), id: \.element.id) { index, bak in
-                        NavigationLink(destination: BackupDetailView(backup: bak)) {
-                            BackupRow(backup: bak, formatTime: formatTime)
-                        }
+                        SwipeActionRow(
+                            rowId: bak.id,
+                            content: {
+                                BackupRow(backup: bak, formatTime: formatTime)
+                            },
+                            actions: [
+                                SwipeAction(title: "恢复", icon: "arrow.counterclockwise", color: .accentBlue) {
+                                    onRevert(bak.id)
+                                },
+                                SwipeAction(title: "导出", icon: "square.and.arrow.up", color: .orange) {
+                                    onExport(bak)
+                                },
+                                SwipeAction(title: "删除", icon: "trash", color: .red) {
+                                    onDelete(bak.id)
+                                }
+                            ],
+                            onTap: {
+                                selectedBackup = bak
+                                navigateToDetail = true
+                            },
+                            openRowId: $openRowId
+                        )
 
                         if index < baks.count - 1 {
                             Divider().padding(.leading, 52)
                         }
                     }
                 }
+                .background(
+                    NavigationLink(
+                        destination: Group {
+                            if let backup = selectedBackup {
+                                BackupDetailView(backup: backup)
+                            }
+                        },
+                        isActive: $navigateToDetail
+                    ) { EmptyView() }
+                    .hidden()
+                )
                 .background(Color.bgCard)
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             } else {

@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		364D296303964521B29BE952 /* SubDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C61523AAFFC54CBBBD390BBB /* SubDetailView.swift */; };
 		A100000100000001000000A1 /* AppIconView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000100000001000000A2 /* AppIconView.swift */; };
+		A100000200000001000000A1 /* SwipeActionRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000200000001000000A2 /* SwipeActionRow.swift */; };
 		AA00000100000001000000A1 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000100000001000000A2 /* ProfileView.swift */; };
 		AA00000100000002000000A1 /* DataViewerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000100000002000000A2 /* DataViewerView.swift */; };
 		AA00000100000003000000A1 /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000100000003000000A2 /* SearchView.swift */; };
@@ -50,6 +51,7 @@
 
 /* Begin PBXFileReference section */
 		A100000100000001000000A2 /* AppIconView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconView.swift; sourceTree = "<group>"; };
+		A100000200000001000000A2 /* SwipeActionRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeActionRow.swift; sourceTree = "<group>"; };
 		AA00000100000001000000A2 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		AA00000100000002000000A2 /* DataViewerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataViewerView.swift; sourceTree = "<group>"; };
 		AA00000100000003000000A2 /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
@@ -260,6 +262,7 @@
 				E21043242C89951C00347C43 /* RadioButtonGroup.swift */,
 				E210432B2C90307000347C43 /* CheckBoxGroup.swift */,
 				A100000100000001000000A2 /* AppIconView.swift */,
+				A100000200000001000000A2 /* SwipeActionRow.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -357,6 +360,7 @@
 				E2E8BA822C6B67BB00C2AF9E /* Utils.swift in Sources */,
 				E210432C2C90307000347C43 /* CheckBoxGroup.swift in Sources */,
 				A100000100000001000000A1 /* AppIconView.swift in Sources */,
+				A100000200000001000000A1 /* SwipeActionRow.swift in Sources */,
 				E2C273682C36BB88004952AA /* SubcribeView.swift in Sources */,
 				364D296303964521B29BE952 /* SubDetailView.swift in Sources */,
 				E2C273642C355309004952AA /* HomeView.swift in Sources */,

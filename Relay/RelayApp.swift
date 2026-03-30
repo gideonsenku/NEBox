@@ -14,7 +14,6 @@ struct RelayApp: App {
     @StateObject private var toastManager = ToastManager()
     @StateObject var boxModel = BoxJsViewModel()
     @StateObject private var apiManager = ApiManager.shared
-    @State private var importingMessage: String? = nil
     init() {
         if #unavailable(iOS 26.0) {
             let tabBarAppearance = UITabBarAppearance()
@@ -55,24 +54,9 @@ struct RelayApp: App {
                 .environmentObject(toastManager)
                 .environmentObject(boxModel)
                 .overlay {
-                    if let message = importingMessage {
-                        VStack(spacing: 14) {
-                            ProgressView()
-                                .progressViewStyle(.circular)
-                                .tint(.white)
-                            Text(message)
-                                .font(.subheadline)
-                                .foregroundColor(.white)
-                        }
-                        .frame(width: 120, height: 120)
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(Color.black.opacity(0.7))
-                        )
-                        .transition(.opacity.combined(with: .scale(scale: 0.9)))
-                    }
+                    GlobalLoadingOverlay(toastManager: toastManager)
                 }
-                .animation(.easeInOut(duration: 0.2), value: importingMessage != nil)
+                .animation(.easeInOut(duration: 0.2), value: toastManager.loadingMessage != nil)
                 .onAppear {
                     boxModel.toastManager = toastManager
                     if apiManager.isApiUrlSet() {
@@ -103,13 +87,13 @@ struct RelayApp: App {
             return
         }
 
-        importingMessage = "正在读取文件…"
+        toastManager.showLoading(message: "正在读取文件…")
         Task {
-            importingMessage = "正在导入备份…"
+            toastManager.showLoading(message: "正在导入备份…")
             await boxModel.impGlobalBak(bakData: jsonString)
-            importingMessage = "导入成功"
+            toastManager.showLoading(message: "导入成功")
             try? await Task.sleep(nanoseconds: 800_000_000)
-            importingMessage = nil
+            toastManager.hideLoading()
         }
     }
 }

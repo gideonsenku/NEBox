@@ -12,6 +12,7 @@ import SwiftUI
 class ToastManager: ObservableObject {
     @Published var isShowing = false
     @Published var message: String = ""
+    @Published var loadingMessage: String?
 
     func showToast(message: String, duration: TimeInterval = 2.0) {
         self.message = message
@@ -22,6 +23,18 @@ class ToastManager: ObservableObject {
             withAnimation {
                 self.isShowing = false
             }
+        }
+    }
+
+    func showLoading(message: String) {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            self.loadingMessage = message
+        }
+    }
+
+    func hideLoading() {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            self.loadingMessage = nil
         }
     }
 }

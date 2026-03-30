@@ -25,3 +25,26 @@ struct GlobalToastView: View {
         }
     }
 }
+
+struct GlobalLoadingOverlay: View {
+    @ObservedObject var toastManager: ToastManager
+
+    var body: some View {
+        if let message = toastManager.loadingMessage {
+            VStack(spacing: 14) {
+                ProgressView()
+                    .progressViewStyle(.circular)
+                    .tint(.white)
+                Text(message)
+                    .font(.subheadline)
+                    .foregroundColor(.white)
+            }
+            .frame(width: 120, height: 120)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color.black.opacity(0.7))
+            )
+            .transition(.opacity.combined(with: .scale(scale: 0.9)))
+        }
+    }
+}
