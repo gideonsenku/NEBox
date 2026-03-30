@@ -467,7 +467,8 @@ class MyCell: UICollectionViewCell {
 
     private func updateIcon() {
         guard let app else { imageView.image = nil; hideFallbackLabel(); return }
-        let isDark = traitCollection.userInterfaceStyle == .dark
+        let appearance = IconAppearance(rawValue: UserDefaults.standard.string(forKey: IconAppearance.userDefaultsKey) ?? "") ?? .auto
+        let isDark = appearance.isDark(systemIsDark: traitCollection.userInterfaceStyle == .dark)
         imageView.backgroundColor = isDark ? UIColor(.bgCard) : .clear
         if let url = app.adaptiveIconURL(isDark: isDark) {
             // Downsample to display size (60pt × @3x = 180px) to avoid decoding
@@ -496,6 +497,8 @@ class MyCell: UICollectionViewCell {
     private func hideFallbackLabel() {
         fallbackLabel.isHidden = true
     }
+
+    private var iconAppearanceObserver: NSObjectProtocol?
 
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
@@ -565,6 +568,20 @@ class MyCell: UICollectionViewCell {
             favBadge.widthAnchor.constraint(equalToConstant: 18),
             favBadge.heightAnchor.constraint(equalToConstant: 18),
         ])
+
+        iconAppearanceObserver = NotificationCenter.default.addObserver(
+            forName: UserDefaults.didChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.updateIcon()
+        }
+    }
+
+    deinit {
+        if let observer = iconAppearanceObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
     }
 
     func showDeleteBadge(_ show: Bool) { deleteBadge.isHidden = !show }

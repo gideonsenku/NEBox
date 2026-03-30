@@ -16,8 +16,12 @@ struct AppIconView: View {
     private var cornerRadius: CGFloat { size * 0.2237 }
 
     @Environment(\.colorScheme) private var colorScheme
+    @AppStorage(IconAppearance.userDefaultsKey) private var iconAppearanceRaw: String = IconAppearance.auto.rawValue
 
-    private var isDark: Bool { colorScheme == .dark }
+    private var isDark: Bool {
+        let appearance = IconAppearance(rawValue: iconAppearanceRaw) ?? .auto
+        return appearance.isDark(systemIsDark: colorScheme == .dark)
+    }
 
     @State private var loadFailed = false
 

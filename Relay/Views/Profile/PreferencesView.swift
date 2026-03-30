@@ -7,9 +7,78 @@
 
 import SwiftUI
 
+/// Controls which icon variant (light / dark / auto) is shown for app icons within the app.
+enum IconAppearance: String, CaseIterable {
+    case auto = "auto"
+    case light = "light"
+    case dark = "dark"
+
+    var displayName: String {
+        switch self {
+        case .auto: return "自动"
+        case .light: return "浅色"
+        case .dark: return "深色"
+        }
+    }
+
+    /// Resolves to a concrete `isDark` value given the current system color scheme.
+    func isDark(systemIsDark: Bool) -> Bool {
+        switch self {
+        case .auto: return systemIsDark
+        case .light: return false
+        case .dark: return true
+        }
+    }
+
+    static let userDefaultsKey = "iconAppearance"
+}
+
+/// Controls the actual iOS home-screen app icon.
+enum AppIconChoice: String, CaseIterable {
+    case auto = "auto"
+    case light = "light"
+    case dark = "dark"
+
+    var displayName: String {
+        switch self {
+        case .auto: return "自动"
+        case .light: return "浅色"
+        case .dark: return "深色"
+        }
+    }
+
+    /// The image asset name used for preview in the picker.
+    var previewImageName: String {
+        switch self {
+        case .auto: return "AppIcon-Light"
+        case .light: return "AppIcon-Light"
+        case .dark: return "AppIcon-Dark"
+        }
+    }
+
+    /// The alternate icon name passed to `setAlternateIconName`. `nil` = default (auto light/dark).
+    var alternateIconName: String? {
+        switch self {
+        case .auto: return nil
+        case .light: return "AppIcon-LightOnly"
+        case .dark: return "AppIcon-DarkOnly"
+        }
+    }
+
+    static let userDefaultsKey = "appIconChoice"
+
+    static var current: AppIconChoice {
+        guard let raw = UserDefaults.standard.string(forKey: userDefaultsKey),
+              let choice = AppIconChoice(rawValue: raw) else { return .auto }
+        return choice
+    }
+}
+
 struct PreferencesView: View {
     @EnvironmentObject var boxModel: BoxJsViewModel
     @EnvironmentObject var toastManager: ToastManager
+    @AppStorage(IconAppearance.userDefaultsKey) private var iconAppearanceRaw: String = IconAppearance.auto.rawValue
+    @AppStorage(AppIconChoice.userDefaultsKey) private var appIconChoiceRaw: String = AppIconChoice.auto.rawValue
 
     var usercfgs: UserConfig? { boxModel.boxData.usercfgs }
 
@@ -32,11 +101,38 @@ struct PreferencesView: View {
         return [cur] + items
     }
 
+    private var currentAppearance: IconAppearance {
+        IconAppearance(rawValue: iconAppearanceRaw) ?? .auto
+    }
+
     var body: some View {
         Form {
             Section(header: Text("通知")) {
                 Toggle("勿扰模式", isOn: prefBoolBinding(\.isMute))
                 Toggle("不显示查询警告", isOn: prefBoolBinding(\.isMuteQueryAlert))
+            }
+
+            Section(header: Text("外观")) {
+                NavigationLink {
+                    AppIconPickerView()
+                } label: {
+                    HStack {
+                        Text("应用图标")
+                        Spacer()
+                        Text((AppIconChoice(rawValue: appIconChoiceRaw) ?? .auto).displayName)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                NavigationLink {
+                    IconAppearancePickerView()
+                } label: {
+                    HStack {
+                        Text("图标风格")
+                        Spacer()
+                        Text(currentAppearance.displayName)
+                            .foregroundColor(.secondary)
+                    }
+                }
             }
 
             if isSurgeEnv {
@@ -69,11 +165,11 @@ struct PreferencesView: View {
                         Text("Surge http-api 地址，用于脚本与 Surge 交互。")
                     }
                 }
+                .simultaneousGesture(TapGesture().onEnded {
+                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                })
             }
         }
-        .simultaneousGesture(TapGesture().onEnded {
-            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-        })
         .navigationTitle("偏好设置")
         .navigationBarTitleDisplayMode(.inline)
         .onDisappear {
@@ -117,5 +213,92 @@ struct PreferencesView: View {
             \UserConfig.httpapi: "usercfgs.httpapi",
         ]
         return map[keyPath] ?? "usercfgs.unknown"
+    }
+}
+
+// MARK: - App Icon Picker
+
+struct AppIconPickerView: View {
+    @Environment(\.presentationMode) private var presentationMode
+    @AppStorage(AppIconChoice.userDefaultsKey) private var selectedRaw: String = AppIconChoice.auto.rawValue
+
+    private var selected: AppIconChoice {
+        AppIconChoice(rawValue: selectedRaw) ?? .auto
+    }
+
+    private let iconSize: CGFloat = 62
+    private var cornerRadius: CGFloat { iconSize * 0.2237 }
+
+    var body: some View {
+        Form {
+            Section {
+                ForEach(AppIconChoice.allCases, id: \.self) { choice in
+                    Button {
+                        selectedRaw = choice.rawValue
+                        UIApplication.shared.setAlternateIconName(choice.alternateIconName)
+                        presentationMode.wrappedValue.dismiss()
+                    } label: {
+                        HStack(spacing: 14) {
+                            Image(choice.previewImageName)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: iconSize, height: iconSize)
+                                .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+
+                            Text(choice.displayName)
+                                .foregroundColor(.primary)
+
+                            Spacer()
+
+                            if selected == choice {
+                                Image(systemName: "checkmark")
+                                    .font(.body.weight(.semibold))
+                                    .foregroundColor(.accentColor)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
+                }
+            }
+        }
+        .navigationTitle("应用图标")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - Icon Appearance Picker
+
+struct IconAppearancePickerView: View {
+    @Environment(\.presentationMode) private var presentationMode
+    @AppStorage(IconAppearance.userDefaultsKey) private var iconAppearanceRaw: String = IconAppearance.auto.rawValue
+
+    private var selected: IconAppearance {
+        IconAppearance(rawValue: iconAppearanceRaw) ?? .auto
+    }
+
+    var body: some View {
+        Form {
+            Section {
+                ForEach(IconAppearance.allCases, id: \.self) { style in
+                    Button {
+                        iconAppearanceRaw = style.rawValue
+                        presentationMode.wrappedValue.dismiss()
+                    } label: {
+                        HStack {
+                            Text(style.displayName)
+                                .foregroundColor(.primary)
+                            Spacer()
+                            if selected == style {
+                                Image(systemName: "checkmark")
+                                    .font(.body.weight(.semibold))
+                                    .foregroundColor(.accentColor)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        .navigationTitle("图标")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
