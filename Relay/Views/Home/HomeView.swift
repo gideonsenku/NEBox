@@ -13,10 +13,23 @@ private func fallbackIconURL(for envId: String) -> String {
     return "https://raw.githubusercontent.com/Orz-3/mini/master/Color/\(key).png"
 }
 
-/// Best icon URL for a SysEnv: prefer Color icon (index 1), then first, then fallback
-private func iconURL(for env: SysEnv) -> String {
+/// URL scheme to open the corresponding proxy app
+private func appURLScheme(for envId: String) -> String? {
+    switch envId.lowercased().replacingOccurrences(of: " ", with: "") {
+    case "loon":          return "loon://"
+    case "surge":         return "surge://"
+    case "shadowrocket":  return "shadowrocket://"
+    case "quantumultx", "quanx":   return "quantumult-x://"
+    case "stash":         return "stash://"
+    default:              return nil
+    }
+}
+
+/// Icon URL for a SysEnv based on color scheme: icons[0] = dark, icons[1] = light
+private func iconURL(for env: SysEnv, isDark: Bool) -> String {
     if let icons = env.icons {
-        if icons.count > 1, !icons[1].isEmpty { return icons[1] }
+        let index = isDark ? 0 : 1
+        if index < icons.count, !icons[index].isEmpty { return icons[index] }
         if let first = icons.first, !first.isEmpty { return first }
     }
     return fallbackIconURL(for: env.id)
@@ -26,6 +39,7 @@ private func iconURL(for env: SysEnv) -> String {
 
 struct HomeView: View {
     @EnvironmentObject var boxModel: BoxJsViewModel
+    @Environment(\.colorScheme) private var colorScheme
     var onSearch: () -> Void
 
     @State var items: [AppModel] = []
@@ -85,10 +99,15 @@ struct HomeView: View {
 
     private var navBar: some View {
         HStack(spacing: 0) {
-            // Left: current tool indicator (read-only)
-            toolAvatarView
-                .frame(width: 36, height: 36)
-                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            // Left: current tool indicator, tap to open the app
+            Button {
+                openProxyApp()
+            } label: {
+                toolAvatarView
+                    .frame(width: 36, height: 36)
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            }
+            .buttonStyle(.plain)
 
             Spacer()
 
@@ -121,7 +140,7 @@ struct HomeView: View {
         if let envId = activeEnv, !envId.isEmpty {
             let urlString: String = {
                 if let sysEnv = availableEnvs.first(where: { $0.id == envId }) {
-                    return iconURL(for: sysEnv)
+                    return iconURL(for: sysEnv, isDark: colorScheme == .dark)
                 }
                 return fallbackIconURL(for: envId)
             }()
@@ -141,6 +160,15 @@ struct HomeView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color.gradientTop)
         }
+    }
+
+    // MARK: - Actions
+
+    private func openProxyApp() {
+        guard let envId = activeEnv,
+              let scheme = appURLScheme(for: envId),
+              let url = URL(string: scheme) else { return }
+        UIApplication.shared.open(url)
     }
 
     // MARK: - Empty State
