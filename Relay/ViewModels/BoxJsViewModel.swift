@@ -240,10 +240,13 @@ class BoxJsViewModel: ObservableObject {
 
     // MARK: - 全局备份
 
-    func saveGlobalBak() async {
-        let name = "全局备份 \((boxData.globalbaks?.count ?? 0) + 1)"
+    func saveGlobalBak(name: String? = nil) async {
+        let bakName = name ?? "全局备份 \((boxData.globalbaks?.count ?? 0) + 1)"
+        let env = boxData.syscfgs?.env ?? ""
+        let version = boxData.syscfgs?.version ?? ""
+        let versionType = boxData.syscfgs?.versionType ?? ""
         await perform("保存备份") {
-            try await ApiRequest.saveGlobalBak(name: name, env: "", version: "", versionType: "")
+            try await ApiRequest.saveGlobalBak(name: bakName, env: env, version: version, versionType: versionType)
         }
     }
 

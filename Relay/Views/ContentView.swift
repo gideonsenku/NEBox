@@ -172,9 +172,17 @@ struct ContentView: View {
             }
         }
         .onChange(of: scenePhase) { phase in
-            guard phase != .active else { return }
-            Task {
-                await boxModel.flushPendingDataUpdates()
+            switch phase {
+            case .active:
+                if apiManager.isApiUrlSet() {
+                    boxModel.fetchData()
+                }
+            case .inactive, .background:
+                Task {
+                    await boxModel.flushPendingDataUpdates()
+                }
+            @unknown default:
+                break
             }
         }
         .onPreferenceChange(NEBoxHideTabBarPreferenceKey.self) { shouldHide in

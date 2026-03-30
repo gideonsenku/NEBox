@@ -195,7 +195,7 @@ private struct BackupHeroArea: View {
                 Circle()
                     .fill(Color.accentBlueLight)
                     .frame(width: 72, height: 72)
-                Image(systemName: "archivebox.fill")
+                Image(systemName: "icloud.fill")
                     .font(.system(size: 36))
                     .foregroundColor(.accent)
             }

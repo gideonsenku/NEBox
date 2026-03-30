@@ -23,6 +23,8 @@ struct ProfileView: View {
     @State private var showImportFilePickerBak = false
     @State private var editName = ""
     @State private var editIcon = ""
+    @State private var showCreateBak = false
+    @State private var newBakName = ""
 
     var body: some View {
         neboxNavigationContainer {
@@ -55,7 +57,7 @@ struct ProfileView: View {
                         ProfileBackupSection(
                             backups: boxModel.boxData.globalbaks,
                             onImport: { showImportBak = true },
-                            onCreate: createBackup,
+                            onCreate: presentCreateBackup,
                             formatTime: formatBackupTime
                         )
 
@@ -95,6 +97,13 @@ struct ProfileView: View {
             .sheet(isPresented: $showApiSettings) {
                 ApiSettingsView()
             }
+            .alert("创建备份", isPresented: $showCreateBak) {
+                TextField("备份名称", text: $newBakName)
+                Button("取消", role: .cancel) { newBakName = "" }
+                Button("创建") { createBackup() }
+            } message: {
+                Text("请输入备份名称")
+            }
         }
         .neboxLiquidGlassTabBarChrome()
     }
@@ -120,9 +129,16 @@ private extension ProfileView {
         }
     }
 
+    func presentCreateBackup() {
+        newBakName = "全局备份 \((boxModel.boxData.globalbaks?.count ?? 0) + 1)"
+        showCreateBak = true
+    }
+
     func createBackup() {
+        let name = newBakName.trimmingCharacters(in: .whitespacesAndNewlines)
+        newBakName = ""
         Task {
-            await boxModel.saveGlobalBak()
+            await boxModel.saveGlobalBak(name: name.isEmpty ? nil : name)
         }
     }
 
@@ -382,7 +398,7 @@ private struct ProfileOtherSection: View {
                 Divider().padding(.leading, 52)
 
                 Link(destination: URL(string: "https://ifdian.net/a/gidoensenku")!) {
-                    ActionRow(icon: "heart.fill", title: "赞助开发者", subtitle: "请开发者喝杯咖啡")
+                    ActionRow(icon: "heart.fill", title: "赞助开发者", subtitle: "请开发者喝杯咖啡", iconColor: .red)
                 }
             }
             .background(Color.bgCard)
@@ -397,6 +413,7 @@ private struct ActionRow: View {
     let icon: String
     let title: String
     let subtitle: String
+    var iconColor: Color = .accent
 
     var body: some View {
         HStack(spacing: 12) {
@@ -406,7 +423,7 @@ private struct ActionRow: View {
                     .frame(width: 36, height: 36)
                 Image(systemName: icon)
                     .font(.system(size: 14))
-                    .foregroundColor(.accent)
+                    .foregroundColor(iconColor)
             }
 
             VStack(alignment: .leading, spacing: 2) {
@@ -517,7 +534,7 @@ private struct BackupRow: View {
                 RoundedRectangle(cornerRadius: 8, style: .continuous)
                     .fill(Color.accentBlueLight)
                     .frame(width: 36, height: 36)
-                Image(systemName: "externaldrive.fill")
+                Image(systemName: "icloud.fill")
                     .font(.system(size: 14))
                     .foregroundColor(Color.accentBlue)
             }
