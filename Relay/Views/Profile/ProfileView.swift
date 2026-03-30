@@ -29,6 +29,9 @@ struct ProfileView: View {
     @State private var showDeleteBakConfirm = false
     @State private var deletingBakId = ""
     @State private var deletingBakName = ""
+    @State private var backupOpenRowId: String?
+    @State private var navBarProgress: CGFloat = 0
+    @State private var navBarBottomY: CGFloat?
 
     var body: some View {
         neboxNavigationContainer {
@@ -47,7 +50,22 @@ struct ProfileView: View {
                         ProfileHeaderCard(
                             usercfgs: boxModel.boxData.usercfgs,
                             apiUrl: apiManager.apiUrl,
-                            onEdit: presentEditProfile
+                            onEdit: presentEditProfile,
+                            scrollProgress: navBarProgress
+                        )
+                        .background(
+                            GeometryReader { geo in
+                                let minY = geo.frame(in: .global).minY
+                                Color.clear
+                                    .onChange(of: minY) { newMinY in
+                                        guard let navBottom = navBarBottomY else { return }
+                                        let distance = newMinY - navBottom
+                                        // distance > 0 → card is below nav bar → progress = 0
+                                        // distance == 0 → card just reached nav bar bottom → progress starts
+                                        // distance == -56 → card fully behind 56pt nav bar → progress = 1
+                                        navBarProgress = max(0, min(1, -distance / 56))
+                                    }
+                            }
                         )
 
                         ProfileStatsRow(
@@ -65,7 +83,8 @@ struct ProfileView: View {
                             onRevert: revertBackup,
                             onExport: exportBackup,
                             onDelete: confirmDeleteBackup,
-                            formatTime: formatBackupTime
+                            formatTime: formatBackupTime,
+                            openRowId: $backupOpenRowId
                         )
 
                         ProfileOtherSection()
@@ -76,10 +95,40 @@ struct ProfileView: View {
                     }
                     .padding(.horizontal, 20)
                 }
+                .simultaneousGesture(
+                    TapGesture().onEnded {
+                        if backupOpenRowId != nil {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                backupOpenRowId = nil
+                            }
+                        }
+                    }
+                )
+                .simultaneousGesture(
+                    DragGesture(minimumDistance: 5).onChanged { _ in
+                        if backupOpenRowId != nil {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                backupOpenRowId = nil
+                            }
+                        }
+                    }
+                )
 
                 VStack {
-                    ProfileNavBar(onSettings: { showApiSettings = true })
-                        .background(Color.gradientTop.ignoresSafeArea())
+                    ProfileNavBar(
+                        usercfgs: boxModel.boxData.usercfgs,
+                        progress: navBarProgress,
+                        onSettings: { showApiSettings = true }
+                    )
+                    .background(Color.gradientTop.ignoresSafeArea())
+                    .overlay(
+                        GeometryReader { geo in
+                            let bottomY = geo.frame(in: .global).maxY
+                            Color.clear
+                                .onAppear { navBarBottomY = bottomY }
+                                .onChange(of: bottomY) { navBarBottomY = $0 }
+                        }
+                    )
                     Spacer()
                 }
             }
@@ -261,23 +310,25 @@ private extension ProfileView {
 // MARK: - Profile Nav Bar
 
 private struct ProfileNavBar: View {
+    let usercfgs: UserConfig?
+    let progress: CGFloat
     let onSettings: () -> Void
 
     var body: some View {
         HStack(spacing: 0) {
-            HStack(spacing: 8) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(Color.bgMuted)
-                        .frame(width: 36, height: 36)
-                    Image(systemName: "person.fill")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(.accent)
-                }
-                Text("我的")
+            HStack(spacing: 10) {
+                navAvatarView
+                    .frame(width: 32, height: 32)
+                    .clipShape(Circle())
+
+                Text(usercfgs?.name ?? "大侠, 请留名!")
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(.textPrimary)
+                    .lineLimit(1)
             }
+            .offset(y: (1 - progress) * 16)
+            .opacity(Double(progress))
+            .scaleEffect(0.85 + 0.15 * progress, anchor: .leading)
 
             Spacer()
 
@@ -290,6 +341,30 @@ private struct ProfileNavBar: View {
         .frame(height: 56)
         .padding(.horizontal, 20)
     }
+
+    @ViewBuilder
+    private var navAvatarView: some View {
+        if let iconUrl = usercfgs?.icon,
+           !iconUrl.isEmpty,
+           let url = URL(string: iconUrl) {
+            WebImage(url: url)
+                .resizable()
+                .scaledToFill()
+                .frame(width: 32, height: 32)
+        } else {
+            ZStack {
+                Circle()
+                    .fill(LinearGradient(
+                        colors: [.accentBlue, .accentBlueDark],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ))
+                Image(systemName: "person.fill")
+                    .font(.system(size: 14))
+                    .foregroundColor(.white)
+            }
+        }
+    }
 }
 
 // MARK: - Profile Header Card
@@ -298,15 +373,19 @@ private struct ProfileHeaderCard: View {
     let usercfgs: UserConfig?
     let apiUrl: String?
     let onEdit: () -> Void
+    var scrollProgress: CGFloat = 0
 
     var body: some View {
         HStack(spacing: 16) {
             avatarView
+                .scaleEffect(1 - 0.15 * scrollProgress)
+                .opacity(1 - Double(scrollProgress) * 0.6)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(usercfgs?.name ?? "大侠, 请留名!")
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundColor(.textPrimary)
+                    .opacity(1 - Double(scrollProgress) * 0.6)
 
                 HStack(spacing: 4) {
                     Image(systemName: "link")
@@ -540,7 +619,7 @@ private struct ProfileBackupSection: View {
     let onDelete: (String) -> Void
     let formatTime: (String) -> String
 
-    @State private var openRowId: String?
+    @Binding var openRowId: String?
     @State private var selectedBackup: GlobalBackup?
     @State private var navigateToDetail = false
 
@@ -621,6 +700,11 @@ private struct ProfileBackupSection: View {
                 )
                 .background(Color.bgCard)
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .onChange(of: navigateToDetail) { isNavigating in
+                    if isNavigating && openRowId != nil {
+                        openRowId = nil
+                    }
+                }
             } else {
                 HStack {
                     Spacer()

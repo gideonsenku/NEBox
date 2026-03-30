@@ -44,6 +44,11 @@ struct SwipeActionRow<Content: View>: View {
                     .onTapGesture {
                         if isOpen {
                             close()
+                        } else if openRowId != nil {
+                            // Another row is open — close it without triggering onTap
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                openRowId = nil
+                            }
                         } else if !didSwipe {
                             onTap()
                         }
@@ -98,6 +103,12 @@ struct SwipeActionRow<Content: View>: View {
             } else if !isOpen && offset != 0 {
                 offset = 0
             }
+        }
+        .onDisappear {
+            if openRowId == rowId {
+                openRowId = nil
+            }
+            offset = 0
         }
     }
 
