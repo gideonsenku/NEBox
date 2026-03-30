@@ -17,6 +17,9 @@ struct DataViewerView: View {
     @State private var isValEditable = true
     @State private var isQuerying = false
     @State private var isSaving = false
+    @State private var hasQueried = false
+    @FocusState private var isKeyFieldFocused: Bool
+    @FocusState private var isEditorFocused: Bool
 
     var viewkeys: [String] {
         Array(Set(boxModel.boxData.usercfgs?.viewkeys ?? [])).filter { !$0.isEmpty }
@@ -28,33 +31,201 @@ struct DataViewerView: View {
 
     var body: some View {
         ZStack {
-            Color(.systemGroupedBackground).ignoresSafeArea()
+            LinearGradient(
+                colors: Color.pageGradientColors,
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
+
             ScrollView {
                 VStack(spacing: 16) {
+                    queryCard
+
                     if !gistkeys.isEmpty {
-                        collapsibleChipSection(title: "非订阅数据", keys: gistkeys, removeType: "gist_cache_key")
+                        chipSection(title: "非订阅数据", icon: "externaldrive", keys: gistkeys, removeType: "gist_cache_key")
                     }
                     if !viewkeys.isEmpty {
-                        collapsibleChipSection(title: "近期查看", keys: viewkeys, removeType: "viewkeys")
+                        chipSection(title: "近期查看", icon: "clock", keys: viewkeys, removeType: "viewkeys")
                     }
-                    dataViewerCard
-                    dataEditorCard
+
+                    resultCard
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
             }
         }
         .simultaneousGesture(TapGesture().onEnded {
-            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+            isKeyFieldFocused = false
+            isEditorFocused = false
         })
         .navigationTitle("数据查看器")
         .navigationBarTitleDisplayMode(.inline)
     }
 
-    // MARK: - Collapsible Chip Section
+    // MARK: - Query Card
 
-    private func collapsibleChipSection(title: String, keys: [String], removeType: String) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+    private var queryCard: some View {
+        VStack(spacing: 12) {
+            HStack(spacing: 10) {
+                HStack(spacing: 8) {
+                    Image(systemName: "magnifyingglass")
+                        .font(.system(size: 14))
+                        .foregroundColor(.textTertiary)
+
+                    TextField("输入数据键, 如: boxjs_host", text: $queryKey)
+                        .font(.system(size: 15))
+                        .focused($isKeyFieldFocused)
+                        .submitLabel(.search)
+                        .onSubmit { queryData() }
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+                .background(Color.bgMuted)
+                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+
+                Button {
+                    queryData()
+                } label: {
+                    Group {
+                        if isQuerying {
+                            ProgressView()
+                                .tint(.white)
+                        } else {
+                            Image(systemName: "arrow.right")
+                                .font(.system(size: 14, weight: .semibold))
+                        }
+                    }
+                    .frame(width: 40, height: 40)
+                    .foregroundColor(.white)
+                    .background(queryKey.isEmpty ? Color.accent.opacity(0.4) : Color.accent)
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                }
+                .disabled(queryKey.isEmpty || isQuerying)
+            }
+
+            if !queryKey.isEmpty {
+                HStack(spacing: 12) {
+                    Button {
+                        copyToClipboard(text: queryKey)
+                        toastManager.showToast(message: "已复制 Key")
+                    } label: {
+                        Label("复制 Key", systemImage: "doc.on.doc")
+                            .font(.system(size: 12))
+                            .foregroundColor(.accent)
+                    }
+
+                    Spacer()
+
+                    Button {
+                        queryKey = ""
+                        queryVal = ""
+                        isValEditable = true
+                        hasQueried = false
+                    } label: {
+                        Label("清除", systemImage: "xmark.circle")
+                            .font(.system(size: 12))
+                            .foregroundColor(.textTertiary)
+                    }
+                }
+                .padding(.horizontal, 4)
+            }
+        }
+        .padding(16)
+        .background(Color.bgCard)
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .shadow(color: .black.opacity(0.05), radius: 8, y: 2)
+    }
+
+    // MARK: - Result Card
+
+    private var resultCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            if hasQueried {
+                HStack {
+                    HStack(spacing: 6) {
+                        Circle()
+                            .fill(isValEditable ? Color.accent : Color.accentCoral)
+                            .frame(width: 6, height: 6)
+                        Text(isValEditable ? "可编辑" : "只读")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(isValEditable ? .accent : .accentCoral)
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background((isValEditable ? Color.accent : Color.accentCoral).opacity(0.1))
+                    .clipShape(Capsule())
+
+                    Spacer()
+
+                    if !queryVal.isEmpty {
+                        Button {
+                            copyToClipboard(text: queryVal)
+                            toastManager.showToast(message: "已复制数据")
+                        } label: {
+                            Image(systemName: "doc.on.doc")
+                                .font(.system(size: 13))
+                                .foregroundColor(.accent)
+                        }
+                    }
+                }
+            }
+
+            ZStack(alignment: .topLeading) {
+                TextEditor(text: isValEditable ? $queryVal : .constant(queryVal))
+                    .font(.system(size: 13, design: .monospaced))
+                    .focused($isEditorFocused)
+                    .frame(minHeight: 120, maxHeight: 280)
+                    .modifier(HideScrollContentBackground())
+                    .padding(10)
+                    .background(Color.bgMuted)
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .disabled(!isValEditable)
+
+                if queryVal.isEmpty {
+                    Text("数据内容")
+                        .foregroundColor(.textTertiary)
+                        .font(.system(size: 13))
+                        .padding(.top, 18)
+                        .padding(.leading, 14)
+                        .allowsHitTesting(false)
+                }
+            }
+
+            if isValEditable && hasQueried {
+                Button {
+                    saveData()
+                } label: {
+                    HStack(spacing: 6) {
+                        if isSaving {
+                            ProgressView()
+                                .tint(.white)
+                        } else {
+                            Image(systemName: "square.and.arrow.down")
+                                .font(.system(size: 13, weight: .medium))
+                        }
+                        Text("保存修改")
+                            .font(.system(size: 14, weight: .semibold))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 44)
+                    .foregroundColor(.white)
+                    .background(queryKey.isEmpty ? Color.accent.opacity(0.4) : Color.accent)
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                }
+                .disabled(queryKey.isEmpty || isSaving)
+            }
+        }
+        .padding(16)
+        .background(Color.bgCard)
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .shadow(color: .black.opacity(0.05), radius: 8, y: 2)
+    }
+
+    // MARK: - Chip Section
+
+    private func chipSection(title: String, icon: String, keys: [String], removeType: String) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
             DisclosureGroup {
                 Group {
                     if #available(iOS 16.0, *) {
@@ -67,16 +238,29 @@ struct DataViewerView: View {
                         }
                     }
                 }
-                .padding(.top, 4)
+                .padding(.top, 6)
             } label: {
-                Text("\(title) (\(keys.count))")
-                    .font(.system(size: 14, weight: .medium))
+                HStack(spacing: 8) {
+                    Image(systemName: icon)
+                        .font(.system(size: 12))
+                        .foregroundColor(.accent)
+                    Text(title)
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(.textPrimary)
+                    Text("\(keys.count)")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(.textTertiary)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Color.bgMuted)
+                        .clipShape(Capsule())
+                }
             }
         }
-        .padding(12)
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.08), radius: 5, x: 0, y: 2)
+        .padding(16)
+        .background(Color.bgCard)
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .shadow(color: .black.opacity(0.05), radius: 8, y: 2)
     }
 
     @ViewBuilder
@@ -91,134 +275,12 @@ struct DataViewerView: View {
         }
     }
 
-    // MARK: - Data Viewer Card
-
-    private var dataViewerCard: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text("数据查看器")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(.secondary)
-                Spacer()
-                Button {
-                    copyToClipboard(text: queryKey)
-                    toastManager.showToast(message: "已复制 Key")
-                } label: {
-                    Text("复制")
-                        .font(.system(size: 12))
-                        .foregroundColor(.accentColor)
-                }
-            }
-
-            TextField("输入数据键, 如: boxjs_host", text: $queryKey)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .font(.system(size: 14))
-
-            Text("输入要查询的数据键")
-                .font(.system(size: 11))
-                .foregroundColor(.secondary)
-
-            Divider()
-
-            HStack {
-                Spacer()
-                Button {
-                    queryData()
-                } label: {
-                    if isQuerying {
-                        ProgressView()
-                            .frame(width: 16, height: 16)
-                    } else {
-                        Text("查询")
-                            .font(.system(size: 13))
-                            .foregroundColor(.accentColor)
-                    }
-                }
-                .disabled(queryKey.isEmpty || isQuerying)
-            }
-        }
-        .padding(12)
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.08), radius: 5, x: 0, y: 2)
-    }
-
-    // MARK: - Data Editor Card
-
-    private var dataEditorCard: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text("数据编辑器")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(.secondary)
-                Spacer()
-                Button {
-                    copyToClipboard(text: queryVal)
-                    toastManager.showToast(message: "已复制数据")
-                } label: {
-                    Text("复制")
-                        .font(.system(size: 12))
-                        .foregroundColor(.accentColor)
-                }
-            }
-
-            ZStack(alignment: .topLeading) {
-                TextEditor(text: isValEditable ? $queryVal : .constant(queryVal))
-                    .font(.system(size: 13))
-                    .frame(minHeight: 100)
-                    .padding(4)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color(.systemGray4), lineWidth: 1)
-                    )
-                    .disabled(!isValEditable)
-
-                if queryVal.isEmpty {
-                    Text("数据内容")
-                        .foregroundColor(.secondary)
-                        .font(.system(size: 13))
-                        .padding(.top, 12)
-                        .padding(.leading, 8)
-                        .allowsHitTesting(false)
-                }
-            }
-
-            if !isValEditable {
-                Text("该数据不可编辑")
-                    .font(.system(size: 11))
-                    .foregroundColor(.secondary)
-            }
-
-            Divider()
-
-            HStack {
-                Spacer()
-                Button {
-                    saveData()
-                } label: {
-                    if isSaving {
-                        ProgressView()
-                            .frame(width: 16, height: 16)
-                    } else {
-                        Text("保存")
-                            .font(.system(size: 13))
-                            .foregroundColor(isValEditable ? .accentColor : .secondary)
-                    }
-                }
-                .disabled(!isValEditable || queryKey.isEmpty || isSaving)
-            }
-        }
-        .padding(12)
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.08), radius: 5, x: 0, y: 2)
-    }
-
     // MARK: - Actions
 
     private func queryData() {
         guard !queryKey.isEmpty else { return }
         isQuerying = true
+        isKeyFieldFocused = false
         Task {
             do {
                 let resp: DataQueryResp = try await NetworkProvider.request(.queryData(key: queryKey))
@@ -242,6 +304,7 @@ struct DataViewerView: View {
                         queryVal = ""
                         isValEditable = true
                     }
+                    hasQueried = true
                     isQuerying = false
                 }
             } catch {
@@ -305,6 +368,7 @@ struct ChipView: View {
         HStack(spacing: 4) {
             Text(label)
                 .font(.system(size: 12))
+                .foregroundColor(.textPrimary)
                 .lineLimit(1)
                 .onTapGesture { onTap() }
 
@@ -313,13 +377,13 @@ struct ChipView: View {
             } label: {
                 Image(systemName: "xmark.circle.fill")
                     .font(.system(size: 10))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.textInactive)
             }
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .background(Color(.systemGray5))
-        .cornerRadius(12)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(Color.bgMuted)
+        .clipShape(Capsule())
     }
 }
 

@@ -106,7 +106,7 @@ struct HTMLWebView: UIViewRepresentable {
 
 // MARK: - iOS 15 Compatibility
 
-private struct HideScrollContentBackground: ViewModifier {
+struct HideScrollContentBackground: ViewModifier {
     func body(content: Content) -> some View {
         if #available(iOS 16.0, *) {
             content.scrollContentBackground(.hidden)
@@ -544,6 +544,7 @@ struct AppDetailView: View {
     @State private var cachedAppDataInfo = AppDataInfo(datas: [], sessions: [], curSession: nil)
     @State private var isSavingSettings = false
     @State private var isRunningScript = false
+    @State private var keyboardHeight: CGFloat = 0
 
     var body: some View {
         if let app = app {
@@ -616,6 +617,15 @@ struct AppDetailView: View {
             }
             .safeAreaInset(edge: .bottom) {
                 appBottomActionBar(app: app)
+                    .offset(y: keyboardHeight)
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { notification in
+                if let frame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
+                    keyboardHeight = frame.height
+                }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+                keyboardHeight = 0
             }
             .neboxHideTabBar()
             .sheet(isPresented: $showImportSession) {
