@@ -66,8 +66,38 @@ struct RelayApp: App {
                     }
                 }
                 .onOpenURL { url in
-                    handleIncomingFile(url: url)
+                    if url.scheme == "relay" {
+                        handleDeepLink(url: url)
+                    } else {
+                        handleIncomingFile(url: url)
+                    }
                 }
+        }
+    }
+
+    private func handleDeepLink(url: URL) {
+        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+              let host = components.host else { return }
+
+        switch host {
+        case "import":
+            guard let subURL = components.queryItems?.first(where: { $0.name == "url" })?.value,
+                  !subURL.isEmpty else {
+                toastManager.showToast(message: "缺少订阅地址")
+                return
+            }
+            guard apiManager.isApiUrlSet() else {
+                toastManager.showToast(message: "请先配置 API 地址")
+                return
+            }
+            boxModel.pendingDeepLinkTab = 1
+            toastManager.showLoading(message: "正在添加订阅…")
+            Task {
+                await boxModel.addAppSub(url: subURL)
+                toastManager.hideLoading()
+            }
+        default:
+            break
         }
     }
 

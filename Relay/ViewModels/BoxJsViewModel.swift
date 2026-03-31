@@ -20,6 +20,9 @@ class BoxJsViewModel: ObservableObject {
     @Published private(set) var cachedApps: [AppModel] = []
     @Published private(set) var favApps: [AppModel] = []
 
+    /// Set by deep link handler to request a tab switch; ContentView consumes and resets to nil.
+    @Published var pendingDeepLinkTab: Int?
+
     private func rebuildDerivedData() {
         cachedAppSubSummaries = boxData.displayAppSubSummaries
         cachedApps = boxData.apps

@@ -171,6 +171,10 @@ struct ContentView: View {
                 await boxModel.flushPendingDataUpdates()
             }
         }
+        .onReceive(boxModel.$pendingDeepLinkTab.compactMap { $0 }) { tab in
+            selectedTab = tab
+            boxModel.pendingDeepLinkTab = nil
+        }
         .onChange(of: scenePhase) { phase in
             switch phase {
             case .active:
