@@ -107,6 +107,11 @@ struct WelcomeSetupView: View {
                 .font(.system(size: 12))
                 .foregroundColor(Color(.tertiaryLabel))
 
+            Spacer().frame(height: 20)
+
+            BoxJSInstallGuideView()
+                .padding(.horizontal, 24)
+
             Spacer()
         }
         .simultaneousGesture(TapGesture().onEnded {
