@@ -12,6 +12,7 @@ struct WelcomeSetupView: View {
     var onConnect: () -> Void
 
     @FocusState private var isFocused: Bool
+    @State private var showDisclaimer = false
 
     private var inputIsEmpty: Bool {
         apiUrlInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -113,11 +114,36 @@ struct WelcomeSetupView: View {
                 .padding(.horizontal, 24)
 
             Spacer()
+
+            Button {
+                showDisclaimer = true
+            } label: {
+                Text("免责声明")
+                    .font(.system(size: 12))
+                    .foregroundColor(Color(.tertiaryLabel))
+                    .underline()
+            }
+            .padding(.bottom, 16)
+            .sheet(isPresented: $showDisclaimer) {
+                NavigationView {
+                    DisclaimerView()
+                        .toolbar {
+                            ToolbarItem(placement: .navigationBarTrailing) {
+                                Button("完成") { showDisclaimer = false }
+                                    .font(.system(size: 15, weight: .medium))
+                            }
+                        }
+                }
+            }
         }
-        .simultaneousGesture(TapGesture().onEnded {
-            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-        })
-        .background(Color(.systemGroupedBackground).ignoresSafeArea())
+        .background(
+            Color(.systemGroupedBackground)
+                .ignoresSafeArea()
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    isFocused = false
+                }
+        )
     }
 }
 

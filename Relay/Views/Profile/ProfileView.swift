@@ -559,6 +559,11 @@ private struct ProfileOtherSection: View {
                 }
                 Divider().padding(.leading, 52)
 
+                NavigationLink(destination: DisclaimerView()) {
+                    ActionRow(icon: "exclamationmark.triangle.fill", title: "免责声明", subtitle: "使用条款与责任说明", iconColor: .yellow)
+                }
+                Divider().padding(.leading, 52)
+
                 NavigationLink(destination: AcknowledgementsView()) {
                     ActionRow(icon: "hands.clap", title: "致谢", subtitle: "感谢所有贡献者", iconColor: .pink)
                 }
@@ -920,6 +925,7 @@ struct ApiSettingsView: View {
 
     @State private var apiUrlInput: String = ""
     @State private var showResetConfirm = false
+    @FocusState private var isUrlFieldFocused: Bool
 
     var body: some View {
         neboxNavigationContainer {
@@ -929,6 +935,7 @@ struct ApiSettingsView: View {
                         Image(systemName: "link")
                             .foregroundColor(.secondary)
                         TextField(ApiManager.defaultAPIURL, text: $apiUrlInput)
+                            .focused($isUrlFieldFocused)
                             .autocorrectionDisabled()
                             .textInputAutocapitalization(.never)
                             .onSubmit { saveAndDismiss() }
@@ -937,6 +944,7 @@ struct ApiSettingsView: View {
 
                 Section {
                     Button(role: .destructive) {
+                        dismissKeyboard()
                         showResetConfirm = true
                     } label: {
                         HStack {
@@ -949,9 +957,6 @@ struct ApiSettingsView: View {
                     Text("重置后将返回初始配置页")
                 }
             }
-            .simultaneousGesture(TapGesture().onEnded {
-                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-            })
             .navigationTitle("API 设置")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -980,6 +985,7 @@ struct ApiSettingsView: View {
     }
 
     private func saveAndDismiss() {
+        dismissKeyboard()
         let trimmed = apiUrlInput.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
         appLog(.info, category: .ui, "[ApiSettings] save host: \(trimmed)")
@@ -987,5 +993,9 @@ struct ApiSettingsView: View {
         boxModel.fetchData()
         toastManager.showToast(message: "API 地址已保存")
         dismiss()
+    }
+
+    private func dismissKeyboard() {
+        isUrlFieldFocused = false
     }
 }

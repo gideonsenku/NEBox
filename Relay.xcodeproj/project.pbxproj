@@ -48,6 +48,7 @@
 		F10000030000000000000001 /* BackupDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000030000000000000002 /* BackupDetailView.swift */; };
 		F10000040000000000000001 /* VersionHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000040000000000000002 /* VersionHistoryView.swift */; };
 		F10000050000000000000001 /* AcknowledgementsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000050000000000000002 /* AcknowledgementsView.swift */; };
+		F10000060000000000000001 /* DisclaimerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000060000000000000002 /* DisclaimerView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -89,6 +90,7 @@
 		F10000030000000000000002 /* BackupDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupDetailView.swift; sourceTree = "<group>"; };
 		F10000040000000000000002 /* VersionHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VersionHistoryView.swift; sourceTree = "<group>"; };
 		F10000050000000000000002 /* AcknowledgementsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AcknowledgementsView.swift; sourceTree = "<group>"; };
+		F10000060000000000000002 /* DisclaimerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisclaimerView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -244,6 +246,7 @@
 				F10000030000000000000002 /* BackupDetailView.swift */,
 				F10000040000000000000002 /* VersionHistoryView.swift */,
 				F10000050000000000000002 /* AcknowledgementsView.swift */,
+				F10000060000000000000002 /* DisclaimerView.swift */,
 			);
 			path = Profile;
 			sourceTree = "<group>";
@@ -387,6 +390,7 @@
 				F10000030000000000000001 /* BackupDetailView.swift in Sources */,
 				F10000040000000000000001 /* VersionHistoryView.swift in Sources */,
 				F10000050000000000000001 /* AcknowledgementsView.swift in Sources */,
+				F10000060000000000000001 /* DisclaimerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -521,7 +525,7 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_ASSET_PATHS = "\"Relay/Preview Content\"";
 				DEVELOPMENT_TEAM = M3BZ2W43WM;
 				ENABLE_PREVIEWS = YES;
@@ -562,7 +566,7 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_ASSET_PATHS = "\"Relay/Preview Content\"";
 				DEVELOPMENT_TEAM = M3BZ2W43WM;
 				ENABLE_PREVIEWS = YES;

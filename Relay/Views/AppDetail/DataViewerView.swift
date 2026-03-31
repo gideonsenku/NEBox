@@ -137,10 +137,10 @@ struct DataViewerView: View {
                 .padding(.vertical, 12)
             }
         }
-        .simultaneousGesture(TapGesture().onEnded {
+        .onTapGesture {
             isKeyFieldFocused = false
             isEditorFocused = false
-        })
+        }
         .navigationTitle("数据查看器")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {

@@ -28,7 +28,8 @@ struct BoxJSInstallGuideView: View {
                         .rotationEffect(.degrees(isExpanded ? 90 : 0))
                 }
                 .foregroundColor(.secondary)
-                .padding(.vertical, 8)
+                .padding(.vertical, 12)
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 
