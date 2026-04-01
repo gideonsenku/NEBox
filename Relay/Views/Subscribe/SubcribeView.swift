@@ -74,6 +74,8 @@ struct SubcribeView: View {
                 }
             }
             Button("取消", role: .cancel) {}
+        } message: {
+            Text("请输入订阅链接地址")
         }
         .onReceive(boxModel.$cachedAppSubSummaries) { summaries in
             if !isDragging {
