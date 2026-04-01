@@ -280,6 +280,7 @@ struct ContentView: View {
                         .kerning(0.5)
                 }
                 .frame(maxWidth: .infinity)
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 
@@ -294,6 +295,7 @@ struct ContentView: View {
                         .kerning(0.5)
                 }
                 .frame(maxWidth: .infinity)
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 
@@ -308,6 +310,7 @@ struct ContentView: View {
                         .kerning(0.5)
                 }
                 .frame(maxWidth: .infinity)
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
         }

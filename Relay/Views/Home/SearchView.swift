@@ -85,6 +85,8 @@ struct SearchView: View {
                                 } label: {
                                     Image(systemName: app.isFav == true ? "star.fill" : "star")
                                         .foregroundColor(app.isFav == true ? .accentColor : .gray)
+                                        .frame(width: 36, height: 36)
+                                        .contentShape(Rectangle())
                                 }
                                 .buttonStyle(.plain)
                             }

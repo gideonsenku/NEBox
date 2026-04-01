@@ -275,6 +275,7 @@ struct DataViewerView: View {
                         selectKey(item.key)
                     } label: {
                         DataKeyRow(item: item, isSelected: selectedKey == item.key)
+                            .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
 

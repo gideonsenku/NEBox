@@ -320,6 +320,8 @@ struct AppScriptsView: View {
                             Image(systemName: "play.circle.fill")
                                 .font(.system(size: 22))
                                 .foregroundColor(.accentColor)
+                                .frame(width: 36, height: 36)
+                                .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
                     }
@@ -773,6 +775,7 @@ struct AppDetailView: View {
                         .padding(.horizontal, 12)
                         .padding(.vertical, 5)
                         .background(Color.accentColor.opacity(0.12), in: Capsule())
+                        .contentShape(Capsule())
                 }
                 .buttonStyle(.plain)
                 .foregroundColor(.accentColor)
@@ -785,6 +788,7 @@ struct AppDetailView: View {
                         .padding(.horizontal, 12)
                         .padding(.vertical, 5)
                         .background(Color(.tertiarySystemFill), in: Capsule())
+                        .contentShape(Capsule())
                 }
                 .buttonStyle(.plain)
                 .foregroundColor(.primary)
@@ -945,6 +949,7 @@ struct AppDetailView: View {
                     .font(.system(size: 15, weight: .semibold))
                     .frame(maxWidth: .infinity)
                     .frame(height: 48)
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .foregroundColor(hasRun ? .textPrimary : .white)
@@ -981,6 +986,7 @@ struct AppDetailView: View {
                         .font(.system(size: 15, weight: .semibold))
                         .frame(maxWidth: .infinity)
                         .frame(height: 48)
+                        .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                     .foregroundColor(.white)

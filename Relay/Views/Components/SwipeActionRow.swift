@@ -72,6 +72,7 @@ struct SwipeActionRow<Content: View>: View {
                         .foregroundColor(.white)
                         .frame(width: buttonWidth)
                         .frame(maxHeight: .infinity)
+                        .contentShape(Rectangle())
                         .background(actions[index].color)
                     }
                     .buttonStyle(.plain)

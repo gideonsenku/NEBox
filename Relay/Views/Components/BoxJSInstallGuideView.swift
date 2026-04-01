@@ -55,6 +55,7 @@ struct BoxJSInstallGuideView: View {
                                     .background(Color(.tertiarySystemFill))
                                     .cornerRadius(8)
                                     .foregroundColor(.primary)
+                                    .contentShape(Rectangle())
                             }
                             .buttonStyle(.plain)
                         }
@@ -75,6 +76,7 @@ struct BoxJSInstallGuideView: View {
                             .background(Color(.tertiarySystemFill))
                             .cornerRadius(8)
                             .foregroundColor(.secondary)
+                            .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
                     }

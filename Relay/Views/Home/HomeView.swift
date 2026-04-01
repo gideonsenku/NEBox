@@ -106,6 +106,7 @@ struct HomeView: View {
                 toolAvatarView
                     .frame(width: 36, height: 36)
                     .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 
