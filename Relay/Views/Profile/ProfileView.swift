@@ -9,6 +9,7 @@ import SwiftUI
 import SDWebImageSwiftUI
 import UniformTypeIdentifiers
 import AnyCodable
+import PhotosUI
 
 // MARK: - Profile Main View
 
@@ -32,6 +33,7 @@ struct ProfileView: View {
     @State private var backupOpenRowId: String?
     @State private var navBarProgress: CGFloat = 0
     @State private var navBarBottomY: CGFloat?
+    @State private var localAvatar: UIImage? = AvatarStorage.load()
 
     var body: some View {
         neboxNavigationContainer {
@@ -50,6 +52,7 @@ struct ProfileView: View {
                         ProfileHeaderCard(
                             usercfgs: boxModel.boxData.usercfgs,
                             apiUrl: apiManager.apiUrl,
+                            localAvatar: localAvatar,
                             onEdit: presentEditProfile,
                             scrollProgress: navBarProgress
                         )
@@ -117,6 +120,7 @@ struct ProfileView: View {
                 VStack {
                     ProfileNavBar(
                         usercfgs: boxModel.boxData.usercfgs,
+                        localAvatar: localAvatar,
                         progress: navBarProgress,
                         onSettings: { showApiSettings = true }
                     )
@@ -137,8 +141,18 @@ struct ProfileView: View {
                 EditProfileSheet(
                     name: $editName,
                     icon: $editIcon,
+                    localAvatar: localAvatar,
                     onSave: saveProfile,
-                    onCancel: { showEditProfile = false }
+                    onCancel: { showEditProfile = false },
+                    onAvatarPicked: { image in
+                        if AvatarStorage.save(image) {
+                            localAvatar = image
+                        }
+                    },
+                    onAvatarRemoved: {
+                        AvatarStorage.delete()
+                        localAvatar = nil
+                    }
                 )
             }
             .sheet(isPresented: $showImportBak) {
@@ -311,6 +325,7 @@ private extension ProfileView {
 
 private struct ProfileNavBar: View {
     let usercfgs: UserConfig?
+    var localAvatar: UIImage?
     let progress: CGFloat
     let onSettings: () -> Void
 
@@ -344,7 +359,12 @@ private struct ProfileNavBar: View {
 
     @ViewBuilder
     private var navAvatarView: some View {
-        if let iconUrl = usercfgs?.icon,
+        if let avatar = localAvatar {
+            Image(uiImage: avatar)
+                .resizable()
+                .scaledToFill()
+                .frame(width: 32, height: 32)
+        } else if let iconUrl = usercfgs?.icon,
            !iconUrl.isEmpty,
            let url = URL(string: iconUrl) {
             WebImage(url: url)
@@ -372,6 +392,7 @@ private struct ProfileNavBar: View {
 private struct ProfileHeaderCard: View {
     let usercfgs: UserConfig?
     let apiUrl: String?
+    var localAvatar: UIImage?
     let onEdit: () -> Void
     var scrollProgress: CGFloat = 0
 
@@ -413,7 +434,15 @@ private struct ProfileHeaderCard: View {
 
     @ViewBuilder
     private var avatarView: some View {
-        if let iconUrl = usercfgs?.icon,
+        if let avatar = localAvatar {
+            Image(uiImage: avatar)
+                .resizable()
+                .scaledToFill()
+                .frame(width: 64, height: 64)
+                .clipShape(Circle())
+                .overlay(Circle().stroke(Color.white, lineWidth: 3))
+                .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
+        } else if let iconUrl = usercfgs?.icon,
            !iconUrl.isEmpty,
            let url = URL(string: iconUrl) {
             WebImage(url: url)
@@ -791,20 +820,53 @@ private struct BackupRow: View {
 private struct EditProfileSheet: View {
     @Binding var name: String
     @Binding var icon: String
+    var localAvatar: UIImage?
     let onSave: () -> Void
     let onCancel: () -> Void
+    var onAvatarPicked: ((UIImage) -> Void)?
+    var onAvatarRemoved: (() -> Void)?
+
+    @State private var showPhotoPicker = false
+    @State private var previewAvatar: UIImage?
 
     var body: some View {
         neboxNavigationContainer {
             Form {
+                Section(header: Text("头像")) {
+                    HStack {
+                        Spacer()
+                        VStack(spacing: 12) {
+                            avatarPreview
+                                .frame(width: 80, height: 80)
+                                .clipShape(Circle())
+                                .overlay(Circle().stroke(Color.secondary.opacity(0.3), lineWidth: 1))
+
+                            HStack(spacing: 16) {
+                                Button("从相册选择") {
+                                    showPhotoPicker = true
+                                }
+                                .font(.system(size: 14))
+
+                                if previewAvatar != nil || localAvatar != nil {
+                                    Button("移除", role: .destructive) {
+                                        previewAvatar = nil
+                                        onAvatarRemoved?()
+                                    }
+                                    .font(.system(size: 14))
+                                }
+                            }
+                        }
+                        Spacer()
+                    }
+                    .padding(.vertical, 8)
+                }
+
                 Section(header: Text("个人资料")) {
                     TextField("昵称", text: $name)
                     TextField("头像链接 (可选)", text: $icon)
                 }
             }
-            .simultaneousGesture(TapGesture().onEnded {
-                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-            })
+            .modifier(ScrollDismissKeyboardModifier())
             .navigationTitle("编辑资料")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -814,6 +876,41 @@ private struct EditProfileSheet: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("保存", action: onSave)
                 }
+            }
+            .fullScreenCover(isPresented: $showPhotoPicker) {
+                PhotoPicker { image in
+                    previewAvatar = image
+                    onAvatarPicked?(image)
+                }
+                .ignoresSafeArea()
+            }
+            .onAppear {
+                previewAvatar = localAvatar
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var avatarPreview: some View {
+        if let avatar = previewAvatar {
+            Image(uiImage: avatar)
+                .resizable()
+                .scaledToFill()
+        } else if !icon.isEmpty, let url = URL(string: icon) {
+            WebImage(url: url)
+                .resizable()
+                .scaledToFill()
+        } else {
+            ZStack {
+                Circle()
+                    .fill(LinearGradient(
+                        colors: [.accentBlue, .accentBlueDark],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ))
+                Image(systemName: "person.fill")
+                    .font(.system(size: 32))
+                    .foregroundColor(.white)
             }
         }
     }

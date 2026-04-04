@@ -32,6 +32,8 @@
 		E2C273642C355309004952AA /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C273632C355309004952AA /* HomeView.swift */; };
 		E2C273682C36BB88004952AA /* SubcribeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C273672C36BB88004952AA /* SubcribeView.swift */; };
 		E2E8BA822C6B67BB00C2AF9E /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E8BA812C6B67BB00C2AF9E /* Utils.swift */; };
+		172EC4F42B366D7A31D6AC74 /* AvatarStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52B08C59053C5B3B08E9FEE8 /* AvatarStorage.swift */; };
+		093AE7CBCA9E78107D1B33FB /* PhotoPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFCC095ECB1ADA8B83A01BDA /* PhotoPicker.swift */; };
 		E2E8BA852C6CA43300C2AF9E /* ToastManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E8BA842C6CA43300C2AF9E /* ToastManager.swift */; };
 		E2E8BA872C6CA46400C2AF9E /* GlobalToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E8BA862C6CA46400C2AF9E /* GlobalToastView.swift */; };
 		E2E9E2472C3FCA9D00836E4B /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = E2E9E2462C3FCA9D00836E4B /* Alamofire */; };
@@ -77,6 +79,8 @@
 		E2C273632C355309004952AA /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		E2C273672C36BB88004952AA /* SubcribeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubcribeView.swift; sourceTree = "<group>"; };
 		E2E8BA812C6B67BB00C2AF9E /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
+		52B08C59053C5B3B08E9FEE8 /* AvatarStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarStorage.swift; sourceTree = "<group>"; };
+		CFCC095ECB1ADA8B83A01BDA /* PhotoPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoPicker.swift; sourceTree = "<group>"; };
 		E2E8BA842C6CA43300C2AF9E /* ToastManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastManager.swift; sourceTree = "<group>"; };
 		E2E8BA862C6CA46400C2AF9E /* GlobalToastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalToastView.swift; sourceTree = "<group>"; };
 		E2E9E24F2C3FE9A800836E4B /* Vibration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Vibration.swift; sourceTree = "<group>"; };
@@ -204,6 +208,7 @@
 			children = (
 				E2E9E24F2C3FE9A800836E4B /* Vibration.swift */,
 				E2E8BA812C6B67BB00C2AF9E /* Utils.swift */,
+				52B08C59053C5B3B08E9FEE8 /* AvatarStorage.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -269,6 +274,7 @@
 				A100000100000001000000A2 /* AppIconView.swift */,
 				A100000200000001000000A2 /* SwipeActionRow.swift */,
 				A100000300000001000000A2 /* BoxJSInstallGuideView.swift */,
+				CFCC095ECB1ADA8B83A01BDA /* PhotoPicker.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -364,6 +370,8 @@
 				E2E8BA852C6CA43300C2AF9E /* ToastManager.swift in Sources */,
 				E2E9E2562C4101AC00836E4B /* BoxJsViewModel.swift in Sources */,
 				E2E8BA822C6B67BB00C2AF9E /* Utils.swift in Sources */,
+				172EC4F42B366D7A31D6AC74 /* AvatarStorage.swift in Sources */,
+				093AE7CBCA9E78107D1B33FB /* PhotoPicker.swift in Sources */,
 				E210432C2C90307000347C43 /* CheckBoxGroup.swift in Sources */,
 				A100000100000001000000A1 /* AppIconView.swift in Sources */,
 				A100000200000001000000A1 /* SwipeActionRow.swift in Sources */,

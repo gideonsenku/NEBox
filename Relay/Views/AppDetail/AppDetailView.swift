@@ -601,9 +601,7 @@ struct AppDetailView: View {
                     }
                 }
             }
-            .simultaneousGesture(TapGesture().onEnded {
-                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-            })
+            .modifier(ScrollDismissKeyboardModifier())
             .modifier(GroupedFormStyle())
             .navigationTitle(app.name)
             .toolbar {

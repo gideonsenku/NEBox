@@ -165,9 +165,7 @@ struct PreferencesView: View {
                         Text("Surge http-api 地址，用于脚本与 Surge 交互。")
                     }
                 }
-                .simultaneousGesture(TapGesture().onEnded {
-                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                })
+                .modifier(ScrollDismissKeyboardModifier())
             }
         }
         .navigationTitle("偏好设置")

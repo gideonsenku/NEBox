@@ -212,6 +212,18 @@ struct NEBoxHideTabBarPreferenceKey: PreferenceKey {
     }
 }
 
+// MARK: - Keyboard Dismissal
+
+struct ScrollDismissKeyboardModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 16.0, *) {
+            content.scrollDismissesKeyboard(.interactively)
+        } else {
+            content
+        }
+    }
+}
+
 // MARK: - iOS 26 Liquid Glass Modifiers
 
 /// Glass effect for floating tab bars and pill-shaped containers
