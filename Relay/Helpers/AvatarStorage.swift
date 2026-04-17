@@ -5,7 +5,7 @@
 //  Created by Senku on 2024.
 //
 
-import UIKit
+import Foundation
 
 enum AvatarStorage {
     private static let fileName = "user_avatar.png"
@@ -15,8 +15,8 @@ enum AvatarStorage {
             .appendingPathComponent(fileName)
     }
 
-    static func save(_ image: UIImage) -> Bool {
-        guard let data = image.pngData() else { return false }
+    static func save(_ image: PlatformImage) -> Bool {
+        guard let data = image.pngRepresentation() else { return false }
         do {
             try data.write(to: fileURL, options: .atomic)
             return true
@@ -26,9 +26,9 @@ enum AvatarStorage {
         }
     }
 
-    static func load() -> UIImage? {
+    static func load() -> PlatformImage? {
         guard FileManager.default.fileExists(atPath: fileURL.path) else { return nil }
-        return UIImage(contentsOfFile: fileURL.path)
+        return PlatformImage(contentsOfFile: fileURL.path)
     }
 
     static func delete() {

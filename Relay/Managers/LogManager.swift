@@ -7,7 +7,9 @@
 
 import Foundation
 import os.log
+#if os(iOS)
 import UIKit
+#endif
 
 // MARK: - Log Level
 
@@ -90,9 +92,14 @@ final class LogManager: @unchecked Sendable {
         // Startup banner
         let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
         let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"
+        #if os(iOS)
         let device = UIDevice.current.model
         let systemVersion = UIDevice.current.systemVersion
         let banner = "Relay v\(appVersion)(\(build)) | \(device) | iOS \(systemVersion)"
+        #else
+        let osVersion = ProcessInfo.processInfo.operatingSystemVersionString
+        let banner = "Relay v\(appVersion)(\(build)) | Mac | \(osVersion)"
+        #endif
         log(.info, category: .app, "──── App Launched ────")
         log(.info, category: .app, banner)
     }

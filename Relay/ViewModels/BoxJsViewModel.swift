@@ -314,6 +314,25 @@ class BoxJsViewModel: ObservableObject {
     }
 
     @MainActor
+    func cloneAppSession(_ session: Session) {
+        let clone = Session(
+            id: UUID().uuidString,
+            name: "\(session.name) 副本",
+            enable: session.enable,
+            appId: session.appId,
+            appName: session.appName,
+            createTime: ISO8601DateFormatter().string(from: Date()),
+            datas: session.datas
+        )
+        var allSessions = boxData.sessions
+        allSessions.append(clone)
+        let sessions = allSessions
+        optimistic("克隆会话", apply: { $0.replacingSessions(sessions) }) {
+            try await ApiRequest.saveSessions(sessions)
+        }
+    }
+
+    @MainActor
     func useAppSession(sessionId: String, appId: String) {
         guard let session = boxData.sessions.first(where: { $0.id == sessionId }) else { return }
         var datas = session.datas
