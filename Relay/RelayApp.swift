@@ -90,7 +90,7 @@ struct RelayApp: App {
                 toastManager.showToast(message: "请先配置 API 地址")
                 return
             }
-            boxModel.pendingDeepLinkTab = 1
+            boxModel.pendingDeepLinkTab = 2
             toastManager.showLoading(message: "正在添加订阅…")
             Task {
                 await boxModel.addAppSub(url: subURL)
