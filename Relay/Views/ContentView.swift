@@ -231,19 +231,16 @@ struct ContentView: View {
     private var mainContent: some View {
         if #available(iOS 26.0, *) {
             TabView(selection: $selectedTab) {
-                Tab("Community", systemImage: "cube.box", value: 0) {
-                    MakerCommunityView()
+                Tab("Home", systemImage: "house", value: 0) {
+                    HomeView(onSearch: { selectedTab = 3 })
                 }
-                Tab("Home", systemImage: "house", value: 1) {
-                    HomeView(onSearch: { selectedTab = 4 })
-                }
-                Tab("Subs", systemImage: "square.stack", value: 2) {
+                Tab("Subs", systemImage: "square.stack", value: 1) {
                     SubcribeView()
                 }
-                Tab("Profile", systemImage: "person", value: 3) {
+                Tab("Profile", systemImage: "person", value: 2) {
                     ProfileView()
                 }
-                Tab("Search", systemImage: "magnifyingglass", value: 4, role: .search) {
+                Tab("Search", systemImage: "magnifyingglass", value: 3, role: .search) {
                     SearchTabView(searchText: $searchText)
                 }
             }
@@ -253,11 +250,10 @@ struct ContentView: View {
             ZStack(alignment: .bottom) {
                 Group {
                     switch selectedTab {
-                    case 0:  MakerCommunityView()
-                    case 1:  HomeView(onSearch: { showSearch = true })
-                    case 2:  SubcribeView()
-                    case 3:  ProfileView()
-                    default: MakerCommunityView()
+                    case 0:  HomeView(onSearch: { showSearch = true })
+                    case 1:  SubcribeView()
+                    case 2:  ProfileView()
+                    default: HomeView(onSearch: { showSearch = true })
                     }
                 }
 
@@ -275,10 +271,10 @@ struct ContentView: View {
         HStack(spacing: 0) {
             Button { selectedTab = 0 } label: {
                 VStack(spacing: 4) {
-                    Image(systemName: selectedTab == 0 ? "cube.box.fill" : "cube.box")
+                    Image(systemName: selectedTab == 0 ? "house.fill" : "house")
                         .font(.system(size: 16, weight: .medium))
                         .foregroundColor(selectedTab == 0 ? NEBoxTabBarPalette.selected : NEBoxTabBarPalette.unselected)
-                    Text("COMM")
+                    Text("HOME")
                         .font(.system(size: 9, weight: selectedTab == 0 ? .bold : .medium))
                         .foregroundColor(selectedTab == 0 ? NEBoxTabBarPalette.selected : NEBoxTabBarPalette.unselected)
                         .kerning(0.5)
@@ -290,10 +286,10 @@ struct ContentView: View {
 
             Button { selectedTab = 1 } label: {
                 VStack(spacing: 4) {
-                    Image(systemName: selectedTab == 1 ? "house.fill" : "house")
+                    Image(systemName: selectedTab == 1 ? "square.stack.fill" : "square.stack")
                         .font(.system(size: 16, weight: .medium))
                         .foregroundColor(selectedTab == 1 ? NEBoxTabBarPalette.selected : NEBoxTabBarPalette.unselected)
-                    Text("HOME")
+                    Text("SUBS")
                         .font(.system(size: 9, weight: selectedTab == 1 ? .bold : .medium))
                         .foregroundColor(selectedTab == 1 ? NEBoxTabBarPalette.selected : NEBoxTabBarPalette.unselected)
                         .kerning(0.5)
@@ -305,27 +301,12 @@ struct ContentView: View {
 
             Button { selectedTab = 2 } label: {
                 VStack(spacing: 4) {
-                    Image(systemName: selectedTab == 2 ? "square.stack.fill" : "square.stack")
+                    Image(systemName: selectedTab == 2 ? "person.fill" : "person")
                         .font(.system(size: 16, weight: .medium))
                         .foregroundColor(selectedTab == 2 ? NEBoxTabBarPalette.selected : NEBoxTabBarPalette.unselected)
-                    Text("SUBS")
+                    Text("PROFILE")
                         .font(.system(size: 9, weight: selectedTab == 2 ? .bold : .medium))
                         .foregroundColor(selectedTab == 2 ? NEBoxTabBarPalette.selected : NEBoxTabBarPalette.unselected)
-                        .kerning(0.5)
-                }
-                .frame(maxWidth: .infinity)
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-
-            Button { selectedTab = 3 } label: {
-                VStack(spacing: 4) {
-                    Image(systemName: selectedTab == 3 ? "person.fill" : "person")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(selectedTab == 3 ? NEBoxTabBarPalette.selected : NEBoxTabBarPalette.unselected)
-                    Text("ME")
-                        .font(.system(size: 9, weight: selectedTab == 3 ? .bold : .medium))
-                        .foregroundColor(selectedTab == 3 ? NEBoxTabBarPalette.selected : NEBoxTabBarPalette.unselected)
                         .kerning(0.5)
                 }
                 .frame(maxWidth: .infinity)
