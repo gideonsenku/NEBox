@@ -23,9 +23,7 @@ struct MacScriptEditorView: View {
                 .padding(.vertical, 10)
                 .background(.regularMaterial)
             Divider()
-            TextEditor(text: $scriptBody)
-                .font(.system(.body, design: .monospaced))
-                .scrollContentBackground(.hidden)
+            MacJavaScriptCodeEditor(text: $scriptBody)
                 .background(.background)
         }
         .navigationTitle("脚本编辑器")
@@ -53,6 +51,7 @@ struct MacScriptEditorView: View {
             TextField("脚本 URL (http://…/script.js)", text: $scriptURL)
                 .textFieldStyle(.roundedBorder)
                 .font(.system(.caption, design: .monospaced))
+                .frame(minWidth: 260, idealWidth: 420, maxWidth: 520)
                 .onSubmit(loadScriptFromURL)
             Button {
                 loadScriptFromURL()
@@ -65,14 +64,17 @@ struct MacScriptEditorView: View {
                     Label("加载", systemImage: "arrow.down.circle")
                 }
             }
+            .buttonStyle(.bordered)
             .disabled(!canLoadScriptURL)
             Button("清空") {
                 scriptBody = ""
             }
+            .buttonStyle(.bordered)
             Button("复制") {
                 PlatformBridge.copyToPasteboard(scriptBody)
                 toastManager.showToast(message: "已复制")
             }
+            .buttonStyle(.bordered)
             .disabled(scriptBody.isEmpty)
             Button {
                 runScript()
@@ -87,7 +89,9 @@ struct MacScriptEditorView: View {
             }
             .buttonStyle(.borderedProminent)
             .disabled(scriptBody.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isRunning || isLoadingURL)
+            Spacer(minLength: 0)
         }
+        .foregroundStyle(.primary)
     }
 
     private var canLoadScriptURL: Bool {

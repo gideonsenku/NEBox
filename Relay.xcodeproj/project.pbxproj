@@ -68,6 +68,7 @@
 		E2E9E2642C464CC300836E4B /* ArrayExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E9E2632C464CC300836E4B /* ArrayExtension.swift */; };
 		E2E9E26B2C4A7E5B00836E4B /* ViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E9E26A2C4A7E5B00836E4B /* ViewModifier.swift */; };
 		E2E9E2792C4FE81800836E4B /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = E2E9E2782C4FE81800836E4B /* SDWebImageSwiftUI */; };
+		E35500012FA0000000E352F0 /* Highlighter in Frameworks */ = {isa = PBXBuildFile; productRef = E35500022FA0000000E352F0 /* Highlighter */; };
 		F10000010000000000000001 /* LogManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000010000000000000002 /* LogManager.swift */; };
 		F10000020000000000000001 /* LogViewerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000020000000000000002 /* LogViewerView.swift */; };
 		F10000030000000000000001 /* BackupDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000030000000000000002 /* BackupDetailView.swift */; };
@@ -133,6 +134,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E35500012FA0000000E352F0 /* Highlighter in Frameworks */,
 				E244397A2F92949F000E352F /* SDWebImageSwiftUI in Frameworks */,
 				E24439762F92949F000E352F /* AnyCodable in Frameworks */,
 				E24439742F92949F000E352F /* Alamofire in Frameworks */,
@@ -358,6 +360,7 @@
 				E24439752F92949F000E352F /* AnyCodable */,
 				E24439772F92949F000E352F /* Moya */,
 				E24439792F92949F000E352F /* SDWebImageSwiftUI */,
+				E35500022FA0000000E352F0 /* Highlighter */,
 			);
 			productName = RelayMac;
 			productReference = E244392B2F92933A000E352F /* RelayMac.app */;
@@ -418,6 +421,7 @@
 				E2E9E2572C45072F00836E4B /* XCRemoteSwiftPackageReference "AnyCodable" */,
 				B0A0000100000003000000B1 /* XCRemoteSwiftPackageReference "Moya" */,
 				E2E9E2772C4FE81700836E4B /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */,
+				E35500032FA0000000E352F0 /* XCRemoteSwiftPackageReference "HighlighterSwift" */,
 			);
 			productRefGroup = E2C273532C354F4A004952AA /* Products */;
 			projectDirPath = "";
@@ -861,6 +865,14 @@
 				minimumVersion = 3.1.1;
 			};
 		};
+		E35500032FA0000000E352F0 /* XCRemoteSwiftPackageReference "HighlighterSwift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/smittytone/HighlighterSwift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.0.3;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -903,6 +915,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = E2E9E2772C4FE81700836E4B /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */;
 			productName = SDWebImageSwiftUI;
+		};
+		E35500022FA0000000E352F0 /* Highlighter */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E35500032FA0000000E352F0 /* XCRemoteSwiftPackageReference "HighlighterSwift" */;
+			productName = Highlighter;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
