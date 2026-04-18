@@ -72,7 +72,6 @@ struct MacSubscribeListView: View {
                 updateChrome()
             }
             .onChange(of: isEditing) { _, _ in updateChrome() }
-            .onDisappear { chrome.clear() }
             .alert("添加订阅", isPresented: $showAddDialog) {
                 TextField("https://example.com/boxjs.json", text: $draftURL)
                 Button("取消", role: .cancel) {}

@@ -6,6 +6,7 @@
 import SwiftUI
 
 struct MacSubscribeDetailView: View {
+    @EnvironmentObject var chrome: WindowChromeModel
     let sub: AppSubCache
 
     private let columns = [
@@ -23,6 +24,7 @@ struct MacSubscribeDetailView: View {
         }
         .navigationTitle(sub.name)
         .navigationSubtitle(sub.author.asHandle)
+        .onAppear { chrome.clear() }
     }
 
     private var header: some View {

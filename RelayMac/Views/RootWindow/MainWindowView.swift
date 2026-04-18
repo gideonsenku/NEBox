@@ -60,7 +60,7 @@ struct MainWindowView: View {
     private var detailCard: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color.white.opacity(0.92))
+                .fill(.regularMaterial)
                 .overlay(
                     RoundedRectangle(cornerRadius: 20, style: .continuous)
                         .strokeBorder(Color.primary.opacity(0.06), lineWidth: 1)
@@ -70,7 +70,7 @@ struct MainWindowView: View {
                 .environmentObject(chrome)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(.horizontal, 20)
-                .padding(.top, chrome.actions.isEmpty ? 20 : 56)
+                .padding(.top, chrome.actions.isEmpty ? 20 : 48)
                 .padding(.bottom, 20)
                 .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         }
@@ -82,7 +82,6 @@ struct MainWindowView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .shadow(color: Color.black.opacity(0.04), radius: 14, x: 0, y: 6)
     }
 
     private var windowActionBar: some View {
@@ -104,6 +103,7 @@ struct MainWindowView: View {
             }
             .buttonStyle(.plain)
             .disabled(action.isDisabled)
+            .help(action.title)
         case let .menu(items):
             Menu {
                 ForEach(items) { item in
@@ -123,23 +123,23 @@ struct MainWindowView: View {
             .menuIndicator(.hidden)
             .fixedSize()
             .disabled(action.isDisabled)
+            .help(action.title)
         }
     }
 
     private func chromeActionLabel(_ action: WindowChromeAction) -> some View {
-        HStack(spacing: 6) {
-            Image(systemName: action.systemImage)
-                .font(.system(size: 11, weight: .semibold))
-            Text(action.title)
-                .font(.system(size: 12, weight: action.isPrimary ? .semibold : .medium))
-        }
-        .foregroundStyle(action.isPrimary ? Color.white : Color.secondary)
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .background(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(action.isPrimary ? AnyShapeStyle(Color.accentColor) : AnyShapeStyle(.ultraThinMaterial))
-        )
+        Image(systemName: action.systemImage)
+            .font(.system(size: 13, weight: .semibold))
+            .foregroundStyle(action.isPrimary ? Color.white : Color.secondary)
+            .frame(width: 28, height: 28)
+            .background(
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(action.isPrimary ? AnyShapeStyle(Color.accentColor) : AnyShapeStyle(.thinMaterial))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .strokeBorder(action.isPrimary ? Color.clear : Color.primary.opacity(0.1), lineWidth: 1)
+            )
     }
 }
 

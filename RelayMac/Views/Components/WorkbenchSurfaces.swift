@@ -11,31 +11,9 @@ import SwiftUI
 
 struct WorkbenchWindowBackground: View {
     var body: some View {
-        LinearGradient(
-            colors: [
-                Color.white,
-                Color(red: 0.95, green: 0.96, blue: 0.97),
-                Color(red: 0.90, green: 0.92, blue: 0.94),
-                Color(red: 0.85, green: 0.87, blue: 0.89).opacity(0.45)
-            ],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-        .overlay(
-            Rectangle()
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            Color.white.opacity(0.28),
-                            Color.black.opacity(0.02),
-                            Color(red: 0.88, green: 0.90, blue: 0.93).opacity(0.08)
-                        ],
-                        startPoint: .top,
-                        endPoint: .bottomTrailing
-                    )
-                )
-        )
-        .ignoresSafeArea()
+        Color(nsColor: .windowBackgroundColor)
+            .overlay(.ultraThinMaterial)
+            .ignoresSafeArea()
     }
 }
 
@@ -113,6 +91,27 @@ struct WorkbenchPageScroll<Content: View>: View {
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
         }
+    }
+}
+
+extension View {
+    /// Rounded panel background that adapts to the system appearance. Use for
+    /// the main surfaces inside editor / log / data panes that previously used
+    /// hardcoded `Color.white` fills.
+    func workbenchPanelBackground(cornerRadius: CGFloat = 12) -> some View {
+        background(
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .fill(.regularMaterial)
+        )
+    }
+
+    /// Subtle fill used for list-row hovers, chips, and secondary containers.
+    /// Relies on `Color.primary.opacity` so it stays readable in both modes.
+    func workbenchSubtleFill(cornerRadius: CGFloat = 8) -> some View {
+        background(
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .fill(Color.primary.opacity(0.06))
+        )
     }
 }
 

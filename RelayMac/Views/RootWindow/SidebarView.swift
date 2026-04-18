@@ -84,6 +84,5 @@ struct SidebarView: View {
 #Preview {
     @Previewable @State var selection: SidebarItem? = .home
     return SidebarView(selection: $selection, isConnected: true)
-        .environment(\.colorScheme, .light)
         .frame(width: 220, height: 400)
 }

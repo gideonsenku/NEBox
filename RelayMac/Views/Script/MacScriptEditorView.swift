@@ -97,11 +97,11 @@ struct MacScriptEditorView: View {
                 .frame(width: 28, height: 28)
                 .background(
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(Color.white.opacity(0.5))
+                        .fill(.thinMaterial)
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .strokeBorder(Color.white.opacity(0.5), lineWidth: 1)
+                        .strokeBorder(Color.primary.opacity(0.1), lineWidth: 1)
                 )
         }
         .menuStyle(.borderlessButton)
@@ -122,11 +122,11 @@ struct MacScriptEditorView: View {
                 .frame(width: 28, height: 28)
                 .background(
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(Color.white.opacity(0.5))
+                        .fill(.thinMaterial)
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .strokeBorder(Color.white.opacity(0.5), lineWidth: 1)
+                        .strokeBorder(Color.primary.opacity(0.1), lineWidth: 1)
                 )
         }
         .buttonStyle(.plain)
@@ -207,21 +207,20 @@ struct MacScriptEditorView: View {
         VStack(spacing: 0) {
             tabsRow
             Rectangle()
-                .fill(Color(red: 0.91, green: 0.91, blue: 0.93))
+                .fill(Color.primary.opacity(0.1))
                 .frame(height: 1)
             MacJavaScriptCodeEditor(text: $scriptBody)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .background(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(Color.white)
+                .fill(Color(nsColor: .textBackgroundColor))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .strokeBorder(Color(red: 0.91, green: 0.91, blue: 0.93), lineWidth: 1)
+                .strokeBorder(Color.primary.opacity(0.1), lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-        .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
@@ -244,20 +243,19 @@ struct MacScriptEditorView: View {
         VStack(spacing: 0) {
             consoleHeader
             Rectangle()
-                .fill(Color(red: 0.91, green: 0.91, blue: 0.93))
+                .fill(Color.primary.opacity(0.1))
                 .frame(height: 1)
             consoleBody
         }
         .background(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(Color.white)
+                .fill(Color(nsColor: .textBackgroundColor))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .strokeBorder(Color(red: 0.91, green: 0.91, blue: 0.93), lineWidth: 1)
+                .strokeBorder(Color.primary.opacity(0.1), lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-        .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
         .frame(height: 190)
     }
 
@@ -291,7 +289,7 @@ struct MacScriptEditorView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
-        .background(Color.white)
+        .background(Color(nsColor: .textBackgroundColor))
     }
 
     private func consoleHeaderChip(icon: String, title: String) -> some View {
@@ -313,7 +311,7 @@ struct MacScriptEditorView: View {
     @ViewBuilder
     private var consoleBody: some View {
         ZStack {
-            Color(red: 0.94, green: 0.94, blue: 0.95).opacity(0.6)
+            Color.primary.opacity(0.06)
             if consoleLines.isEmpty {
                 emptyConsolePlaceholder
             } else {
@@ -504,7 +502,7 @@ private struct EditorTab: View {
                 topTrailingRadius: 10,
                 style: .continuous
             )
-            .fill(isActive ? AnyShapeStyle(Color.white.opacity(0.5)) : AnyShapeStyle(Color.clear))
+            .fill(isActive ? AnyShapeStyle(.thinMaterial) : AnyShapeStyle(Color.clear))
         )
         .overlay(
             Group {
@@ -516,7 +514,7 @@ private struct EditorTab: View {
                         topTrailingRadius: 10,
                         style: .continuous
                     )
-                    .strokeBorder(Color.white.opacity(0.5), lineWidth: 1)
+                    .strokeBorder(Color.primary.opacity(0.1), lineWidth: 1)
                 }
             }
         )

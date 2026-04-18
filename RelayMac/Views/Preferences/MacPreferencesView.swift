@@ -386,14 +386,13 @@ private struct SettingsSection<Content: View>: View {
             .padding(18)
             .background(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(Color.white)
+                    .fill(.thickMaterial)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .strokeBorder(Color(red: 0.91, green: 0.91, blue: 0.93), lineWidth: 1)
+                    .strokeBorder(Color.primary.opacity(0.1), lineWidth: 1)
             )
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-            .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
         }
     }
 }
@@ -432,10 +431,10 @@ private struct SettingsDivider: View {
 private struct SettingsPillBackground: View {
     var body: some View {
         RoundedRectangle(cornerRadius: 10, style: .continuous)
-            .fill(Color(red: 0.94, green: 0.94, blue: 0.95).opacity(0.6))
+            .fill(Color.primary.opacity(0.06))
             .overlay(
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .strokeBorder(Color.white.opacity(0.5), lineWidth: 1)
+                    .strokeBorder(Color.primary.opacity(0.1), lineWidth: 1)
             )
     }
 }

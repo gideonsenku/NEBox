@@ -10,6 +10,7 @@ struct MacAppDetailView: View {
     let app: AppModel
     @EnvironmentObject var boxModel: BoxJsViewModel
     @EnvironmentObject var toastManager: ToastManager
+    @EnvironmentObject var chrome: WindowChromeModel
 
     @State private var drafts: [String: AnyCodable?] = [:]
     @State private var saving: Bool = false
@@ -69,7 +70,10 @@ struct MacAppDetailView: View {
         }
         .navigationTitle(app.name)
         .navigationSubtitle(app.author.asHandle)
-        .onAppear(perform: primeDrafts)
+        .onAppear {
+            chrome.clear()
+            primeDrafts()
+        }
         .popover(item: $renameTarget, arrowEdge: .trailing) { session in
             RenameSessionPopover(session: session)
                 .environmentObject(boxModel)

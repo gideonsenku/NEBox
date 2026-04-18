@@ -64,7 +64,6 @@ struct MacHomeView: View {
                 updateChrome()
             }
             .onChange(of: isEditingFavorites) { _, _ in updateChrome() }
-            .onDisappear { chrome.clear() }
         }
     }
 

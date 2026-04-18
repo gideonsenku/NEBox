@@ -89,11 +89,11 @@ struct MacBackupView: View {
                 .frame(width: 28, height: 28)
                 .background(
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(Color.white.opacity(0.5))
+                        .fill(.thinMaterial)
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .strokeBorder(Color.white.opacity(0.5), lineWidth: 1)
+                        .strokeBorder(Color.primary.opacity(0.1), lineWidth: 1)
                 )
         }
         .buttonStyle(.plain)
@@ -233,14 +233,13 @@ private struct BackupCard: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color.white)
+                .fill(.thickMaterial)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .strokeBorder(Color(red: 0.91, green: 0.91, blue: 0.93), lineWidth: 1)
+                .strokeBorder(Color.primary.opacity(0.1), lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
     }
 
     private var iconBox: some View {
@@ -298,13 +297,13 @@ private struct BackupCard: View {
                 .frame(width: 26, height: 26)
                 .background(
                     RoundedRectangle(cornerRadius: 6, style: .continuous)
-                        .fill(filled ? Color.white.opacity(0.5) : Color.clear)
+                        .fill(filled ? AnyShapeStyle(.thinMaterial) : AnyShapeStyle(Color.clear))
                 )
                 .overlay(
                     Group {
                         if filled {
                             RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                .strokeBorder(Color.white.opacity(0.5), lineWidth: 1)
+                                .strokeBorder(Color.primary.opacity(0.1), lineWidth: 1)
                         }
                     }
                 )

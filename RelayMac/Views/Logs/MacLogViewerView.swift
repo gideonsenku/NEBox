@@ -91,11 +91,11 @@ struct MacLogViewerView: View {
                 .frame(width: 28, height: 28)
                 .background(
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(Color.white.opacity(0.5))
+                        .fill(.thinMaterial)
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .strokeBorder(Color.white.opacity(0.5), lineWidth: 1)
+                        .strokeBorder(Color.primary.opacity(0.1), lineWidth: 1)
                 )
         }
         .buttonStyle(.plain)
@@ -110,10 +110,10 @@ struct MacLogViewerView: View {
             .padding(.vertical, 3)
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(Color.white.opacity(0.5))
+                    .fill(.thinMaterial)
                     .overlay(
                         RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .strokeBorder(Color.white.opacity(0.5), lineWidth: 1)
+                            .strokeBorder(Color.primary.opacity(0.1), lineWidth: 1)
                     )
             )
     }
@@ -131,11 +131,11 @@ struct MacLogViewerView: View {
         .padding(.vertical, 8)
         .background(
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(Color(red: 0.94, green: 0.94, blue: 0.95).opacity(0.6))
+                .fill(Color.primary.opacity(0.06))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .strokeBorder(Color.white.opacity(0.5), lineWidth: 1)
+                .strokeBorder(Color.primary.opacity(0.1), lineWidth: 1)
         )
     }
 
@@ -158,11 +158,11 @@ struct MacLogViewerView: View {
                 .frame(width: 28, height: 28)
                 .background(
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(Color.white.opacity(0.5))
+                        .fill(.thinMaterial)
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .strokeBorder(Color.white.opacity(0.5), lineWidth: 1)
+                        .strokeBorder(Color.primary.opacity(0.1), lineWidth: 1)
                 )
         }
         .menuStyle(.borderlessButton)
@@ -249,14 +249,13 @@ struct MacLogViewerView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(Color.white)
+                .fill(Color(nsColor: .textBackgroundColor))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .strokeBorder(Color.primary.opacity(0.06), lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-        .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
     }
 
     private var tableHeader: some View {
@@ -271,10 +270,10 @@ struct MacLogViewerView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .font(.system(size: 11, weight: .bold))
-        .foregroundStyle(Color(white: 0.68))
+        .foregroundStyle(.secondary)
         .padding(.horizontal, 20)
         .padding(.vertical, 10)
-        .background(Color(red: 0.94, green: 0.94, blue: 0.95).opacity(0.8))
+        .background(Color.primary.opacity(0.06))
     }
 
     // MARK: - Actions
@@ -448,7 +447,7 @@ private struct FilterChip: View {
         case .tint(let color):
             Capsule(style: .continuous).fill(color)
         case .glass:
-            Capsule(style: .continuous).fill(Color.white.opacity(0.5))
+            Capsule(style: .continuous).fill(.thinMaterial)
         }
     }
 
@@ -456,7 +455,7 @@ private struct FilterChip: View {
     private var overlay: some View {
         if case .glass = fillStyle {
             Capsule(style: .continuous)
-                .strokeBorder(Color.white.opacity(0.5), lineWidth: 1)
+                .strokeBorder(Color.primary.opacity(0.1), lineWidth: 1)
         }
     }
 }
@@ -479,8 +478,8 @@ private extension LogLevel {
     /// Pencil: Info/Debug use neutral greys, Warning/Error keep their tint.
     var chipTextColor: Color {
         switch self {
-        case .debug:   return Color(white: 0.68)
-        case .info:    return Color(white: 0.53)
+        case .debug:   return Color.secondary.opacity(0.7)
+        case .info:    return .secondary
         case .warning: return .orange
         case .error:   return .red
         }
