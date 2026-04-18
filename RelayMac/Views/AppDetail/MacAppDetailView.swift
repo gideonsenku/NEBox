@@ -11,6 +11,7 @@ struct MacAppDetailView: View {
     @EnvironmentObject var boxModel: BoxJsViewModel
     @EnvironmentObject var toastManager: ToastManager
     @EnvironmentObject var chrome: WindowChromeModel
+    @Environment(\.dismiss) private var dismiss
 
     @State private var drafts: [String: AnyCodable?] = [:]
     @State private var saving: Bool = false
@@ -23,57 +24,27 @@ struct MacAppDetailView: View {
 
     var body: some View {
         WorkbenchPageScroll {
+            headerSection
             basicsSection
             settingsSection
             sessionSection
             scriptsSection
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button {
-                    save()
-                } label: {
-                    if saving {
-                        ProgressView().controlSize(.small)
-                    } else {
-                        Label("保存", systemImage: "tray.and.arrow.down")
-                    }
-                }
+        .toolbar(.hidden)
+        .background {
+            Button("", action: save)
                 .keyboardShortcut("s", modifiers: .command)
                 .disabled(drafts.isEmpty || saving)
-            }
-            ToolbarItem(placement: .automatic) {
-                Menu {
-                    Button("导入会话") {
-                        showImportSession = true
-                    }
-                    Button("复制数据") {
-                        copyAppDatas()
-                    }
-                    .disabled(appKeys.isEmpty)
-                    Button("复制会话") {
-                        if let session = currentSession {
-                            copySession(session)
-                        }
-                    }
-                    .disabled(currentSession == nil)
-                    Divider()
-                    Button("清除数据", role: .destructive) {
-                        showClearConfirm = true
-                    }
-                    .disabled(appKeys.isEmpty)
-                } label: {
-                    Label("更多", systemImage: "ellipsis.circle")
-                }
-            }
+                .hidden()
         }
-        .navigationTitle(app.name)
-        .navigationSubtitle(app.author.asHandle)
         .onAppear {
-            chrome.clear()
             primeDrafts()
+            updateChrome()
         }
+        .onChange(of: drafts.isEmpty) { _, _ in updateChrome() }
+        .onChange(of: saving) { _, _ in updateChrome() }
+        .onReceive(boxModel.$boxData) { _ in updateChrome() }
         .popover(item: $renameTarget, arrowEdge: .trailing) { session in
             RenameSessionPopover(session: session)
                 .environmentObject(boxModel)
@@ -119,6 +90,18 @@ struct MacAppDetailView: View {
     }
 
     // MARK: - Sections
+
+    private var headerSection: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(app.name)
+                .font(.largeTitle).bold()
+                .foregroundStyle(.primary)
+            Text(app.author.asHandle)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
 
     @ViewBuilder
     private var basicsSection: some View {
@@ -273,6 +256,54 @@ struct MacAppDetailView: View {
             get: { drafts[setting.id] ?? setting.val },
             set: { drafts[setting.id] = $0 }
         )
+    }
+
+    private func updateChrome() {
+        chrome.setBackAction { dismiss() }
+        var items: [WindowChromeMenuItem] = [
+            WindowChromeMenuItem(
+                title: "导入会话",
+                systemImage: "square.and.arrow.down",
+                action: { showImportSession = true }
+            ),
+            WindowChromeMenuItem(
+                title: "复制数据",
+                systemImage: "doc.on.doc",
+                isDisabled: appKeys.isEmpty,
+                action: copyAppDatas
+            ),
+            WindowChromeMenuItem(
+                title: "复制会话",
+                systemImage: "person.crop.square",
+                isDisabled: currentSession == nil,
+                action: {
+                    if let session = currentSession {
+                        copySession(session)
+                    }
+                }
+            ),
+            WindowChromeMenuItem(
+                title: "清除数据",
+                systemImage: "trash",
+                role: .destructive,
+                isDisabled: appKeys.isEmpty,
+                action: { showClearConfirm = true }
+            )
+        ]
+        chrome.setActions([
+            WindowChromeAction(
+                title: "保存",
+                systemImage: "tray.and.arrow.down",
+                isPrimary: true,
+                isDisabled: drafts.isEmpty || saving,
+                kind: .button(action: save)
+            ),
+            WindowChromeAction(
+                title: "更多",
+                systemImage: "ellipsis",
+                kind: .menu(items: items)
+            )
+        ])
     }
 
     private func save() {

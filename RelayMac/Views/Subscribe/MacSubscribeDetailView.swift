@@ -7,6 +7,7 @@ import SwiftUI
 
 struct MacSubscribeDetailView: View {
     @EnvironmentObject var chrome: WindowChromeModel
+    @Environment(\.dismiss) private var dismiss
     let sub: AppSubCache
 
     private let columns = [
@@ -22,15 +23,24 @@ struct MacSubscribeDetailView: View {
             }
             .padding(20)
         }
-        .navigationTitle(sub.name)
-        .navigationSubtitle(sub.author.asHandle)
-        .onAppear { chrome.clear() }
+        .toolbar(.hidden)
+        .onAppear {
+            chrome.setActions([])
+            chrome.setBackAction { dismiss() }
+        }
     }
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 6) {
+            Text(sub.name)
+                .font(.largeTitle).bold()
+                .foregroundStyle(.primary)
+            Text(sub.author.asHandle)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
             Text("共 \(sub.apps.count) 个应用")
                 .font(.callout).foregroundStyle(.secondary)
+                .padding(.top, 4)
             if !sub.repo.isEmpty {
                 Text(sub.repo)
                     .font(.footnote)

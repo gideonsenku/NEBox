@@ -70,9 +70,16 @@ struct MainWindowView: View {
                 .environmentObject(chrome)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(.horizontal, 20)
-                .padding(.top, chrome.actions.isEmpty ? 20 : 48)
+                .padding(.top, hasChromeBar ? 48 : 20)
                 .padding(.bottom, 20)
                 .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        }
+        .overlay(alignment: .topLeading) {
+            if let back = chrome.backAction {
+                InlineBackButton(action: back)
+                    .padding(.top, 10)
+                    .padding(.leading, 12)
+            }
         }
         .overlay(alignment: .topTrailing) {
             if !chrome.actions.isEmpty {
@@ -82,6 +89,10 @@ struct MainWindowView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private var hasChromeBar: Bool {
+        !chrome.actions.isEmpty || chrome.backAction != nil
     }
 
     private var windowActionBar: some View {

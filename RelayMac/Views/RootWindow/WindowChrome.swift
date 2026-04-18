@@ -31,12 +31,18 @@ struct WindowChromeMenuItem: Identifiable {
 @MainActor
 final class WindowChromeModel: ObservableObject {
     @Published var actions: [WindowChromeAction] = []
+    @Published var backAction: (() -> Void)?
 
     func setActions(_ actions: [WindowChromeAction]) {
         self.actions = actions
     }
 
+    func setBackAction(_ action: (() -> Void)?) {
+        self.backAction = action
+    }
+
     func clear() {
         actions = []
+        backAction = nil
     }
 }

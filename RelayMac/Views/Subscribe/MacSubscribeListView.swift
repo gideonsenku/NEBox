@@ -12,7 +12,6 @@ struct MacSubscribeListView: View {
     @EnvironmentObject var toastManager: ToastManager
 
     @State private var subscriptions: [AppSub] = []
-    @State private var isEditing: Bool = false
     @State private var showAddDialog: Bool = false
     @State private var draftURL: String = ""
 
@@ -27,36 +26,7 @@ struct MacSubscribeListView: View {
                     )
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
-                    ScrollView {
-                        LazyVStack(spacing: 0) {
-                            ForEach(Array(subscriptions.enumerated()), id: \.element.url) { pair in
-                                let index = pair.offset
-                                let sub = pair.element
-                                if let summary = summary(for: sub) {
-                                    if let url = summary.url, !url.isEmpty, !isEditing {
-                                        NavigationLink(value: MacRoute.subscription(url: url)) {
-                                            SubscribeRow(sub: summary)
-                                        }
-                                        .buttonStyle(.plain)
-                                        .contextMenu {
-                                            Button("刷新") { reloadSubscription(url) }
-                                            Button("删除", role: .destructive) { deleteSubscription(url) }
-                                        }
-                                    } else {
-                                        SubscribeRow(sub: summary)
-                                            .foregroundStyle(sub.enable ? .primary : .secondary)
-                                    }
-
-                                    if index < subscriptions.count - 1 {
-                                        Divider()
-                                            .padding(.leading, 48)
-                                    }
-                                }
-                            }
-                        }
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                    }
+                    subscriptionList
                 }
             }
             .navigationDestination(for: MacRoute.self) { route in
@@ -67,11 +37,9 @@ struct MacSubscribeListView: View {
                 updateChrome()
             }
             .onReceive(boxModel.$boxData) { data in
-                guard !isEditing else { return }
                 subscriptions = data.usercfgs?.appsubs ?? []
                 updateChrome()
             }
-            .onChange(of: isEditing) { _, _ in updateChrome() }
             .alert("添加订阅", isPresented: $showAddDialog) {
                 TextField("https://example.com/boxjs.json", text: $draftURL)
                 Button("取消", role: .cancel) {}
@@ -84,6 +52,41 @@ struct MacSubscribeListView: View {
 
     private func summary(for sub: AppSub) -> AppSubSummary? {
         boxModel.boxData.displayAppSubSummaries.first(where: { $0.url == sub.url })
+    }
+
+    private var subscriptionList: some View {
+        List {
+            ForEach(subscriptions, id: \.url) { sub in
+                rowContent(for: sub)
+                    .contextMenu {
+                        Button("刷新") { reloadSubscription(sub.url) }
+                        Button("删除", role: .destructive) { deleteSubscription(sub.url) }
+                    }
+            }
+            .onMove(perform: moveSubscriptions)
+            .onDelete(perform: deleteSubscriptions)
+        }
+        .listStyle(.inset)
+    }
+
+    @ViewBuilder
+    private func rowContent(for sub: AppSub) -> some View {
+        if let summary = summary(for: sub), !sub.url.isEmpty {
+            NavigationLink(value: MacRoute.subscription(url: sub.url)) {
+                SubscribeRow(sub: summary)
+                    .foregroundStyle(sub.enable ? .primary : .secondary)
+            }
+        } else if let summary = summary(for: sub) {
+            SubscribeRow(sub: summary)
+                .foregroundStyle(sub.enable ? .primary : .secondary)
+        } else {
+            Text(sub.url)
+                .font(.body)
+                .lineLimit(1)
+                .truncationMode(.middle)
+                .foregroundStyle(.secondary)
+                .padding(.vertical, 10)
+        }
     }
 
     private func moveSubscriptions(from source: IndexSet, to destination: Int) {
@@ -144,7 +147,8 @@ struct MacSubscribeListView: View {
     }
 
     private func updateChrome() {
-        var actions: [WindowChromeAction] = [
+        chrome.setBackAction(nil)
+        let actions: [WindowChromeAction] = [
             WindowChromeAction(
                 title: "刷新全部",
                 systemImage: "arrow.triangle.2.circlepath",
@@ -160,16 +164,6 @@ struct MacSubscribeListView: View {
                 })
             )
         ]
-
-        if !subscriptions.isEmpty {
-            actions.append(
-                WindowChromeAction(
-                    title: isEditing ? "完成" : "编辑",
-                    systemImage: isEditing ? "checkmark" : "slider.horizontal.3",
-                    kind: .button(action: { isEditing.toggle() })
-                )
-            )
-        }
 
         chrome.setActions(actions)
     }
@@ -189,9 +183,16 @@ private struct SubscribeRow: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
-            Spacer()
+            Spacer(minLength: 0)
+            Image(systemName: "line.3.horizontal")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(.tertiary)
+                .accessibilityLabel("拖动以排序")
         }
+        .padding(.horizontal, 12)
         .padding(.vertical, 10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .contentShape(Rectangle())
     }
 
     @ViewBuilder

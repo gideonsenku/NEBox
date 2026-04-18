@@ -79,6 +79,34 @@ struct WorkbenchAccentCapsule: View {
     }
 }
 
+/// Inline back-chevron button used in detail pages to replace the system
+/// NavigationStack back chevron (which would render in the hiddenTitleBar
+/// area near the traffic lights). Calls the passed closure — typically
+/// `@Environment(\.dismiss)`.
+struct InlineBackButton: View {
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: "chevron.left")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(.secondary)
+                .frame(width: 28, height: 28)
+                .background(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(.thinMaterial)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .strokeBorder(Color.primary.opacity(0.1), lineWidth: 1)
+                )
+        }
+        .buttonStyle(.plain)
+        .help("返回")
+        .keyboardShortcut("[", modifiers: .command)
+    }
+}
+
 struct WorkbenchPageScroll<Content: View>: View {
     @ViewBuilder var content: Content
 

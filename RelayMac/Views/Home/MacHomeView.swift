@@ -158,8 +158,9 @@ struct MacHomeView: View {
     }
 
     private func updateChrome() {
+        chrome.setBackAction(nil)
         guard !favoriteItems.isEmpty else {
-            chrome.clear()
+            chrome.setActions([])
             return
         }
         chrome.setActions([

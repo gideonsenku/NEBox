@@ -51,20 +51,20 @@ struct MacBackupDetailView: View {
                 )
             }
         }
-        .navigationTitle(bak?.name ?? "备份详情")
     }
 
     // MARK: - Content
 
     private func content(for bak: GlobalBackup) -> some View {
         WorkbenchPageScroll {
+            inlineActionBar(for: bak)
             hero(for: bak)
             nameSection(for: bak)
             metaSection(for: bak)
             contentSection(for: bak)
             dangerSection(for: bak)
         }
-        .toolbar { toolbar(for: bak) }
+        .toolbar(.hidden)
         .confirmationDialog(
             "确认恢复？",
             isPresented: $showRevertConfirm,
@@ -234,30 +234,56 @@ struct MacBackupDetailView: View {
         }
     }
 
-    @ToolbarContentBuilder
-    private func toolbar(for bak: GlobalBackup) -> some ToolbarContent {
-        ToolbarItemGroup(placement: .primaryAction) {
-            Button {
+    private func inlineActionBar(for bak: GlobalBackup) -> some View {
+        HStack(spacing: 8) {
+            InlineBackButton { dismiss() }
+            Spacer(minLength: 0)
+            inlineIconButton(
+                systemName: "arrow.counterclockwise",
+                tooltip: "恢复",
+                disabled: resolvedBak == nil
+            ) {
                 showRevertConfirm = true
-            } label: {
-                Label("恢复", systemImage: "arrow.counterclockwise")
             }
-            .disabled(resolvedBak == nil)
-
-            Button {
-                copyJSON()
-            } label: {
-                Label("复制 JSON", systemImage: "doc.on.doc")
-            }
-            .disabled(resolvedBak == nil)
-
-            Button {
+            inlineIconButton(
+                systemName: "doc.on.doc",
+                tooltip: "复制 JSON",
+                disabled: resolvedBak == nil,
+                action: copyJSON
+            )
+            inlineIconButton(
+                systemName: "square.and.arrow.up",
+                tooltip: "导出…",
+                disabled: resolvedBak == nil
+            ) {
                 exportJSON(for: bak)
-            } label: {
-                Label("导出…", systemImage: "square.and.arrow.up")
             }
-            .disabled(resolvedBak == nil)
         }
+    }
+
+    private func inlineIconButton(
+        systemName: String,
+        tooltip: String,
+        disabled: Bool = false,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(.secondary)
+                .frame(width: 28, height: 28)
+                .background(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(.thinMaterial)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .strokeBorder(Color.primary.opacity(0.1), lineWidth: 1)
+                )
+        }
+        .buttonStyle(.plain)
+        .disabled(disabled)
+        .help(tooltip)
     }
 
     // MARK: - Actions
