@@ -35,10 +35,16 @@ struct SettingRowMac: View {
         HStack {
             labelText
             Spacer()
-            TextField(setting.placeholder ?? "", text: stringBinding)
+            TextField("", text: stringBinding, prompt: promptText)
                 .textFieldStyle(.roundedBorder)
+                .labelsHidden()
                 .frame(maxWidth: 280)
         }
+    }
+
+    private var promptText: Text? {
+        guard let placeholder = setting.placeholder, !placeholder.isEmpty else { return nil }
+        return Text(placeholder)
     }
 
     private var radioPicker: some View {

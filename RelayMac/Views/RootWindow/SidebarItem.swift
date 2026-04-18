@@ -7,42 +7,36 @@ import SwiftUI
 
 enum SidebarItem: String, Hashable, CaseIterable, Identifiable {
     case home
-    case search
     case subscriptions
     case scripts
-    case logs
+    case dataViewer
     case backup
-    case profile
+    case logs
     case preferences
-    case about
 
     var id: String { rawValue }
 
     var title: String {
         switch self {
         case .home:          return "收藏应用"
-        case .search:        return "搜索"
         case .subscriptions: return "订阅源"
-        case .scripts:       return "脚本编辑器"
-        case .logs:          return "日志"
+        case .scripts:       return "脚本工坊"
+        case .dataViewer:    return "数据查看器"
         case .backup:        return "备份"
-        case .profile:       return "个人资料"
+        case .logs:          return "日志"
         case .preferences:   return "偏好设置"
-        case .about:         return "关于"
         }
     }
 
     var systemImage: String {
         switch self {
         case .home:          return "star.fill"
-        case .search:        return "magnifyingglass"
         case .subscriptions: return "rectangle.stack"
         case .scripts:       return "curlybraces"
-        case .logs:          return "doc.text.magnifyingglass"
+        case .dataViewer:    return "text.magnifyingglass"
         case .backup:        return "externaldrive"
-        case .profile:       return "person.crop.circle"
+        case .logs:          return "doc.text.magnifyingglass"
         case .preferences:   return "gearshape"
-        case .about:         return "info.circle"
         }
     }
 
@@ -54,9 +48,19 @@ enum SidebarItem: String, Hashable, CaseIterable, Identifiable {
 
     var group: Group {
         switch self {
-        case .home, .search, .subscriptions:        return .apps
-        case .scripts, .logs, .backup:              return .tools
-        case .profile, .preferences, .about:        return .system
+        case .home, .subscriptions:         return .apps
+        case .scripts, .dataViewer, .backup: return .tools
+        case .logs, .preferences:           return .system
+        }
+    }
+
+    /// Items that render directly onto the window background, without the default
+    /// rounded detail card. Used for sections with their own card-like chrome
+    /// (e.g. the Log Center, which has its own title bar + table card).
+    var usesBareLayout: Bool {
+        switch self {
+        case .logs, .dataViewer, .scripts, .backup, .preferences: return true
+        default:                                                  return false
         }
     }
 }

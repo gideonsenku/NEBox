@@ -22,7 +22,7 @@ struct MacSubscribeDetailView: View {
             .padding(20)
         }
         .navigationTitle(sub.name)
-        .navigationSubtitle("@\(sub.author)")
+        .navigationSubtitle(sub.author.asHandle)
     }
 
     private var header: some View {

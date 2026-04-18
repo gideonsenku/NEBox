@@ -19,11 +19,13 @@ struct MacOnboardingSheet: View {
             header
             Divider()
             form
+            MacBoxJSInstallGuide()
             Spacer(minLength: 0)
             footer
         }
         .padding(32)
-        .frame(width: 560, height: 420)
+        .frame(width: 560)
+        .frame(minHeight: 420)
         .background(.regularMaterial)
     }
 

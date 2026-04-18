@@ -50,6 +50,7 @@
 		E24439F02F9294A0000E352F /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E8BA812C6B67BB00C2AF9E /* Utils.swift */; };
 		E24439F12F9294A0000E352F /* AvatarStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52B08C59053C5B3B08E9FEE8 /* AvatarStorage.swift */; };
 		E24439F22F9294A0000E352F /* GlobalToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E8BA862C6CA46400C2AF9E /* GlobalToastView.swift */; };
+		E2443BEB2F936C1C000E352F /* ColorfulX in Frameworks */ = {isa = PBXBuildFile; productRef = E2443BEA2F936C1C000E352F /* ColorfulX */; };
 		E2C273562C354F4A004952AA /* RelayApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C273552C354F4A004952AA /* RelayApp.swift */; };
 		E2C273582C354F4A004952AA /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C273572C354F4A004952AA /* ContentView.swift */; };
 		E2C2735A2C354F4B004952AA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E2C273592C354F4B004952AA /* Assets.xcassets */; };
@@ -97,7 +98,7 @@
 		E210432B2C90307000347C43 /* CheckBoxGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckBoxGroup.swift; sourceTree = "<group>"; };
 		E210FCEE2CBF6DC7004A8CFB /* ApiManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiManager.swift; sourceTree = "<group>"; };
 		E23F56032C7DBDCD0039F1CC /* AppDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDetailView.swift; sourceTree = "<group>"; };
-		E244392B2F92933A000E352F /* RelayMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RelayMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E244392B2F92933A000E352F /* Relay.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Relay.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E24439C02F9294A0000E352F /* PlatformBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformBridge.swift; sourceTree = "<group>"; };
 		E24439C12F9294A0000E352F /* PlatformColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformColors.swift; sourceTree = "<group>"; };
 		E24439C22F9294A0000E352F /* PlatformImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformImage.swift; sourceTree = "<group>"; };
@@ -135,6 +136,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E35500012FA0000000E352F0 /* Highlighter in Frameworks */,
+				E2443BEB2F936C1C000E352F /* ColorfulX in Frameworks */,
 				E244397A2F92949F000E352F /* SDWebImageSwiftUI in Frameworks */,
 				E24439762F92949F000E352F /* AnyCodable in Frameworks */,
 				E24439742F92949F000E352F /* Alamofire in Frameworks */,
@@ -177,7 +179,7 @@
 			isa = PBXGroup;
 			children = (
 				E2C273522C354F4A004952AA /* Relay.app */,
-				E244392B2F92933A000E352F /* RelayMac.app */,
+				E244392B2F92933A000E352F /* Relay.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -361,9 +363,10 @@
 				E24439772F92949F000E352F /* Moya */,
 				E24439792F92949F000E352F /* SDWebImageSwiftUI */,
 				E35500022FA0000000E352F0 /* Highlighter */,
+				E2443BEA2F936C1C000E352F /* ColorfulX */,
 			);
 			productName = RelayMac;
-			productReference = E244392B2F92933A000E352F /* RelayMac.app */;
+			productReference = E244392B2F92933A000E352F /* Relay.app */;
 			productType = "com.apple.product-type.application";
 		};
 		E2C273512C354F4A004952AA /* Relay */ = {
@@ -422,6 +425,7 @@
 				B0A0000100000003000000B1 /* XCRemoteSwiftPackageReference "Moya" */,
 				E2E9E2772C4FE81700836E4B /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */,
 				E35500032FA0000000E352F0 /* XCRemoteSwiftPackageReference "HighlighterSwift" */,
+				E2443BE92F936C1C000E352F /* XCRemoteSwiftPackageReference "ColorfulX" */,
 			);
 			productRefGroup = E2C273532C354F4A004952AA /* Products */;
 			projectDirPath = "";
@@ -548,7 +552,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 26.3;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = net.sodion.RelayMac;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = Relay;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = macosx;
@@ -579,7 +583,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 26.3;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = net.sodion.RelayMac;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = Relay;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = macosx;
@@ -841,6 +845,14 @@
 				minimumVersion = 15.0.3;
 			};
 		};
+		E2443BE92F936C1C000E352F /* XCRemoteSwiftPackageReference "ColorfulX" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Lakr233/ColorfulX";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.1.0;
+			};
+		};
 		E2E9E2452C3FCA9D00836E4B /* XCRemoteSwiftPackageReference "Alamofire" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Alamofire/Alamofire";
@@ -900,6 +912,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = E2E9E2772C4FE81700836E4B /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */;
 			productName = SDWebImageSwiftUI;
+		};
+		E2443BEA2F936C1C000E352F /* ColorfulX */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E2443BE92F936C1C000E352F /* XCRemoteSwiftPackageReference "ColorfulX" */;
+			productName = ColorfulX;
 		};
 		E2E9E2462C3FCA9D00836E4B /* Alamofire */ = {
 			isa = XCSwiftPackageProductDependency;

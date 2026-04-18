@@ -32,6 +32,7 @@ struct RelayMacApp: App {
                 }
                 .onOpenURL(perform: handleURL)
         }
+        .windowStyle(.hiddenTitleBar)
         .windowResizability(.contentSize)
         .commands {
             RelayMenuCommands(boxModel: boxModel, apiManager: apiManager)

@@ -15,40 +15,47 @@ struct ScriptsSection: View {
     @State private var runningIndex: Int? = nil
 
     var body: some View {
-        Section("脚本") {
-            ForEach(Array(scripts.enumerated()), id: \.offset) { pair in
-                let idx = pair.offset
-                let script = pair.element
-                HStack(spacing: 10) {
-                    Text("\(idx + 1).")
-                        .font(.caption.monospacedDigit())
-                        .foregroundStyle(.secondary)
-                        .frame(width: 24, alignment: .trailing)
+        WorkbenchSectionBlock(title: "脚本") {
+            VStack(spacing: 0) {
+                ForEach(Array(scripts.enumerated()), id: \.offset) { pair in
+                    let idx = pair.offset
+                    let script = pair.element
+                    HStack(spacing: 10) {
+                        Text("\(idx + 1).")
+                            .font(.caption.monospacedDigit())
+                            .foregroundStyle(.secondary)
+                            .frame(width: 24, alignment: .trailing)
 
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(script.name).font(.body)
-                        Text(script.script)
-                            .font(.caption2)
-                            .foregroundStyle(.tertiary)
-                            .lineLimit(1)
-                            .truncationMode(.middle)
-                    }
-
-                    Spacer()
-
-                    Button {
-                        run(script: script, at: idx)
-                    } label: {
-                        if runningIndex == idx {
-                            ProgressView().controlSize(.small)
-                        } else {
-                            Label("运行", systemImage: "play.circle.fill")
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(script.name).font(.body)
+                            Text(script.script)
+                                .font(.caption2)
+                                .foregroundStyle(.tertiary)
+                                .lineLimit(1)
+                                .truncationMode(.middle)
                         }
+
+                        Spacer()
+
+                        Button {
+                            run(script: script, at: idx)
+                        } label: {
+                            if runningIndex == idx {
+                                ProgressView().controlSize(.small)
+                            } else {
+                                Label("运行", systemImage: "play.circle.fill")
+                            }
+                        }
+                        .buttonStyle(.borderless)
+                        .disabled(runningIndex != nil)
                     }
-                    .buttonStyle(.borderless)
-                    .disabled(runningIndex != nil)
+                    .padding(.vertical, 6)
+
+                    if idx < scripts.count - 1 {
+                        Divider()
+                            .padding(.leading, 34)
+                    }
                 }
-                .padding(.vertical, 2)
             }
         }
     }

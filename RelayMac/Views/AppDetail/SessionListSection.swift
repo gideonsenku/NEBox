@@ -17,38 +17,41 @@ struct SessionListSection: View {
     @EnvironmentObject var toastManager: ToastManager
 
     var body: some View {
-        Section {
+        WorkbenchSectionBlock(title: "会话") {
             if sessions.isEmpty {
                 Text("暂无会话。点击右上角「新建」保存当前数据为会话。")
                     .foregroundStyle(.secondary)
                     .font(.caption)
                     .padding(.vertical, 4)
             } else {
-                ForEach(Array(sessions.enumerated()), id: \.element.id) { pair in
-                    let idx = pair.offset
-                    let session = pair.element
-                    SessionRow(
-                        session: session,
-                        index: idx,
-                        isActive: session.id == currentSessionId
-                    )
-                    .contextMenu { menu(for: session) }
-                    .swipeActions(edge: .trailing) { swipe(for: session) }
+                VStack(spacing: 0) {
+                    ForEach(Array(sessions.enumerated()), id: \.element.id) { pair in
+                        let idx = pair.offset
+                        let session = pair.element
+                        SessionRow(
+                            session: session,
+                            index: idx,
+                            isActive: session.id == currentSessionId
+                        )
+                        .contextMenu { menu(for: session) }
+                        .swipeActions(edge: .trailing) { swipe(for: session) }
+
+                        if idx < sessions.count - 1 {
+                            Divider()
+                                .padding(.leading, 28)
+                        }
+                    }
                 }
             }
-        } header: {
-            HStack {
-                Text("会话")
-                Spacer()
-                Button {
-                    createEmpty()
-                } label: {
-                    Label("新建", systemImage: "plus")
-                        .labelStyle(.titleAndIcon)
-                }
-                .buttonStyle(.borderless)
-                .help("从当前应用数据新建会话")
+        } accessory: {
+            Button {
+                createEmpty()
+            } label: {
+                Label("新建", systemImage: "plus")
+                    .labelStyle(.titleAndIcon)
             }
+            .buttonStyle(.borderless)
+            .help("从当前应用数据新建会话")
         }
     }
 

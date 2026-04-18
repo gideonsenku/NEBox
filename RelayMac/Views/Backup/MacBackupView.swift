@@ -10,48 +10,157 @@ import UniformTypeIdentifiers
 struct MacBackupView: View {
     @EnvironmentObject var boxModel: BoxJsViewModel
     @EnvironmentObject var toastManager: ToastManager
+    @EnvironmentObject var chrome: WindowChromeModel
+
+    @State private var showDeleteConfirm: Bool = false
+    @State private var deleteTarget: GlobalBackup?
+    @State private var showRestoreConfirm: Bool = false
+    @State private var restoreTarget: GlobalBackup?
+    @State private var showNewBackupAlert: Bool = false
+    @State private var newBackupName: String = ""
 
     var body: some View {
         NavigationStack {
-            Form {
-                importSection
-                backupsSection
+            VStack(alignment: .leading, spacing: 16) {
+                header
+                backupList
             }
-            .formStyle(.grouped)
-            .padding(10)
-            .navigationTitle("备份")
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .navigationDestination(for: MacRoute.self) { route in
                 MacRouteDestination(route: route)
             }
         }
-    }
-
-    private var importSection: some View {
-        Section("全局备份") {
-            Button("导入备份 (JSON)…") { importBackup() }
-                .buttonStyle(.borderedProminent)
-            Text("选择一个 Relay/NEBox 导出的 JSON 文件合并到当前服务器。")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+        .onAppear { chrome.clear() }
+        .confirmationDialog(
+            "确认删除此备份？",
+            isPresented: $showDeleteConfirm,
+            titleVisibility: .visible,
+            presenting: deleteTarget
+        ) { target in
+            Button("删除", role: .destructive) {
+                Task { await boxModel.delGlobalBak(id: target.id) }
+            }
+            Button("取消", role: .cancel) {}
+        }
+        .confirmationDialog(
+            "恢复此备份将覆盖当前数据",
+            isPresented: $showRestoreConfirm,
+            titleVisibility: .visible,
+            presenting: restoreTarget
+        ) { target in
+            Button("恢复", role: .destructive) {
+                Task { await boxModel.revertGlobalBak(id: target.id) }
+            }
+            Button("取消", role: .cancel) {}
+        } message: { _ in
+            Text("当前服务器的数据将被该备份覆盖，无法撤销。")
+        }
+        .alert("创建备份", isPresented: $showNewBackupAlert) {
+            TextField("备份名称（可选）", text: $newBackupName)
+            Button("创建") {
+                let name = newBackupName.trimmingCharacters(in: .whitespacesAndNewlines)
+                newBackupName = ""
+                Task { await boxModel.saveGlobalBak(name: name.isEmpty ? nil : name) }
+            }
+            Button("取消", role: .cancel) { newBackupName = "" }
         }
     }
+
+    // MARK: - Header
+
+    private var header: some View {
+        HStack(spacing: 8) {
+            Text("备份中心")
+                .font(.system(size: 22, weight: .semibold))
+                .foregroundStyle(.primary)
+
+            Spacer(minLength: 16)
+
+            importButton
+            createButton
+        }
+    }
+
+    private var importButton: some View {
+        Button(action: importBackup) {
+            Image(systemName: "square.and.arrow.down")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(.secondary)
+                .frame(width: 28, height: 28)
+                .background(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(Color.white.opacity(0.5))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .strokeBorder(Color.white.opacity(0.5), lineWidth: 1)
+                )
+        }
+        .buttonStyle(.plain)
+        .help("导入备份")
+    }
+
+    private var createButton: some View {
+        Button {
+            showNewBackupAlert = true
+        } label: {
+            Image(systemName: "plus")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: 28, height: 28)
+                .background(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(Color.accentColor)
+                )
+                .shadow(color: Color.accentColor.opacity(0.25), radius: 8, x: 0, y: 2)
+        }
+        .buttonStyle(.plain)
+        .help("创建备份")
+    }
+
+    // MARK: - Backup List
 
     @ViewBuilder
-    private var backupsSection: some View {
-        Section("历史备份") {
-            if let backups = boxModel.boxData.globalbaks, !backups.isEmpty {
-                ForEach(backups) { bak in
-                    NavigationLink(value: MacRoute.backup(id: bak.id)) {
-                        BackupRow(bak: bak)
-                    }
-                    .contextMenu {
-                        Button("导出…") { exportBackup(bak) }
+    private var backupList: some View {
+        if let backups = boxModel.boxData.globalbaks, !backups.isEmpty {
+            ScrollView {
+                LazyVStack(spacing: 12) {
+                    ForEach(Array(backups.enumerated()), id: \.element.id) { pair in
+                        BackupCard(
+                            bak: pair.element,
+                            isLatest: pair.offset == 0,
+                            onRestore: {
+                                restoreTarget = pair.element
+                                showRestoreConfirm = true
+                            },
+                            onExport: { exportBackup(pair.element) },
+                            onDelete: {
+                                deleteTarget = pair.element
+                                showDeleteConfirm = true
+                            }
+                        )
                     }
                 }
-            } else {
-                Text("暂无备份").foregroundStyle(.secondary)
+                .padding(.bottom, 4)
             }
+        } else {
+            emptyState
         }
+    }
+
+    private var emptyState: some View {
+        VStack(spacing: 10) {
+            Image(systemName: "archivebox")
+                .font(.system(size: 30))
+                .foregroundStyle(.tertiary)
+            Text("暂无备份")
+                .font(.system(size: 13))
+                .foregroundStyle(.secondary)
+            Text("点击右上角的 + 创建一个新备份")
+                .font(.system(size: 11))
+                .foregroundStyle(.tertiary)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     // MARK: - Actions
@@ -98,23 +207,109 @@ struct MacBackupView: View {
     }
 }
 
-private struct BackupRow: View {
+// MARK: - Backup Card
+
+private struct BackupCard: View {
     let bak: GlobalBackup
+    let isLatest: Bool
+    let onRestore: () -> Void
+    let onExport: () -> Void
+    let onDelete: () -> Void
 
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "externaldrive.badge.icloud")
-                .font(.system(size: 22))
-                .foregroundStyle(.tint)
-                .frame(width: 32)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(bak.name).font(.body)
-                if let t = bak.createTime {
-                    Text(t).font(.caption).foregroundStyle(.secondary)
+        HStack(spacing: 14) {
+            NavigationLink(value: MacRoute.backup(id: bak.id)) {
+                HStack(spacing: 14) {
+                    iconBox
+                    info
+                    Spacer(minLength: 0)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            actionRow
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(Color.white)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .strokeBorder(Color(red: 0.91, green: 0.91, blue: 0.93), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
+    }
+
+    private var iconBox: some View {
+        Image(systemName: "archivebox.fill")
+            .font(.system(size: 18))
+            .foregroundStyle(isLatest ? Color.white : Color.secondary)
+            .frame(width: 40, height: 40)
+            .background(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(isLatest ? AnyShapeStyle(Color.accentColor) : AnyShapeStyle(Color.primary.opacity(0.06)))
+            )
+    }
+
+    private var info: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(bak.name)
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(.primary)
+                .lineLimit(1)
+            HStack(spacing: 12) {
+                if let t = bak.createTime, !t.isEmpty {
+                    Text(t)
+                        .font(.system(size: 12))
+                        .foregroundStyle(.secondary)
+                }
+                if let tags = bak.tags, !tags.isEmpty {
+                    Text(tags.joined(separator: " · "))
+                        .font(.system(size: 12))
+                        .foregroundStyle(.tertiary)
+                        .lineLimit(1)
                 }
             }
-            Spacer()
         }
-        .padding(.vertical, 2)
+    }
+
+    private var actionRow: some View {
+        HStack(spacing: 6) {
+            iconButton(systemName: "arrow.counterclockwise", tint: .secondary, help: "恢复备份", action: onRestore)
+            iconButton(systemName: "square.and.arrow.up", tint: .secondary, help: "导出备份", action: onExport)
+            iconButton(systemName: "trash", tint: .red, help: "删除备份", filled: false, action: onDelete)
+        }
+    }
+
+    private func iconButton(
+        systemName: String,
+        tint: Color,
+        help: String,
+        filled: Bool = true,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(tint)
+                .frame(width: 26, height: 26)
+                .background(
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .fill(filled ? Color.white.opacity(0.5) : Color.clear)
+                )
+                .overlay(
+                    Group {
+                        if filled {
+                            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                .strokeBorder(Color.white.opacity(0.5), lineWidth: 1)
+                        }
+                    }
+                )
+        }
+        .buttonStyle(.plain)
+        .help(help)
     }
 }

@@ -28,7 +28,7 @@ struct SearchResultRow: View {
                         .lineLimit(1)
                 }
                 if !app.author.isEmpty {
-                    Text("@\(app.author)")
+                    Text(app.author.asHandle)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
