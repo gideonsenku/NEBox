@@ -14,8 +14,6 @@ struct MacScriptEditorView: View {
     @State private var scriptBody: String = "// BoxJS Script\nconst $ = new Env('My Script');\n\n!(async () => {\n  const data = $.getdata('key');\n  $.log(JSON.stringify(data));\n  $.done({ body: data });\n})();\n"
     @State private var isLoadingURL: Bool = false
     @State private var isRunning: Bool = false
-    @State private var scriptResult: ScriptResp?
-    @State private var showResultInspector: Bool = false
     @State private var showLoadURLPopover: Bool = false
     @State private var consoleLines: [ConsoleLine] = []
     @State private var showClearScriptConfirm: Bool = false
@@ -29,23 +27,6 @@ struct MacScriptEditorView: View {
             consoleCard
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .inspector(isPresented: $showResultInspector) {
-            if let scriptResult {
-                MacScriptResultInspector(
-                    scriptName: displayedFilename,
-                    result: scriptResult,
-                    onClose: { showResultInspector = false }
-                )
-            } else {
-                ContentUnavailableView(
-                    "暂无脚本结果",
-                    systemImage: "terminal",
-                    description: Text("运行脚本后会在这里显示输出")
-                )
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            }
-        }
-        .inspectorColumnWidth(min: 280, ideal: 360, max: 520)
         .onAppear { chrome.clear() }
     }
 
@@ -81,15 +62,6 @@ struct MacScriptEditorView: View {
                 Label("复制脚本", systemImage: "doc.on.doc")
             }
             .disabled(scriptBody.isEmpty)
-            if let scriptResult {
-                Divider()
-                Button {
-                    showResultInspector = true
-                } label: {
-                    Label("查看结果", systemImage: "rectangle.righthalf.inset.filled.arrow.right")
-                }
-                .disabled(scriptResult.output?.isEmpty != false && (scriptResult.exception ?? "").isEmpty)
-            }
         } label: {
             Image(systemName: "ellipsis")
                 .font(.system(size: 12, weight: .semibold))
@@ -270,16 +242,6 @@ struct MacScriptEditorView: View {
 
             Spacer()
 
-            Button {
-                showResultInspector = true
-            } label: {
-                consoleHeaderChip(icon: "rectangle.righthalf.inset.filled.arrow.right",
-                                  title: "查看详情")
-            }
-            .buttonStyle(.plain)
-            .disabled(scriptResult == nil)
-            .opacity(scriptResult == nil ? 0.5 : 1)
-
             Button(action: clearConsole) {
                 consoleHeaderChip(icon: "trash", title: "清空")
             }
@@ -420,7 +382,6 @@ struct MacScriptEditorView: View {
                 let envMin = try await EnvScriptLoader.loadEnvMinScript()
                 let scriptForRun = scriptBody + "\n" + envMin
                 let resp: ScriptResp = try await NetworkProvider.request(.runTxtScript(script: scriptForRun))
-                scriptResult = resp
                 appendOutput(from: resp)
                 if let exception = resp.exception, !exception.isEmpty {
                     toastManager.showToast(message: "执行失败：\(exception)")
@@ -428,8 +389,6 @@ struct MacScriptEditorView: View {
                     toastManager.showToast(message: "执行完成")
                 }
             } catch {
-                let resp = ScriptResp(exception: "请求失败：\(error.localizedDescription)", output: nil)
-                scriptResult = resp
                 appendConsole(.init(level: .error, message: "请求失败：\(error.localizedDescription)"))
                 toastManager.showToast(message: "请求失败：\(error.localizedDescription)")
             }

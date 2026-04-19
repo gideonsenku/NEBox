@@ -233,7 +233,7 @@ private struct BackupCard: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(.thickMaterial)
+                .fill(Color(nsColor: .textBackgroundColor))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12, style: .continuous)

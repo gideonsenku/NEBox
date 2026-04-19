@@ -66,7 +66,7 @@ struct MacSubscribeListView: View {
             .onMove(perform: moveSubscriptions)
             .onDelete(perform: deleteSubscriptions)
         }
-        .listStyle(.inset)
+         .listStyle(.inset)
     }
 
     @ViewBuilder
@@ -90,14 +90,16 @@ struct MacSubscribeListView: View {
     }
 
     private func moveSubscriptions(from source: IndexSet, to destination: Int) {
-        subscriptions.move(fromOffsets: source, toOffset: destination)
+        withAnimation(.snappy) {
+            subscriptions.move(fromOffsets: source, toOffset: destination)
+        }
         persistSubscriptions(message: "订阅顺序已更新")
     }
 
     private func deleteSubscriptions(at offsets: IndexSet) {
         let urls = offsets.map { subscriptions[$0].url }
         subscriptions.remove(atOffsets: offsets)
-        boxModel.updateData(path: "usercfgs.appsubs", data: subscriptions)
+        boxModel.updateData(path: "usercfgs.appsubs", data: encodedSubscriptions())
         for url in urls {
             Task { await boxModel.deleteAppSub(url: url) }
         }
@@ -106,15 +108,21 @@ struct MacSubscribeListView: View {
 
     private func deleteSubscription(_ url: String) {
         subscriptions.removeAll { $0.url == url }
-        boxModel.updateData(path: "usercfgs.appsubs", data: subscriptions)
+        boxModel.updateData(path: "usercfgs.appsubs", data: encodedSubscriptions())
         Task { await boxModel.deleteAppSub(url: url) }
         toastManager.showToast(message: "已删除订阅")
     }
 
     private func persistSubscriptions(message: String) {
-        boxModel.updateData(path: "usercfgs.appsubs", data: subscriptions)
+        boxModel.updateData(path: "usercfgs.appsubs", data: encodedSubscriptions())
         toastManager.showToast(message: message)
         Task { await boxModel.flushPendingDataUpdates() }
+    }
+
+    // JSONSerialization (used by the update endpoint) can't encode Swift
+    // Codable structs — flatten to plain dictionaries before sending.
+    private func encodedSubscriptions() -> [[String: Any]] {
+        subscriptions.map { ["url": $0.url, "enable": $0.enable, "id": $0.id ?? ""] }
     }
 
     private func addSubscription() {
@@ -193,6 +201,7 @@ private struct SubscribeRow: View {
         .padding(.vertical, 10)
         .frame(maxWidth: .infinity, alignment: .leading)
         .contentShape(Rectangle())
+        .background(Color(nsColor: .textBackgroundColor))
     }
 
     @ViewBuilder

@@ -386,7 +386,7 @@ private struct SettingsSection<Content: View>: View {
             .padding(18)
             .background(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(.thickMaterial)
+                    .fill(Color(nsColor: .textBackgroundColor))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)

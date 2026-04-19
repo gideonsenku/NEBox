@@ -60,7 +60,7 @@ struct MainWindowView: View {
     private var detailCard: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(.regularMaterial)
+                .fill(Color(nsColor: .textBackgroundColor))
                 .overlay(
                     RoundedRectangle(cornerRadius: 20, style: .continuous)
                         .strokeBorder(Color.primary.opacity(0.06), lineWidth: 1)

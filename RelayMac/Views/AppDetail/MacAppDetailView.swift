@@ -16,9 +16,6 @@ struct MacAppDetailView: View {
     @State private var drafts: [String: AnyCodable?] = [:]
     @State private var saving: Bool = false
     @State private var renameTarget: Session?
-    @State private var latestScriptName: String?
-    @State private var latestScriptResult: ScriptResp?
-    @State private var showScriptInspector: Bool = false
     @State private var showImportSession: Bool = false
     @State private var showClearConfirm: Bool = false
 
@@ -50,24 +47,6 @@ struct MacAppDetailView: View {
                 .environmentObject(boxModel)
                 .environmentObject(toastManager)
         }
-        .inspector(isPresented: $showScriptInspector) {
-            if let scriptName = latestScriptName,
-               let scriptResult = latestScriptResult {
-                MacScriptResultInspector(
-                    scriptName: scriptName,
-                    result: scriptResult,
-                    onClose: { showScriptInspector = false }
-                )
-            } else {
-                ContentUnavailableView(
-                    "暂无脚本结果",
-                    systemImage: "terminal",
-                    description: Text("运行脚本后会在这里显示输出")
-                )
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            }
-        }
-        .inspectorColumnWidth(min: 280, ideal: 360, max: 520)
         .sheet(isPresented: $showImportSession) {
             NavigationStack {
                 MacImportSessionView()
@@ -218,11 +197,7 @@ struct MacAppDetailView: View {
     @ViewBuilder
     private var scriptsSection: some View {
         if let scripts = app.scripts, !scripts.isEmpty {
-            ScriptsSection(scripts: scripts) { script, result in
-                latestScriptName = script.name
-                latestScriptResult = result
-                showScriptInspector = true
-            }
+            ScriptsSection(scripts: scripts)
         }
     }
 

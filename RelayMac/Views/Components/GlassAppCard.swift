@@ -29,13 +29,8 @@ struct GlassAppCard: View {
         .padding(.vertical, 14)
         .padding(.horizontal, 10)
         .frame(maxWidth: .infinity)
-        .background(backgroundLayer)
-        .overlay(border)
         .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .scaleEffect(isHovering ? 1.02 : 1.0)
-        .shadow(color: .black.opacity(isHovering ? 0.12 : 0.04),
-                radius: isHovering ? 10 : 4,
-                y: isHovering ? 4 : 2)
         .animation(.easeInOut(duration: 0.18), value: isHovering)
         .onHover { hovering in isHovering = hovering }
     }
@@ -60,25 +55,5 @@ struct GlassAppCard: View {
         let appearance = MacIconAppearance(rawValue: iconAppearanceRaw) ?? .auto
         let isDark = appearance.isDark(systemIsDark: colorScheme == .dark)
         return app.adaptiveIconURL(isDark: isDark)
-    }
-
-    @ViewBuilder
-    private var backgroundLayer: some View {
-        if #available(macOS 26.0, *) {
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(.thinMaterial)
-                .glassEffect(.regular, in: .rect(cornerRadius: 16))
-        } else {
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(.thinMaterial)
-        }
-    }
-
-    private var border: some View {
-        RoundedRectangle(cornerRadius: 16, style: .continuous)
-            .strokeBorder(
-                Color.white.opacity(isHovering ? 0.22 : 0.08),
-                lineWidth: 0.5
-            )
     }
 }

@@ -7,7 +7,6 @@ import SwiftUI
 
 struct ScriptsSection: View {
     let scripts: [RunScript]
-    var onResult: ((RunScript, ScriptResp) -> Void)? = nil
 
     @EnvironmentObject var boxModel: BoxJsViewModel
     @EnvironmentObject var toastManager: ToastManager
@@ -71,7 +70,6 @@ struct ScriptsSection: View {
             }
             do {
                 let resp: ScriptResp = try await NetworkProvider.request(.runScript(url: scriptURL))
-                onResult?(script, resp)
                 if let exception = resp.exception, !exception.isEmpty {
                     toastManager.showToast(message: "执行失败：\(exception)")
                 } else {
@@ -79,8 +77,6 @@ struct ScriptsSection: View {
                 }
                 boxModel.fetchData()
             } catch {
-                let resp = ScriptResp(exception: "请求失败：\(error.localizedDescription)", output: nil)
-                onResult?(script, resp)
                 toastManager.showToast(message: "请求失败：\(error.localizedDescription)")
             }
         }
